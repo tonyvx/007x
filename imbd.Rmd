@@ -12,7 +12,12 @@ params:
 library(dplyr)
 
 knitr::opts_chunk$set(echo = FALSE)
-df <- read.csv("/Users/valantrahome/projects/data_science-r/movie_metadata2.csv", header=TRUE, stringsAsFactors = FALSE)
+df <-
+read.csv(
+"/Users/valantrahome/projects/data_science-r/movie_metadata2.csv",
+header = TRUE,
+stringsAsFactors = FALSE
+)
 
 ```
 
@@ -21,9 +26,14 @@ This my first analysis of IMDB data using dplyr and published via _R Markdown_
 
 ####Number of Movies and average ratings by year####
 ```{r data1}
-movies_rating_byCountryyear <- df %>% group_by(country, title_year) %>% summarize(imdb_score=round(mean(imdb_score),2), facebook_likes=round(mean(movie_facebook_likes)), movie_cnt=n()) %>% arrange(desc(title_year),desc(imdb_score))
-
-movies_rating_byCountryyear
+movies_rating_byCountryyear <-
+  df %>% group_by(country, title_year) %>% summarize(
+  imdb_score = round(mean(imdb_score), 2),
+  facebook_likes = round(mean(movie_facebook_likes)),
+  movie_cnt = n()
+  ) %>% arrange(desc(title_year), desc(imdb_score))
+  
+  movies_rating_byCountryyear
 ```
 
 ####Number of movies by country and by year having a IMDB rating of `r paste(params$imdb_score)` or greater and average facebook likes for movies, directors and main actor####
@@ -47,14 +57,15 @@ movies_country_title = df %>% group_by(country, title_year, imdb_score)  %>%
   director_likes > params$facebook_thresh ,
   actor1_likes > params$facebook_thresh
   ) %>%
-  arrange(desc(title_year))  
-
-#publish data
-movies_country_title
+  arrange(desc(title_year))
+  
+  #publish data
+  movies_country_title
 ```
 
 ###Countries by year, count of movies having rating more than _`r paste(params$imdb_score)`_ ###
 ```{r data2}
 library(ggplot2)
-ggplot(movies_country_title,aes( x=  country , y=title_year, size = movies)) + geom_point()
+ggplot(movies_country_title,
+aes(x =  country , y = title_year, size = movies)) + geom_point()
 ```
