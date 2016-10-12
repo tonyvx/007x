@@ -1,7 +1,6 @@
 library("dplyr")
 library("tidyr")
-df <-
-  read.csv("./refine.csv",
+df <-read.csv("./refine_original.csv",
            header = TRUE,
            stringsAsFactors = FALSE)
 
@@ -33,6 +32,4 @@ refined_data = df %>% #Fix company Name
   mutate(product_laptop=if_else(code=='Laptop',1,0)) %>%
   mutate(product_tablet=if_else(code=='Tablet',1,0)) 
 
-
-
-refined_data %>% arrange(company) %>% View()
+refined_data %>% arrange(company,code) %>% write.csv("./refine_clean.csv")
