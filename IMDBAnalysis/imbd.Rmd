@@ -2,22 +2,21 @@
 title: "IMDB Movie Analysis"
 output: html_document
 params:
-min_year: 2005
-max_year: 2016
-imdb_score : 7
-facebook_thresh : 1000
+  min_year: 2005
+  max_year: 2016
+  imdb_score : 7
+  facebook_thresh : 1000
 ---
 
 ```{r setup, include=FALSE}
 library(dplyr)
 
 knitr::opts_chunk$set(echo = FALSE)
-df <-
-  read.csv(
-    "./movie_metadata2.csv",
-    header = TRUE,
-    stringsAsFactors = FALSE
-  )
+df <-read.csv(
+  "./movie_metadata2.csv",
+  header = TRUE,
+  stringsAsFactors = FALSE
+)
 
 ```
 
