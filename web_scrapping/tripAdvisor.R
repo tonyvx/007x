@@ -5,16 +5,29 @@ library(rvest)
 
 readDestination <- function()
 {
-  n <- readline(prompt="Destination - ")
+  n <- readline(prompt = "Destination - ")
   print
-  if (n == ""){
+  if (n == "") {
     n <- readDestination()
   }
   return(n)
 }
 
-destination <-readDestination()
-#destination = "Kochi,+India"
+fetch <- function(x) {
+
+  for (i in x) {
+    print(xml_find_one(i,'.//div[@class=class="photo_booking non_generic"]'))
+   # name <- i %>% xml_find_one( 'property_title') %>% xml_text()
+    #print(name)
+  }
+  # name <- x %>% html_nodes(".property_title a") %>% html_text()
+  # href <-
+  #   x %>% html_nodes(".property_title a") %>% html_attr('href')
+  # rating <- x %>% html_nodes(".sprite-ratings") %>% html_attr('alt')
+  # #print(name, href, rating)
+}
+
+destination <- readDestination()
 
 search_url1 = paste0("https://www.tripadvisor.com/Search?geo=1&redirect&q=",
                      destination)
@@ -22,28 +35,7 @@ search_url1 = paste0("https://www.tripadvisor.com/Search?geo=1&redirect&q=",
 travel_guide_url <-
   search_url1 %>% read_html() %>% html_nodes(".sublink:nth-child(6) a") %>% html_attr('href') %>% head(1)
 
-title_names <-
-  paste0("https://www.tripadvisor.com", travel_guide_url) %>%
+data1 <- paste0("https://www.tripadvisor.com", travel_guide_url) %>%
   read_html() %>%
-  html_nodes("#FILTERED_LIST .al_border") %>%
-  html_nodes(".property_title a") %>%
-  html_text()
+  html_nodes("#FILTERED_LIST .al_border")  %>% fetch()
 
-title_links <-
-  paste0("https://www.tripadvisor.com", travel_guide_url) %>%
-  read_html() %>%
-  html_nodes("#FILTERED_LIST .al_border") %>%
-  html_nodes(".property_title a") %>%
-  html_attr('href')
-
-title_ratings <-
-  paste0("https://www.tripadvisor.com", travel_guide_url) %>%
-  read_html()  %>%
-  html_nodes(".sprite-ratings") %>%
-  html_attr('alt')
-
-df <- data.frame(title_names,
-                 #title_ratings,
-                 title_links)
-
-View(df)
