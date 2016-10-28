@@ -421,6 +421,60 @@ ggplot(mtcars, aes(mpg, fill=am)) +
 ggplot(mtcars, aes(mpg, fill=cyl)) + 
   geom_histogram(binwidth = 1, position="identity", alpha=0.4)
 
+# Print out head of economics
+head(economics)
+
+# Plot unemploy as a function of date using a line plot
+ggplot(economics, aes(x = date, y = unemploy)) + 
+  geom_line()
+    
+# Adjust plot to represent the fraction of total population that is unemployed
+ggplot(economics, aes(x = date, y = unemploy/pop))+ 
+  geom_line()
+
+  # Expand the following command with geom_rect() to draw the recess periods
+ggplot(economics, aes(x = date, y = unemploy/pop)) +
+  geom_line() + 
+  geom_rect(data=recess, inherit.aes=FALSE ,  
+  aes(xmin=begin, xmax=end, ymin=-Inf, ymax=+Inf), fill="red",alpha=0.2)
+
+# Check the structure as a starting point
+str(fish.species)
+
+# Use gather to go from fish.species to fish.tidy
+fish.tidy <- gather(fish.species, Species,Capture, -Year)
+
+# Recreate the plot shown on the right
+ggplot(fish.tidy, aes(x = Year, y = Capture, col=Species)) + 
+  geom_line()
+
+# titanic is avaliable in your workspace
+
+# Check out the structure of titanic
+str(titanic)
+
+# Use ggplot() for the first instruction
+ggplot(titanic, aes(x=factor(Pclass), fill=factor(Sex)) ) + 
+  geom_bar(position="dodge")
+
+
+# Use ggplot() for the second instruction
+ggplot(titanic, aes(x=factor(Pclass), fill=factor(Sex)) ) + 
+  geom_bar(position="dodge") +
+  facet_grid(".~Survived")
+
+# Position jitter (use below)
+posn.j <- position_jitter(0.5, 0)
+
+# Use ggplot() for the last instruction
+ggplot(titanic, aes(x=factor(Pclass),y=Age, col=factor(Sex))) + 
+  geom_jitter(position=posn.j, size=3,alpha=0.5) +
+  facet_grid(".~Survived")
+
+
+
+
+
 
 
 
