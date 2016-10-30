@@ -541,6 +541,51 @@ ggplot(mtcars, aes(x = wt, y = mpg, col = factor(cyl))) +
               se = F, span = 0.7) + 
 # Add correct arguments to scale_color_manual
   scale_color_manual("Cylinders", values=myColors)
+
+# Plot 1: Jittered scatter plot, add a linear model (lm) smooth
+ggplot(Vocab, aes(x = education, y = vocabulary)) +
+  geom_jitter(alpha = 0.2) +
+  stat_smooth(method = "lm", se = F)
+
+# Plot 2: Only lm, colored by year
+ggplot(Vocab, aes(x = education, y = vocabulary, col = factor(year))) +
+  stat_smooth(method = "lm", se = F)
+
+# Plot 3: Set a color brewer palette
+ggplot(Vocab, aes(x = education, y = vocabulary, col = factor(year))) +
+  stat_smooth(method = "lm", se = F) +
+  scale_color_brewer()
+
+# Plot 4: Change col and group, specify alpha, size and geom, and add scale_color_gradient
+ggplot(Vocab, aes(x = education, y = vocabulary, col = year, group = factor(year))) +
+  stat_smooth(method = "lm", se = F, alpha = 0.6, size = 2) +
+  scale_color_gradientn(colors = brewer.pal(9,"YlOrRd"))
+
+# Use stat_quantile instead of stat_smooth:
+ggplot(Vocab, aes(x = education, y = vocabulary, col = year, group = factor(year))) +
+  stat_quantile( alpha = 0.6, size = 2) +
+  scale_color_gradientn(colors = brewer.pal(9,"YlOrRd"))
+
+# Set quantile to 0.5:
+ggplot(Vocab, aes(x = education, y = vocabulary, col = year, group = factor(year))) +
+  stat_quantile( alpha = 0.6, size = 2, quantiles=0.5) +
+  scale_color_gradientn(colors = brewer.pal(9,"YlOrRd"))
+
+  # Plot with linear and loess model
+p <- ggplot(Vocab, aes(x = education, y = vocabulary)) +
+       stat_smooth(method = "loess", aes(col = "red"), se = F) +
+       stat_smooth(method = "lm", aes(col = "blue"), se = F) +
+       scale_color_discrete("Model", labels = c("red" = "LOESS", "blue" = "lm"))
+
+# Add stat_sum
+p + stat_sum()
+
+# Add stat_sum and set size range
+p + stat_sum() +scale_size(range=c(1,10))
+
+
+
+
   
   
 
