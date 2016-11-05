@@ -583,6 +583,199 @@ p + stat_sum()
 # Add stat_sum and set size range
 p + stat_sum() +scale_size(range=c(1,10))
 
+# Display structure of mtcars
+str(mtcars)
+
+# Convert cyl and am to factors:
+mtcars$cyl <- as.factor(mtcars$cyl)
+mtcars$am <- as.factor(mtcars$am)
+
+# Define positions:
+posn.d <- position_dodge(width=0.1)
+posn.jd <- position_jitterdodge(jitter.width=0.1,dodge.width=0.2)
+posn.j <- position_jitter(width=0.2)
+
+# base layers:
+wt.cyl.am <-ggplot(mtcars, aes(x=cyl,y=wt, col=am, fill=am, group=am))
+
+# wt.cyl.am, posn.d, posn.jd and posn.j are available
+
+# Plot 1: Jittered, dodged scatter plot with transparent points
+wt.cyl.am +
+  geom_point(position = posn.jd, alpha = 0.6)
+  
+# Plot 2: Mean and SD - the easy way
+wt.cyl.am + stat_summary(fun.data=mean_sdl, fun.args=list(mult=1),position=posn.d)
+
+  
+# Plot 3: Mean and 95% CI - the easy way
+wt.cyl.am + stat_summary(fun.data=mean_cl_normal,position=posn.d)
+
+  
+# Plot 4: Mean and SD - with T-tipped error bars - fill in ___
+wt.cyl.am +
+  stat_summary(geom = "point", fun.y = mean, 
+               position = posn.d) +
+  stat_summary(geom = "errorbar", fun.data = mean_sdl , 
+               position = posn.d, fun.args = list(mult = 1), width = 0.1)
+
+  # Play vector xx is available
+
+# Function to save range for use in ggplot 
+gg_range <- function(x) {
+  # Change x below to return the instructed values
+  data.frame(ymin = min(x), # Min
+             ymax = max(x)) # Max
+}
+
+gg_range(xx)
+# Required output:
+#   ymin ymax
+# 1    1  100
+
+# Function to Custom function:
+med_IQR <- function(x) {
+  # Change x below to return the instructed values
+  data.frame(y = median(x), # Median
+             ymin = quantile(x)[2], # 1st quartile
+             ymax = quantile(x)[4])  # 3rd quartile
+}
+
+med_IQR(xx)
+# Required output:
+#        y  ymin  ymax
+# 25% 50.5 25.75 75.25
+
+# The base ggplot command, you don't have to change this
+wt.cyl.am <- ggplot(mtcars, aes(x = cyl,y = wt, col = am, fill = am, group = am))
+
+# Add three stat_summary calls to wt.cyl.am
+wt.cyl.am + 
+  stat_summary(geom = "linerange", fun.data =med_IQR, 
+               position = posn.d, size = 3) +
+  stat_summary(geom = "linerange", fun.data = gg_range, 
+               position = posn.d, size = 3, 
+               alpha = 0.4) +
+  stat_summary(geom = "point", fun.y = median, 
+               position = posn.d, size = 3, 
+               col = "black"
+              , shape = "X")
+
+
+# Basic ggplot() command, coded for you
+p <- ggplot(mtcars, aes(x = wt, y = hp, col = am)) + 
+  geom_point() + 
+  geom_smooth()
+
+# Add scale_x_continuous
+p <- ggplot(mtcars, aes(x = wt, y = hp, col = am)) + 
+  geom_point() + 
+  geom_smooth() + 
+  scale_x_continuous(limits = c(3, 6),expand = c(0, 0))
+
+# The proper way to zoom in:
+p <- ggplot(mtcars, aes(x = wt, y = hp, col = am)) + 
+  geom_point() + 
+  geom_smooth() + 
+  coord_cartesian(xlim = c(3, 6))
+
+  # Complete basic scatter plot function
+base.plot <- ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width, col=Species)) +
+               geom_jitter() +
+               geom_smooth(method = "lm", se = F)
+
+# Plot base.plot: default aspect ratio
+base.plot
+
+# Fix aspect ratio (1:1) of base.plot
+base.plot + coord_equal(ratio=1)
+
+# Create stacked bar plot: thin.bar
+thin.bar <- ggplot(mtcars, aes(x=1, fill=cyl)) +
+              geom_bar()
+
+# Convert thin.bar to pie chart
+thin.bar + coord_polar(theta="y")
+
+# Create stacked bar plot: wide.bar
+wide.bar <- ggplot(mtcars, aes(x=1, fill=cyl)) +
+              geom_bar(width=1) 
+
+
+# Convert wide.bar to pie chart
+wide.bar + coord_polar(theta="y")
+# Basic scatter plot:
+p <- ggplot(mtcars, aes(x = wt, y = mpg)) +
+  geom_point()
+
+# Separate rows according to transmission type, am
+p + facet_grid(am~.)
+
+# Separate columns according to cylinders, cyl
+p + facet_grid(.~cyl)
+
+# Separate by both columns and rows 
+p + facet_grid(am~cyl)
+
+# Code to create the cyl_am col and myCol vector
+mtcars$cyl_am <- paste(mtcars$cyl, mtcars$am, sep = "_")
+myCol <- rbind(brewer.pal(9, "Blues")[c(3,6,8)],
+               brewer.pal(9, "Reds")[c(3,6,8)])
+
+# Basic scatter plot, add color scale:
+ggplot(mtcars, aes(x = wt, y = mpg, col=cyl_am)) +
+  geom_point() + 
+  scale_color_manual(values=myCol)
+  
+# Facet according on rows and columns.
+ggplot(mtcars, aes(x = wt, y = mpg, col=cyl_am)) +
+  geom_point() + 
+  scale_color_manual(values=myCol) + 
+  facet_grid(gear~vs)
+
+# Add more variables
+ggplot(mtcars, aes(x = wt, y = mpg, col=cyl_am, size=disp)) +
+  geom_point() + 
+  scale_color_manual(values=myCol) + 
+  facet_grid(gear~vs)
+
+  # Basic scatter plot
+ggplot(mamsleep, aes(x=time,y=name, col=sleep)) + 
+  geom_point()
+
+# Facet rows accoding to vore
+ggplot(mamsleep, aes(x=time,y=name, col=sleep)) + 
+  geom_point() + 
+  facet_grid(vore~.)
+
+# Specify scale and space arguments to free up rows
+ggplot(mamsleep, aes(x=time,y=name, col=sleep)) + 
+  geom_point() + 
+  facet_grid(vore~.,scale = "free_y" , space = "free_y")
+
+# Plot 1: change the plot background color to myPink:
+z+theme(plot.background=element_rect(fill = myPink))
+
+# Plot 2: adjust the border to be a black line of size 3
+z+theme(plot.background=element_rect(fill = myPink, color="black", size=3))
+
+# Plot 3: set panel.background, legend.key, legend.background and strip.background to element_blank()
+uniform_panels <- theme(panel.background = element_blank(), 
+                        legend.key = element_blank(), 
+                        legend.background=element_blank(), 
+                        strip.background = element_blank())
+z+theme(plot.background=element_rect(fill = myPink, color="black", size=3)) + uniform_panels
+
+# Extend z with theme() function and three arguments
+ z+theme(panel.grid= element_blank(), 
+         axis.line=element_line("black"), 
+         axis.ticks=element_line("black"))
+
+ z+theme(strip.text=element_text(size=16, color=myRed), 
+         axis.title.y=element_text(hjust=0, color=myRed,face="italic"),
+         axis.title.x=element_text(hjust=0, color=myRed, face="italic"),
+         axis.text=element_text(color="black"))
+
 
 
 
