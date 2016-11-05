@@ -5,13 +5,18 @@ params:
   min_year: 2005
   max_year: 2016
   imdb_score : 7
+  movie_count : 5
   facebook_thresh : 1000
 ---
 
 ```{r setup, include=FALSE}
 library(dplyr)
 
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE
+)
 df <-read.csv(
   "./movie_metadata2.csv",
   header = TRUE,
@@ -24,7 +29,7 @@ df <-read.csv(
 This my first analysis of IMDB data using dplyr and published via _R Markdown_
 
 ####Number of Movies and average ratings by year####
-```{r data1}
+```{r data1, message=FALSE, warning=FALSE}
 movies_rating_byCountryyear <-
   df %>% group_by(country, title_year) %>% summarize(
     imdb_score = round(mean(imdb_score), 2),
@@ -38,7 +43,7 @@ movies_rating_byCountryyear
 ####Number of movies by country and by year having a IMDB rating of `r paste(params$imdb_score)` or greater and average facebook likes for movies, directors and main actor####
 _Only movies made between year `r paste(params$min_year)` and year `r paste(params$max_year)` are considered_
 
-```{r data}
+```{r data, message=FALSE, warning=FALSE}
 movies_country_title = df %>% group_by(country, title_year, imdb_score)  %>%
   summarise(
     movie_likes = mean(movie_facebook_likes),
@@ -62,9 +67,48 @@ movies_country_title = df %>% group_by(country, title_year, imdb_score)  %>%
 movies_country_title
 ```
 
+
+```{r plotdata, message=FALSE, warning=FALSE}
+library("ggplot2")
+library("dplyr")
+library("RColorBrewer")
+
+plot_data <-
+df %>% group_by(country, title_year) %>% summarize(
+imdb_score = round(mean(imdb_score), 2),
+a_facebook_likes = round(quantile(na.rm = TRUE, actor_1_facebook_likes, c(.90))),
+m_facebook_likes = round(quantile(na.rm = TRUE, movie_facebook_likes, c(.90))),
+d_facebook_likes = round(quantile(na.rm = TRUE, director_facebook_likes, c(.90))),
+
+movie_cnt = n()
+) %>% arrange(desc(title_year), desc(imdb_score)) %>%
+filter(
+  title_year >= params$min_year ,
+  title_year <= params$max_year ,
+  imdb_score >= params$imdb_score,
+  movie_cnt > params$movie_count)
+
+
+```
+
 ###Countries by year, count of movies having rating more than _`r paste(params$imdb_score)`_ ###
-```{r data2}
-library(ggplot2)
-ggplot(movies_country_title,
-       aes(x =  country , y = title_year, size = movies)) + geom_point()
+```{r movielikes, message=FALSE, warning=FALSE}
+plot_data %>% ggplot(aes(x = title_year,
+                         y = imdb_score,
+                         col = m_facebook_likes)) +
+                         geom_point() +
+                         geom_smooth(method = "loess",
+                         alpha = 0.6,
+                         size = 1)  +
+                         labs(list(title = "IMDB Score by Facebook Likes", x = "Facebook Likes", y = "IMDB Score")) +
+                         theme(plot.background = element_rect(fill = "#CFDBD3", color = "black", size =
+                         3)) + theme(
+                         panel.grid = element_blank(),
+                         panel.background = element_blank(),
+                         legend.key = element_blank(),
+                         legend.background = element_blank(),
+                         strip.background = element_blank()
+                         ) +
+                         
+                         facet_grid(country ~ .)
 ```
