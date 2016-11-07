@@ -776,6 +776,165 @@ z+theme(plot.background=element_rect(fill = myPink, color="black", size=3)) + un
          axis.title.x=element_text(hjust=0, color=myRed, face="italic"),
          axis.text=element_text(color="black"))
 
+# Move legend by position
+z +theme(legend.position=c(0.85, 0.85))
+
+# Change direction
+z +theme(legend.direction="horizontal")
+
+# Change location by name
+z +theme(legend.position="bottom")
+
+# Remove legend entirely
+z +theme(legend.position="none")
+
+# Increase spacing between facets
+library("grid")
+z+ theme(panel.margin.x=unit(2,"cm"))
+
+# Add code to remove any excess plot margin space
+library("grid")
+z+ theme(panel.margin.x=unit(2,"cm"), 
+         plot.margin=unit(c(0,0,0,0), "cm"))
+
+# Theme layer saved as an object, theme_pink
+theme_pink <- theme(panel.background = element_blank(),
+                    legend.key = element_blank(),
+                    legend.background = element_blank(),
+                    strip.background = element_blank(),
+                    plot.background = element_rect(fill = myPink, color = "black", size = 3),
+                    panel.grid = element_blank(),
+                    axis.line = element_line(color = "black"),
+                    axis.ticks = element_line(color = "black"),
+                    strip.text = element_text(size = 16, color = myRed),
+                    axis.title.y = element_text(color = myRed, hjust = 0, face = "italic"),
+                    axis.title.x = element_text(color = myRed, hjust = 0, face = "italic"),
+                    axis.text = element_text(color = "black"),
+                    legend.position = "none")
+  
+# Apply theme_pink to z2
+z2 + theme_pink
+
+# Change code so that old theme is saved as old
+
+old <-theme_update(panel.background = element_blank(),
+             legend.key = element_blank(),
+             legend.background = element_blank(),
+             strip.background = element_blank(),
+             plot.background = element_rect(fill = myPink, color = "black", size = 3),
+             panel.grid = element_blank(),
+             axis.line = element_line(color = "black"),
+             axis.ticks = element_line(color = "black"),
+             strip.text = element_text(size = 16, color = myRed),
+             axis.title.y = element_text(color = myRed, hjust = 0, face = "italic"),
+             axis.title.x = element_text(color = myRed, hjust = 0, face = "italic"),
+             axis.text = element_text(color = "black"),
+             legend.position = "none")
+
+# Display the plot z2
+z2 + theme_pink
+
+# Restore the old plot
+theme_set(old)
+z2 + theme_pink
+
+# Load ggthemes package
+library(ggthemes)
+
+
+# Apply theme_tufte
+z2 + theme_tufte()
+
+
+# Apply theme_tufte, modified:
+z2 + theme_tufte() + 
+     theme(legend.position = c(0.9, 0.9),
+           legend.title = element_text(face = "italic", size =12),
+           axis.title=element_text(face = "bold", size =14))
+
+# Base layers
+m <- ggplot(mtcars, aes(x = cyl, y = wt))
+
+# Draw dynamite plot
+m +
+  stat_summary(fun.y = mean, 
+               geom = "bar", 
+               fill = "skyblue") +
+  stat_summary(fun.data = mean_sdl, 
+               fun.args = list(mult = 1), 
+               geom = "errorbar", 
+               width = 0.1)
+
+  # Base layers
+m <- ggplot(mtcars, aes(x = cyl,y = wt, col = am, fill = am))
+
+# Plot 1: Draw dynamite plot
+m +
+  stat_summary(fun.y = mean, geom = "bar") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), geom = "errorbar", width = 0.1)
+
+# Plot 2: Set position dodge in each stat function
+m +
+  stat_summary(fun.y = mean, geom = "bar", position = "dodge") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), 
+               geom = "errorbar", width = 0.1, position = "dodge")
+
+# Set your dodge posn manually
+posn.d <- position_dodge(0.9)
+
+# Plot 3:  Redraw dynamite plot
+m +
+  stat_summary(fun.y = mean, geom = "bar", position = posn.d) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), geom = "errorbar", width = 0.1, position = posn.d)
+
+
+  # Base layers
+m <- ggplot(mtcars.cyl, aes(x = cyl, y = wt.avg))
+
+# Plot 1: Draw bar plot
+m + geom_bar(stat="identity", fill="skyblue")
+
+# Plot 2: Add width aesthetic
+m + geom_bar(aes(width=prop),stat="identity", fill="skyblue")
+
+# Plot 3: Add error bars
+m + geom_bar(aes(width=prop),stat="identity", fill="skyblue") +
+geom_errorbar(aes(ymin = wt.avg - sd , ymax = wt.avg + sd), width=0.1)
+
+# Convert bar chart to pie chart
+ggplot(mtcars, aes(x = factor(1), fill=am))+
+      coord_polar(theta="y") + 
+      geom_bar( position="fill",width=1)+ 
+      facet_grid(.~cyl)
+
+
+# Parallel coordinates plot using GGally
+library(GGally)
+
+# All columns except am
+group_by_am <- 9
+my_names_am <- (1:11)[-group_by_am]
+
+# Basic parallel plot - each variable plotted as a z-score transformation
+ggparcoord(mtcars, my_names_am, groupColumn = group_by_am, alpha = 0.8)
+
+# Create color palette
+myColors <- brewer.pal(9, "Reds")
+
+# Build the heat map from scratch
+ ggplot(barley, aes(x=year, y=variety, fill=yield)) + 
+  geom_tile() + 
+  facet_wrap(~site, ncol=1) + 
+  scale_fill_gradientn(colors=myColors)
+
+ 
+
+
+ 
+
+
+
+
 
 
 
