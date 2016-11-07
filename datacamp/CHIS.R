@@ -257,7 +257,7 @@ mosaicGG(adult,"SRAGE_P","POVLL")
 mosaicGG(mtcars,"cyl","am")
 
 # Vocab: vocabulary described by education
-library(cars)
+library(car)
 mosaicGG(Vocab,"education","vocabulary")
 
 
