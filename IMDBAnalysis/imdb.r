@@ -11,7 +11,7 @@ movies <- movies %>% mutate(`Action` = grepl("Action", genres))
 movies <-
   movies %>% mutate(`Adventure` = grepl("Adventure", genres))
 movies <- movies %>% mutate(`Fantasy` = grepl("Fantasy", genres))
-movies <- movies %>% mutate(`Sci-Fi` = grepl("ci-Fi", genres))
+movies <- movies %>% mutate(`Sci-Fi` = grepl("Sci-Fi", genres))
 movies <- movies %>% mutate(`Thriller` = grepl("Thriller", genres))
 movies <-
   movies %>% mutate(`Documentary` = grepl("Documentary", genres))
@@ -51,40 +51,62 @@ movies <- movies %>%
                                      if_else(movie_age < 20, "1990s", "old")
                                    )))
 
+movies <- movies %>%
+  mutate(
+    genres_class = case_when(
+      grepl("Action", movies$genres) ~ "Action",
+      grepl("Adventure", movies$genres) ~ "Action",
+      grepl("Thriller", movies$genres) ~ "Thriller",
+      grepl("Western", movies$genres) ~ "Thriller",
+      grepl("Romance", movies$genres) ~ "Family",
+      grepl("Sci-Fi", movies$genres) ~ "Family",
+      grepl("Drama", movies$genres) ~ "Family",
+      grepl("Fantasy", movies$genres) ~ "Family",
+      grepl("Animation", movies$genres) ~ "Family",
+      grepl("Comedy", movies$genres) ~ "Comedy",
+      grepl("Crime", movies$genres) ~ "Thriller",
+      grepl("Romance", movies$genres) ~ "Romance",
+      grepl("Family", movies$genres) ~ "Family",
+      grepl("Fantasy", movies$genres) ~ "Fanatasy",
+      grepl("Documentary", movies$genres) ~ "Documentary",
+      grepl("History", movies$genres) ~ "Documentary",
+      grepl("Animarion", movies$genres) ~ "Family",
+      grepl("Horror", movies$genres) ~ "Horror",
+      grepl("Music", movies$genres) ~ "Musical",
+      TRUE ~ as.character(movies$genres)
+    )
+  )
+
 #1 Gross by critic review and imdb score
 movies %>%  select(gross_in_million, num_critic_for_reviews, imdb_score) %>%
-  ggplot(aes(gross_in_million, imdb_score, color = num_critic_for_reviews)) +
-  geom_point()
+  ggplot(aes(imdb_score, gross_in_million, color = num_critic_for_reviews)) +
+  geom_point(alpha = 0.6)
 
 #2 Gross by user review and imdb score
 movies %>%  select(gross_in_million, num_user_for_reviews, imdb_score) %>%
-  ggplot(aes(gross_in_million, imdb_score, color = num_user_for_reviews)) +
-  geom_point()
+  ggplot(aes(imdb_score, gross_in_million, color = num_user_for_reviews)) +
+  geom_point(alpha = 0.6)
 
 #3 Gross by duration and imdb score
 movies %>%  select(gross_in_million, duration, imdb_score) %>%
-  ggplot(aes(gross_in_million, imdb_score, color = duration)) +
-  geom_point()
+  ggplot(aes(imdb_score, gross_in_million, color = duration)) +
+  geom_point(alpha = 0.6)
 
 #4 Gross by budget and imdb score
 movies %>%  select(gross_in_million, budget_in_million, imdb_score) %>%
-  ggplot(aes(gross_in_million, imdb_score, color = budget_in_million)) +
-  geom_point()
+  ggplot(aes(imdb_score, gross_in_million, color = budget_in_million)) +
+  geom_point(alpha = 0.6)
 
 #5 Gross by movie-age and imdb score
 movies %>% filter(movie_age < 10 &
                     movie_age > 5) %>% select(gross_in_million, movie_age, imdb_score) %>%
-  ggplot(aes(gross_in_million, imdb_score, col = movie_age)) +
-  geom_point()
+  ggplot(aes(imdb_score, gross_in_million, col = movie_age)) +
+  geom_point(alpha = 0.6)
 
 #6 Gross by Genres(Action vs Romance) and imdb score
-movies %>% filter(Action == TRUE |
-                    Romance == TRUE) %>% select(gross_in_million,
-                                                movie_age,
-                                                imdb_score,
-                                                Drama,
-                                                Thriller,
-                                                Action,
-                                                Adventure,
-                                                Romance) %>%
-  ggplot(aes(gross_in_million, imdb_score, col = Romance)) + geom_point()
+movies %>% select(gross_in_million,
+                  movie_age,
+                  imdb_score,
+                  genres_class) %>%
+  ggplot(aes(imdb_score, gross_in_million, col = genres_class)) + geom_point(alpha =
+                                                                               0.6)
