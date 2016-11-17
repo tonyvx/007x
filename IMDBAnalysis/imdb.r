@@ -54,24 +54,21 @@ movies <- movies %>%
 movies <- movies %>%
   mutate(
     genres_class = case_when(
+      grepl("Horror", movies$genres) ~ "Horror",
       grepl("Action", movies$genres) ~ "Action",
       grepl("Adventure", movies$genres) ~ "Action",
       grepl("Thriller", movies$genres) ~ "Thriller",
       grepl("Western", movies$genres) ~ "Thriller",
+      grepl("Crime", movies$genres) ~ "Thriller",
       grepl("Romance", movies$genres) ~ "Family",
       grepl("Sci-Fi", movies$genres) ~ "Family",
       grepl("Drama", movies$genres) ~ "Family",
       grepl("Fantasy", movies$genres) ~ "Family",
       grepl("Animation", movies$genres) ~ "Family",
-      grepl("Comedy", movies$genres) ~ "Comedy",
-      grepl("Crime", movies$genres) ~ "Thriller",
-      grepl("Romance", movies$genres) ~ "Romance",
       grepl("Family", movies$genres) ~ "Family",
-      grepl("Fantasy", movies$genres) ~ "Fanatasy",
+      grepl("Comedy", movies$genres) ~ "Comedy",
       grepl("Documentary", movies$genres) ~ "Documentary",
       grepl("History", movies$genres) ~ "Documentary",
-      grepl("Animarion", movies$genres) ~ "Family",
-      grepl("Horror", movies$genres) ~ "Horror",
       grepl("Music", movies$genres) ~ "Musical",
       TRUE ~ as.character(movies$genres)
     )
