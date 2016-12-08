@@ -35,25 +35,17 @@ ui <- fluidPage(
         max = 1000,
         value = 500
       ),
-      #[5] "director_facebook_likes"
-      #[6] "actor_3_facebook_likes"
-      #[8] "actor_1_facebook_likes"
-      #[14] "cast_total_facebook_likes"
-      #[25] "actor_2_facebook_likes"
-      #[28] "movie_facebook_likes"
-      #[29] "gross_in_million"
-      #[30] "budget_in_million"
       selectInput(
         "facebookLikesInput",
         "Facebook popularity of cast",
         choices = c(
-          "Likes for the director" = 5,
-          "Likes for the main actor" = 8,
-          "Likes for the 1st supporting actor" = 25,
-          "Likes for the 2nd supporting actor" = 6,
-          "Likes for all cast" = 14
+          "Likes for the director" = "director_facebook_likes",
+          "Likes for the main actor" = "actor_1_facebook_likes",
+          "Likes for the 1st supporting actor" = "actor_2_facebook_likes",
+          "Likes for the 2nd supporting actor" = "actor_3_facebook_likes",
+          "Likes for all cast" = "cast_total_facebook_likes"
         ),
-        selected = 5,
+        selected = "director_facebook_likes",
         multiple = TRUE
       )
     ),

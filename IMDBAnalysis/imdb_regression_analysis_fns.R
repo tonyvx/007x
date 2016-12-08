@@ -57,13 +57,6 @@ loadDF <- function() {
   return(movies)
 }
 
-convertToIntVector <- function(selectedFactors) {
-  colIndex = c()
-  for (i in selectedFactors)
-    colIndex <- c(colIndex, as.integer(i))
-  return(colIndex)
-}
-
 ## Regression Analysis 
 analysis <- function(lmodel, data) {
   sse = sum(lmodel$residuals ^ 2, na.rm = TRUE)
@@ -75,7 +68,7 @@ analysis <- function(lmodel, data) {
     "Sum of squared Errors" = sum(lmodel$residuals ^ 2, na.rm = TRUE) ,
     "Root Mean Squared error" = rmse
   )
-  my_list
+  return(my_list)
 }
 analysisPredict <- function(predicted, train, test, test_data) {
   sse = sum((predicted - test) ^ 2, na.rm = TRUE)
@@ -89,7 +82,7 @@ analysisPredict <- function(predicted, train, test, test_data) {
     "Sum of squared Errors" = sse ,
     "Root Mean Squared error" = rmse
   )
-  my_list
+  return(my_list)
 }
 createTrainData <- function(movie_data) {
   return(movie_data %>% filter(movie_age_class == '>2000'))
@@ -99,16 +92,8 @@ createTestData <- function(movie_data) {
 }
 
 createLinearModel <- function(selectedFactors, df) {
-  #[5] "director_facebook_likes"
-  #[6] "actor_3_facebook_likes"
-  #[8] "actor_1_facebook_likes"
-  #[14] "cast_total_facebook_likes"
-  #[25] "actor_2_facebook_likes"
-  #[28] "movie_facebook_likes"
-  #[29] "gross_in_million"
-  #[30] "budget_in_million"
-  selectedFactors <- c(convertToIntVector(selectedFactors), 29, 30)
-  lmodel <- lm(gross_in_million ~ ., data = df %>% select(selectedFactors))
+  selectedFactors <- c(selectedFactors, "gross_in_million", "budget_in_million")
+  lmodel <- lm(gross_in_million ~ ., data = subset( df , select = selectedFactors))
   return(lmodel)
 }
 
