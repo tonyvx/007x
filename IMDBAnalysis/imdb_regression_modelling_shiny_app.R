@@ -19,45 +19,86 @@ ui <- fluidPage(
     "IMDB Analysis - Predict Gross based on budget and Facebook popularity of the cast"
   ),
   
-  # Sidebar with a slider input for number of bins
-  sidebarLayout(
-    sidebarPanel(
-      selectInput(
-        "countryInput",
-        "Country",
-        choices = c("USA", "UK", "Canada", "Germany"),
-        selected = "USA"
+  
+  tabsetPanel(
+    tabPanel(
+      "Plot",
+      fluidRow(column(
+        6,
+        sliderInput(
+          inputId = "gross",
+          label = "gross in million:",
+          min = 0,
+          max = 1000,
+          value = c(0, 1000),
+          dragRange = TRUE
+        )
       ),
-      sliderInput(
-        "gross",
-        "gross in million:",
-        min = 0,
-        max = 1000,
-        value = 500
+      column(
+        6,
+        selectInput(
+          "countryInput",
+          "Country",
+          choices = c("USA", "UK", "Canada", "Germany"),
+          selected = "USA"
+        )
+      )),
+      fluidRow(
+        column(6, verbatimTextOutput("gross_by_imdb_score_msg")),
+        column(6, verbatimTextOutput("gross_by_movie_like_msg"))
       ),
-      selectInput(
-        "facebookLikesInput",
-        "Facebook popularity of cast",
-        choices = c(
-          "Likes for the director" = "director_facebook_likes",
-          "Likes for the main actor" = "actor_1_facebook_likes",
-          "Likes for the 1st supporting actor" = "actor_2_facebook_likes",
-          "Likes for the 2nd supporting actor" = "actor_3_facebook_likes",
-          "Likes for all cast" = "cast_total_facebook_likes"
-        ),
-        selected = "director_facebook_likes",
-        multiple = TRUE
-      )
+      fluidRow(column(6, plotOutput(
+        "gross_by_imdb_score"
+      )),
+      column(6, plotOutput(
+        "gross_by_movie_like"
+      ))),
+      fluidRow(column(
+        12,
+        selectInput(
+          "facebookLikesPlotInput",
+          "Facebook popularity of cast",
+          choices = c(
+            "Likes for the director" = "director_facebook_likes",
+            "Likes for the main actor" = "actor_1_facebook_likes",
+            "Likes for the 1st supporting actor" = "actor_2_facebook_likes",
+            "Likes for the 2nd supporting actor" = "actor_3_facebook_likes",
+            "Likes for all cast" = "cast_total_facebook_likes"
+          ),
+          selected = "director_facebook_likes",
+          multiple = FALSE
+        )
+      ),
+      column(
+        12, plotOutput("gross_vs_budget_likes_plot1")
+      ))
     ),
     
-    mainPanel(tabsetPanel(
-      tabPanel("gross by imdb score", plotOutput("gross_by_imdb_score")),
-      tabPanel("gross by movie likes", plotOutput("gross_by_movie_like")),
-      tabPanel("Training (title_year > 2000)", verbatimTextOutput("train")),
-      tabPanel("Testing (title_year > 2010)", verbatimTextOutput("test"))
-    ))
+    tabPanel("Training (title_year > 2000)",
+             fluidRow(
+               column(
+                 12,
+                 selectInput(
+                   "facebookLikesInput",
+                   "Facebook popularity of cast",
+                   choices = c(
+                     "Likes for the director" = "director_facebook_likes",
+                     "Likes for the main actor" = "actor_1_facebook_likes",
+                     "Likes for the 1st supporting actor" = "actor_2_facebook_likes",
+                     "Likes for the 2nd supporting actor" = "actor_3_facebook_likes",
+                     "Likes for all cast" = "cast_total_facebook_likes"
+                   ),
+                   selected = "director_facebook_likes",
+                   multiple = TRUE
+                 )
+               ),
+               column(12,
+                      verbatimTextOutput("train"))
+             )),
+    tabPanel("Testing (title_year > 2010)", verbatimTextOutput("test"))
   )
 )
+
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
@@ -65,30 +106,72 @@ server <- function(input, output) {
   movies = loadDF()
   
   output$gross_by_imdb_score <- renderPlot({
-    print(imdb_gross_plot(movies %>% 
-                            filter( country == input$countryInput , gross_in_million > input$gross
-      )
+    print(imdb_gross_plot(
+      movies %>%
+        filter(
+          country == input$countryInput ,
+          gross_in_million > input$gross[1],
+          gross_in_million < input$gross[2]
+        )
+    ))
+  })
+  output$gross_vs_budget_likes_plot1 <- renderPlot({
+    print(input$countryInput)
+    print(gross_vs_budget_likes_plot(
+      movies %>%
+        filter(country == input$countryInput),
+      input$facebookLikesPlotInput
     ))
   })
   output$gross_by_movie_like <- renderPlot({
-    print(movie_like_gross_plot(movies %>% 
-                                  filter( country == input$countryInput ,  gross_in_million > input$gross
-      )
+    print(movie_like_gross_plot(
+      movies %>%
+        filter(
+          country == input$countryInput ,
+          gross_in_million > input$gross[1],
+          gross_in_million < input$gross[2]
+        )
     ))
   })
   output$train <- renderPrint({
-    train <- createTrainData(movies %>% filter(country == input$countryInput))
-    lmodel <- createLinearModel(input$facebookLikesInput, train)
+    train <-
+      createTrainData(movies %>% filter(country == input$countryInput))
+    data_lm = dfSubsetForlm(input$facebookLikesInput, train)
+    print("Summary of data used for linear model")
+    print("_____________________________________")
+    print(summary(data_lm))
+    print(" ")
+    print("Correlation of data used for linear model")
+    print("_________________________________________")
+    print(cor(data_lm))
+    
+    lmodel <- createLinearModel(data_lm)
+    print(" ")
+    print("Linear model")
+    print("_________________________________________")
+    print(lmodel)
     trainAnalysis <- analysis(lmodel, train)
+    print(" ")
+    print("Linear model = Analysis")
+    print("_________________________________________")
     print(trainAnalysis)
   })
+  output$gross_by_imdb_score_msg <- renderPrint({
+    print("gross_by_imdb_score_msg")
+  })
   
+  output$gross_by_movie_like_msg <- renderPrint({
+    print("gross_by_movie_like_msg")
+  })
   output$test <- renderPrint({
-    train <- createTrainData(movies %>% filter(country == input$countryInput))
-    lmodel <- createLinearModel(input$facebookLikesInput, train)
+    train <-
+      createTrainData(movies %>% filter(country == input$countryInput))
+    data_lm = dfSubsetForlm(input$facebookLikesInput, train)
+    lmodel <- createLinearModel(data_lm)
     trainAnalysis <- analysis(lmodel, train)
-    test <- createTestData(movies %>% filter(country == input$countryInput))
-    
+    test <-
+      createTestData(movies %>% filter(country == input$countryInput))
+    print(summary(dfSubsetForlm(input$facebookLikesInput, test)))
     predictTest = predict(lmodel, newdata = test)
     testAnalysis <- analysisPredict(predictTest,
                                     train$gross_in_million,
