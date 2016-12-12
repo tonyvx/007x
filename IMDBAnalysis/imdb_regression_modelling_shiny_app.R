@@ -74,28 +74,31 @@ ui <- fluidPage(
       ))
     ),
     
-    tabPanel("Training (title_year > 2000)",
-             fluidRow(
-               column(
-                 12,
-                 selectInput(
-                   "facebookLikesInput",
-                   "Facebook popularity of cast",
-                   choices = c(
-                     "Likes for the director" = "director_facebook_likes",
-                     "Likes for the main actor" = "actor_1_facebook_likes",
-                     "Likes for the 1st supporting actor" = "actor_2_facebook_likes",
-                     "Likes for the 2nd supporting actor" = "actor_3_facebook_likes",
-                     "Likes for all cast" = "cast_total_facebook_likes"
-                   ),
-                   selected = "director_facebook_likes",
-                   multiple = TRUE
-                 )
-               ),
-               column(12,
-                      verbatimTextOutput("train"))
-             )),
-    tabPanel("Testing (title_year > 2010)", verbatimTextOutput("test"))
+    tabPanel(
+      "Linear Regression Analysis",
+      fluidRow(
+        column(
+          12,
+          selectInput(
+            "facebookLikesInput",
+            "Facebook popularity of cast",
+            choices = c(
+              "Likes for the director" = "director_facebook_likes",
+              "Likes for the main actor" = "actor_1_facebook_likes",
+              "Likes for the 1st supporting actor" = "actor_2_facebook_likes",
+              "Likes for the 2nd supporting actor" = "actor_3_facebook_likes",
+              "Likes for all cast" = "cast_total_facebook_likes"
+            ),
+            selected = "director_facebook_likes",
+            multiple = TRUE
+          )
+        ),
+        column(6,
+               verbatimTextOutput("train")),
+        column(6,
+               verbatimTextOutput("test"))
+      )
+    )
   )
 )
 
@@ -137,24 +140,25 @@ server <- function(input, output) {
     train <-
       createTrainData(movies %>% filter(country == input$countryInput))
     data_lm = dfSubsetForlm(input$facebookLikesInput, train)
-    print("Summary of data used for linear model")
+    print("Training (title_year > 2000)")
     print("_____________________________________")
     print(summary(data_lm))
-    print(" ")
+    print("_____________________________________")
     print("Correlation of data used for linear model")
     print("_________________________________________")
     print(cor(data_lm))
     
     lmodel <- createLinearModel(data_lm)
-    print(" ")
+    
     print("Linear model")
     print("_________________________________________")
     print(lmodel)
     trainAnalysis <- analysis(lmodel, train)
-    print(" ")
+    print("_____________________________________")
     print("Linear model = Analysis")
     print("_________________________________________")
     print(trainAnalysis)
+    print("_____________________________________")
   })
   output$gross_by_imdb_score_msg <- renderPrint({
     print("gross_by_imdb_score_msg")
@@ -168,7 +172,7 @@ server <- function(input, output) {
       createTrainData(movies %>% filter(country == input$countryInput))
     data_lm = dfSubsetForlm(input$facebookLikesInput, train)
     lmodel <- createLinearModel(data_lm)
-    trainAnalysis <- analysis(lmodel, train)
+   #trainAnalysis <- analysis(lmodel, train)
     test <-
       createTestData(movies %>% filter(country == input$countryInput))
     print(summary(dfSubsetForlm(input$facebookLikesInput, test)))

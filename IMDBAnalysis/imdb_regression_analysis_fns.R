@@ -108,6 +108,7 @@ imdb_gross_plot <- function(movies) {
     mutate(rating = factor(round(imdb_score))) %>%
     na.omit() %>%
     ggplot(aes(x = gross_in_million, y = ..density.., fill = rating)) +
+    ggtitle("IMDB rating vs gross_in_million")+
     geom_histogram(binwidth = 5, position = "dodge")
   return(p)
 }
@@ -118,35 +119,34 @@ movie_like_gross_plot <- function(movies) {
                                                     10000))) %>%
     na.omit() %>%
     ggplot(aes(x = gross_in_million, y = ..density.., fill = `Movie likes in 10000s`)) +
-    geom_histogram(binwidth =
+    
+    ggtitle("Movies facebook like vs gross_in_million")+
+     geom_histogram(binwidth =
                      5, position = "dodge") + scale_colour_brewer()
   return(p)
 }
 
 
-gross_vs_budget_likes_plot <- function(movies,param_like) {
-  columns<-c("gross_in_million","budget_in_million", param_like)
+gross_vs_budget_likes_plot <- function(movies, param_like) {
+  columns <- c("gross_in_million", "budget_in_million", param_like)
   print(columns)
   df <-
-    movies %>% filter(country == "USA") %>% subset(select=columns) 
+    movies %>% filter(country == "USA") %>% subset(select = columns)
   names(df)[3] <- "fb_like"
+  
+  df <- df %>% mutate(fb_like = log10(fb_like))
  
-  df <- df %>% mutate(
-    fb_like = factor(if_else(
-      fb_like > 10000,
-        11,
-      round(fb_like/ 1000)
-      ))
-    )
-  #names(df)[3] <-param_like
   
   plot <- df %>%
     na.omit() %>%
-    ggplot(aes(
-      x = budget_in_million,
-      y = gross_in_million,
-      col = fb_like
-    )) +geom_point(alpha = 0.6, position = position_jitter(width = 0.2))+
-    guides(col = guide_legend(title=param_like))
+    ggplot(aes(x = budget_in_million,
+               y = gross_in_million,
+               col = fb_like)) +
+    
+    geom_point(alpha = 0.6, position = position_jitter(width = 0.2)) +
+    geom_smooth() +
+    guides(col = guide_legend(title = param_like)) +
+    ggtitle("gross_in_million vs budget_in_million")
+  
   return(plot)
 }
