@@ -28,13 +28,18 @@ hr = hrDF()
 ```
 ####Data Challenges
 
-#### _Total Employees : `r NROW(hr)`_
+  Impact of market trends are not considered in the data
+  
+  Salary is factored into high, medium & low
 
-#### _Total Employees Left : `r NROW(hr %>% filter(left==1))`_
+### Data Insights
 
-## Correlation plot - 
+####_Total Employees : `r NROW(hr)`_
 
-####_Observation - Low overall statisfaction, high workload (projects, monthly hours, work accident) & less incentive (promotion)_
+####_Total Employees leaving : `r NROW(hr %>% filter(left==1))`_
+
+#####_Observation - For employees that are performing with high evaluation rating:_
+Low overall statisfaction, high workload (projects, monthly hours, work accident) & less incentive (promotion) are seen as reasons for leaving
 
 ```{r correlation, echo=FALSE}
 
