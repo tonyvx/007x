@@ -6,7 +6,7 @@ library(corrplot)
 
 #Description of data set
 description =  c(
-    "Employee satisfaction level",
+  "Employee satisfaction level",
   "Last evaluation",
   "Number of projects",
   "Average monthly hours",
@@ -25,6 +25,21 @@ dataDescription <- function(hr_data) {
 #load Data Set
 hrDF <- function() {
   hr_efficiency <- read.csv("./HR_comma_sep.csv", header = TRUE)
+  hr_efficiency$promotion_last_5years_f <-
+    as.factor(hr_efficiency$promotion_last_5years)
+  hr_efficiency$left_f <- as.factor(hr_efficiency$left)
+  hr_efficiency$Work_accident_f <-
+    as.factor(hr_efficiency$Work_accident)
+  hr_efficiency$number_project_f <-
+    as.factor(hr_efficiency$number_project)
+  hr_efficiency$last_eval_cat = cut(hr_efficiency$last_evaluation, c(0, 0.2, 0.4, 0.6, 0.8, 1))
+  hr_efficiency$monthly_avg_hrs_cat <-
+    cut(hr_efficiency$average_montly_hours,
+        c(0, 50, 10, 150, 200, 250, 300, 350))
+  hr_efficiency$time_spend_company_cat <-
+    cut(hr_efficiency$time_spend_company, c(0,  4, 8, 10, 12, 14))
+  hr_efficiency$total_emp <- NROW(hr_efficiency)
+  names(hr_efficiency)[9] <- "dept"
   return(hr_efficiency)
 }
 
@@ -36,54 +51,51 @@ dataDescription(hr)
 
 
 # Cannot see a correlation between promotion in last 5 years to emp satisfaction
-plot_promotion_last_5years_observation <- function(){
+plot_promotion_last_5years_observation <- function() {
   return("Cannot see a correlation between promotion in last 5 years to emp satisfaction")
 }
 plot_promotion_last_5years <- function(hr) {
   plotData <- hr %>% na.omit() %>%
-    group_by(satisfaction_level, factor(promotion_last_5years)) %>%
+    group_by(satisfaction_level, promotion_last_5years_f) %>%
     mutate(emp_count = n()) %>%
-    ggplot(aes(
-      x = satisfaction_level,
-      y = emp_count,
-      col = factor(promotion_last_5years)
-    )) +
-    geom_line() + 
+    ggplot(aes(x = satisfaction_level,
+               y = emp_count,
+               col = promotion_last_5years_f)) +
+    geom_line() +
     ggtitle(plot_promotion_last_5years_observation())
   return(plotData)
 }
 
-plot_number_project_observation <- function(){
-  return("Though with less projects there are employees with high satisfaction,\n 3-5 projects seems to be common for high staisfaction")
+plot_number_project_observation <- function() {
+  return(
+    "Though with less projects there are employees with high satisfaction,\n 3-5 projects seems to be common for high staisfaction"
+  )
 }
-plot_number_project <- function(hr){
+plot_number_project <- function(hr) {
   plotData <- hr %>% na.omit() %>%
-    group_by(satisfaction_level, factor(number_project)) %>%
+    group_by(satisfaction_level, number_project_f) %>%
     mutate(emp_count = n()) %>%
-    ggplot(aes(
-      x = satisfaction_level,
-      y = emp_count,
-      col = factor(number_project)
-    )) +
+    ggplot(aes(x = satisfaction_level,
+               y = emp_count,
+               col = number_project_f)) +
     geom_line() +
     ggtitle(plot_number_project_observation())
   return(plotData)
 }
 
-plot_last_evaluation_observation <- function(){
-  return("Though there are employees with high satisfaction even with low evaluation, \n evaluation rating of 0.6 -1 seems to be high among employees with high satisfaction level")
+plot_last_evaluation_observation <- function() {
+  return(
+    "Though there are employees with high satisfaction even with low evaluation, \n evaluation rating of 0.6 -1 seems to be high among employees with high satisfaction level"
+  )
 }
-plot_last_evaluation <- function(hr){
-  plotData <- hr %>% na.omit() %>% 
-    mutate(last_eval_cat = cut(last_evaluation, c(0, 0.2, 0.4, 0.6, 0.8, 1))) %>% 
-    group_by(satisfaction_level, factor(last_eval_cat)) %>%
+plot_last_evaluation <- function(hr) {
+  plotData <- hr %>% na.omit() %>%
+    group_by(satisfaction_level, last_eval_cat) %>%
     mutate(emp_count = n()) %>%
-    ggplot(aes(
-    x = satisfaction_level,
-    y = emp_count,
-    col = factor(last_eval_cat)
-  )) +
-    geom_line() + 
+    ggplot(aes(x = satisfaction_level,
+               y = emp_count,
+               col = last_eval_cat)) +
+    geom_line() +
     ggtitle(plot_last_evaluation_observation())
   return(plotData)
 }
@@ -93,16 +105,13 @@ plot_last_evaluation <- function(hr){
 #Again there are employees who have high satisfaction level at low avg monthly hours
 # 150-250 average monthly hours leads higher satisfaction level
 
-plot_average_montly_hours <- function(hr){
-  plotData <- hr %>% na.omit() %>% 
-    mutate(monthly_avg_hrs_cat = cut(average_montly_hours, c(0, 50, 10, 150, 200, 250, 300, 350))) %>% 
-    group_by(satisfaction_level, factor(monthly_avg_hrs_cat)) %>%
+plot_average_montly_hours <- function(hr) {
+  plotData <- hr %>% na.omit() %>%
+    group_by(satisfaction_level, monthly_avg_hrs_cat) %>%
     mutate(emp_count = n()) %>%
-    ggplot(aes(
-    x = satisfaction_level,
-    y = emp_count,
-    col = factor(monthly_avg_hrs_cat)
-  )) +
+    ggplot(aes(x = satisfaction_level,
+               y = emp_count,
+               col = monthly_avg_hrs_cat)) +
     geom_line() +
     ggtitle("150-250 average monthly hours leads higher satisfaction level")
   return(plotData)
@@ -111,47 +120,57 @@ plot_average_montly_hours <- function(hr){
 #Technical , support, sales areas have higher satisfaction levels
 plot_sales <- function(hr) {
   plotData <- hr %>% na.omit() %>%
-    group_by(satisfaction_level, sales) %>% 
-    mutate(emp_count = n()) %>% 
-    ggplot(aes(
-      x = satisfaction_level, 
-      y = emp_count, 
-      col = factor(sales))) +
+    group_by(satisfaction_level, dept) %>%
+    mutate(emp_count = n()) %>%
+    ggplot(aes(x = satisfaction_level,
+               y = emp_count,
+               col = dept)) +
     geom_line(alpha = 0.6) +
     ggtitle("Technical , support, sales areas have higher satisfaction levels")
   return(plotData)
 }
 
 #Cannot see a very clear correlation
-plot_salary <- function(hr){
-  plotData <- hr %>% na.omit() %>% 
-    group_by(satisfaction_level, factor(salary)) %>% 
-    mutate(emp_count = n()) %>% 
-    ggplot(aes(
-    x = satisfaction_level,
-    y = emp_count,
-    col = factor(salary)
-  )) +
+plot_salary <- function(hr) {
+  plotData <- hr %>% na.omit() %>%
+    group_by(satisfaction_level, salary) %>%
+    mutate(emp_count = n()) %>%
+    ggplot(aes(x = satisfaction_level,
+               y = emp_count,
+               col = salary)) +
     geom_line() +
     ggtitle("Cannot see a very clear correlation")
   return(plotData)
 }
 
 #Cannot see a very clear correlation
-plot_time_spend_company <- function(hr){
-  plotData <- hr %>% na.omit() %>% 
-    mutate(time_spend_company_cat = cut(time_spend_company, c(0,  4, 8, 10, 12, 14))) %>% 
-    
-    group_by(satisfaction_level, factor(time_spend_company)) %>% 
-    mutate(emp_count = n()) %>% 
-    ggplot(aes(
-    x = satisfaction_level,
-    y = emp_count,
-    col = factor(time_spend_company_cat)
-  )) +
+plot_time_spend_company <- function(hr) {
+  plotData <- hr %>% na.omit() %>%
+    group_by(satisfaction_level, time_spend_company_cat) %>%
+    mutate(emp_count = n()) %>%
+    ggplot(aes(x = satisfaction_level,
+               y = emp_count,
+               col = time_spend_company_cat)) +
     geom_line() +
-    ggtitle("Most employees stay 0-4 years but \n employees staying on for 4-8 years creeps up between 0.75 to 1")
+    ggtitle(
+      "Most employees stay 0-4 years but \n employees staying on for 4-8 years creeps up between 0.75 to 1"
+    )
   return(plotData)
+}
+
+plot_correlation <- function(hr,prj_eval,time_in_co,num_prj) {
+  hr_good_leaving_people2 <-
+    hr %>% filter(last_evaluation >= prj_eval |
+                    time_spend_company >= time_in_co | number_project > num_prj)
+  hr_good_people_select <-
+    hr_good_leaving_people2 %>% select(satisfaction_level, number_project:promotion_last_5years)
+  M <- cor(hr_good_people_select)
+  return(corrplot(M, method = "pie"))
+}
+plot_atrition_dept <- function(hr) {
+  
+   p <- hr %>% group_by(dept,left_f) %>% mutate(emp_count=n())  %>% ggplot(aes(x=dept, y=emp_count, col=left_f)) +geom_point()
+  return(p)
 }
 
 getSelectedPlot <- function(plot_type, hr) {
@@ -178,34 +197,36 @@ getPlotTypes <- function() {
     "last evaluation rating vs satisfaction level" = "plot_last_evaluation",
     "employee satisfaction level by departments " = "plot_sales",
     "employee satisfaction level by salary" = "plot_salary",
-    "employee satisfaction level vs time spend in company "="plot_time_spend_company"
+    "employee satisfaction level vs time spend in company " = "plot_time_spend_company"
   )
   return(plot_types)
 }
+
+
 # set.seed(3000)
-# 
-# split = sample.split(hr$satisfaction_level, SplitRatio = 0.7)
+#
+# split = sample.split(hr$satisfaction_level_cat, SplitRatio = 0.7)
 # Train = subset(hr, split = TRUE)
 # Test = subset(hr, split = FALSE)
-# 
+#
 # lm_satisfaction = lm (
-#   satisfaction_level ~ last_evaluation + number_project + average_montly_hours +
-#     time_spend_company + promotion_last_5years  + salary,
+#   satisfaction_level_cat ~ last_evaluation + number_project + average_montly_hours +
+#     satisfaction_level + promotion_last_5years  + salary,
 #   data = Train
 # )
 # plot(lm_satisfaction)
-# 
+#
 # abline(lm_satisfaction)
-# 
+#
 # summary(lm_satisfaction)
-# 
-# 
+#
+#
 # abline(predict(lm_satisfaction, newdata = Test) ,
 #        coef(lm_satisfaction),
 #        col = "red")
-# 
+#
 # lm_satisfaction = lm (
-#   satisfaction_level ~ last_evaluation + number_project + average_montly_hours +
-#     time_spend_company + promotion_last_5years  + salary,
+#   satisfaction_level_cat ~ last_evaluation + number_project + average_montly_hours +
+#     satisfaction_level + promotion_last_5years  + salary,
 #   data = Train
 # )
