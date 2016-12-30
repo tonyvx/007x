@@ -1,0 +1,13 @@
+load("/Users/valantrahome/projects/data_science-r/git/linear_regression/dataSets/states.rds")
+~/projects/data_science-r/git/linear_regression/dataSets/states.rds
+../projects/data_science-r/git/linear_regression/dataSets/states.rds
+/Users/valantrahome/projects/data_science-r/git/linear_regression/dataSets/states.rds
+/Users/valantrahome/projects/data_science-r/git/linear_regression/dataSets/states.rds
+/Users/valantrahome/projects/data_science-r/git/linear_regression/dataSets/states.rds
+cd /Users/valantrahome/
+)))
+setwd("/Users/valantrahome/projects/data_science-r/git/linear_regression")
+ls
+states.data <- readRDS("dataSets/states.rds")
+states.data
+str(states.data)
