@@ -1,15 +1,21 @@
 ---
 title: "HR Analysis - Factors important to retain performing employees"
 runtime: shiny
-output: html_document
+output: 
+  html_document:
+    fig_width: 14
+    fig_height: 8
+    out_width: '900px'
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-	echo = FALSE,
+	echo = TRUE,
 	message = FALSE,
 	warning = FALSE
 )
+library(dplyr)
+library(ggplot2)
 ```
 
 #### Problem
@@ -21,63 +27,100 @@ https://www.kaggle.com/ludobenistant/hr-analytics
 https://www.kaggle.com/ludobenistant/hr-analytics/downloads/human-resources-analytics.zip
 
 
-```{r load}
-source("hr_efficiency.R")
-hr = hrDF()
+```{r}
 
-```
-####Data Challenges
 
-  Impact of market trends are not considered in the data
-  
-  Salary is factored into high, medium & low
-
-### Data Insights
-
-####_Total Employees : `r NROW(hr)`_
-
-####_Total Employees leaving : `r NROW(hr %>% filter(left==1))`_
-
-#####_Observation - For employees that are performing with high evaluation rating:_
-Low overall statisfaction, high workload (projects, monthly hours, work accident) & less incentive (promotion) are seen as reasons for leaving
-
-```{r correlation, echo=FALSE}
-
-inputPanel(
-  sliderInput("n_last_evaluation", label = "Last Evaluation Ratings:",
-              min = 0.1, max = 1, value = 0.7, step = 0.1),
-  
-  sliderInput("n_time_spend_company", label = "time spend company:",
-              min = 0, max = 8, value = 4, step = 1),
-  sliderInput("n_number_project", label = "number of projects:",
-              min = 0, max = 8, value = 5, step = 1)
+#Description of data set
+description =  c(
+  "Employee satisfaction level",
+  "Last evaluation",
+  "Number of projects",
+  "Average monthly hours",
+  "Time spent at the company",
+  "Whether they have had a work accident",
+  "Whether they have had a promotion in the last 5 years",
+  "Sales",
+  "Salary",
+  "Whether the employee has left"
 )
+dataDescription <- function(hr_data) {
+  return(str(hr_data))
+  
+}
 
-renderPlot({
- plot_correlation(hr,input$n_last_evaluation, input$n_time_spend_company,input$n_number_project)
-})
+#load Data Set
+hrDF <- function() {
+  hr_efficiency <- read.csv("./HR_comma_sep.csv", header = TRUE)
+  hr_efficiency$promotion_last_5years <-
+    as.factor(hr_efficiency$promotion_last_5years)
+  hr_efficiency$left <- as.factor(hr_efficiency$left)
+  hr_efficiency$Work_accident <-
+    as.factor(hr_efficiency$Work_accident)
+  hr_efficiency$number_project <-
+    as.factor(hr_efficiency$number_project)
+  hr_efficiency$last_eval_in_range = cut(hr_efficiency$last_evaluation, c(0, 0.2, 0.4, 0.6, 0.8, 1))
+  hr_efficiency$monthly_avg_hrs_in_range <-
+    cut(hr_efficiency$average_montly_hours,
+        c(0, 50, 10, 150, 200, 250, 300, 350))
+  hr_efficiency$time_spend_company_in_range <-
+    cut(hr_efficiency$time_spend_company, c(0,  4, 8, 10, 12, 14))
+  hr_efficiency$total_emp <- NROW(hr_efficiency)
+  names(hr_efficiency)[9] <- "dept"
+  return(hr_efficiency)
+}
+hr <- hrDF()
 ```
 
-## Plot atrition by departments
+#Data Structure
+```{r}
+data_desc <- dataDescription(hr)
+data_desc
+```
+##Higher turnover rate observed for employees who are under 5 years
+###Large percent of employees fall in this category
 
-```{r atrition_dept, echo=FALSE}
-plot_atrition_dept(hr)
+```{r}
+par(cex.axis=10, cex.lab=10)
+plot_tm_spend <- hr %>% 
+  ggplot(aes(time_spend_company, fill = left)) + 
+  geom_histogram() + 
+  facet_grid(. ~ dept) +
+  labs(x = "Time spend in company (in years)", y = "employees")
+plot_tm_spend
 ```
 
-```{r atrition_dept_vw, echo=FALSE}
-library(dplyr)
-dataByDept <- hr %>% 
-  mutate(has_left=if_else(left_f==1, 1, 0) ) %>% 
-  mutate(remain=if_else(left_f==0, 1, 0) )  %>% 
-  group_by(dept) %>% 
-  summarise(quit=sum(has_left), 
-            stayed=sum(remain), 
-            attrition=round(quit/(quit+stayed),2)) %>% 
-  arrange(attrition)
-dataByDept
+##Across departmentst 2-4 projects seems to provide better percent of employee retention
+
+```{r}
+plot_num_prj <- hr %>% 
+  ggplot(aes(as.numeric(number_project), fill = left)) + 
+  geom_histogram() + 
+  facet_grid(. ~ dept) +
+  labs(x = "Number of projects in a year", y = "employees")
+plot_num_prj
+```
+
+##Looks like employees having evaluation rating of 0.7 having higher odds of staying 
+###Also company's success rate in retaining performaing employees beyong 0.7 is poor
+
+```{r}
+plot_lst_eval <- hr %>% 
+  ggplot(aes(as.numeric(last_evaluation), fill = left)) + 
+  geom_histogram() + 
+  facet_grid(. ~ dept) +
+  labs(x = "Latest evaluation rating", y = "employees")
+plot_lst_eval
 ```
 
 
-
-
+##Company faring well in retaining employees having average monthly utilization of around 200 hours
+###Company performs poorly in retianing employees lower and higher spectrum of 200 hours
+```{r}
+plot_avg_montly_hrs <- hr %>% 
+  ggplot(aes(average_montly_hours, fill = left)) + 
+  geom_histogram() + 
+  facet_grid(. ~ dept) +
+  labs(x = "Average monthly untilization (in hours)", y = "employees")
+plot_avg_montly_hrs
+```
 
