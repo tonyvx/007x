@@ -80,7 +80,6 @@ data_desc
 ###Large percent of employees fall in this category
 
 ```{r}
-par(cex.axis=10, cex.lab=10)
 plot_tm_spend <- hr %>% 
   ggplot(aes(time_spend_company, fill = left)) + 
   geom_histogram() + 
