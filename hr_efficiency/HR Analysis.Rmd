@@ -156,3 +156,17 @@ summary(lm_emp_leaving)
 ```{r}
 anova(lm_emp_leaving)
 ```
+
+###Predict for the model lm_emp_leaving
+```{r}
+predict_lm_emp_leaving <- predict(lm_emp_leaving, data = hrTest)
+
+hist(predict_lm_emp_leaving)
+
+
+sse = sum((predict_lm_emp_leaving - hrTest$time_spend_company) ^ 2)
+sst = sum((mean(hrTrain$time_spend_company) - hrTest$time_spend_company) ^ 2)
+`R-Squared` = 1 - sse / sst
+  
+`R-Squared`
+```
