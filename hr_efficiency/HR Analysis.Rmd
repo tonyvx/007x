@@ -123,3 +123,36 @@ plot_avg_montly_hrs <- hr %>%
 plot_avg_montly_hrs
 ```
 
+##Regression Model
+
+###Train Data
+```{r}
+library(caret)
+set.seed(3456)
+trainIndex <- createDataPartition(hr$time_spend_company, p = .8, 
+                                  list = FALSE, 
+                                  times = 1)
+head(trainIndex)
+
+hrTrain <- hr[ trainIndex,]
+
+```
+###Test Data
+```{r}
+hrTest  <- hr[-trainIndex,]
+```
+###Linear Regression Model
+
+```{r}
+lm_emp_leaving <- lm(time_spend_company~left+number_project+last_evaluation+average_montly_hours, data= hrTrain)
+```
+
+###Summary of the Model
+```{r}
+summary(lm_emp_leaving)
+```
+
+####Annova for the model
+```{r}
+anova(lm_emp_leaving)
+```
