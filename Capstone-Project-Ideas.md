@@ -18,6 +18,9 @@ published: true
 
     * https://www.kaggle.com/ludobenistant/hr-analytics/downloads/human-resources-analytics.zip
 
+* Analysis
+   * https://github.com/tonyvx/007x/blob/master/hr_efficiency/HR%20Analysis.Rmd
+
 * About Data
 
     * $ satisfaction_level   		: num  0.38 0.8 0.11 0.72 0.37 0.41 0.1 ..
