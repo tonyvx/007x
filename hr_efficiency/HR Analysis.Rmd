@@ -1,5 +1,5 @@
 ---
-title: "HR Analysis - Factors important to retain performing employees"
+title: "HR Efficiency Analysis"
 runtime: shiny
 output: 
   html_document:
@@ -18,10 +18,10 @@ library(dplyr)
 library(ggplot2)
 ```
 
-#### Problem
-Factors important to retain performing employees
+## Problem
+###Factors important to retain performing employees
 
-#### Data
+## Data
 https://www.kaggle.com/ludobenistant/hr-analytics
 
 https://www.kaggle.com/ludobenistant/hr-analytics/downloads/human-resources-analytics.zip
@@ -71,13 +71,13 @@ hrDF <- function() {
 hr <- hrDF()
 ```
 
-#Data Structure
+##Data Structure
 ```{r}
 data_desc <- dataDescription(hr)
 data_desc
 ```
-##Higher turnover rate observed for employees who are under 5 years
-###Large percent of employees fall in this category
+###Higher turnover rate observed for employees who are under 5 years
+####Large percent of employees fall in this category
 
 ```{r}
 plot_tm_spend <- hr %>% 
@@ -88,7 +88,7 @@ plot_tm_spend <- hr %>%
 plot_tm_spend
 ```
 
-##Across departmentst 2-4 projects seems to provide better percent of employee retention
+###Across departmentst 2-4 projects seems to provide better percent of employee retention
 
 ```{r}
 plot_num_prj <- hr %>% 
@@ -99,8 +99,8 @@ plot_num_prj <- hr %>%
 plot_num_prj
 ```
 
-##Looks like employees having evaluation rating of 0.7 having higher odds of staying 
-###Also company's success rate in retaining performaing employees beyong 0.7 is poor
+###Looks like employees having evaluation rating of 0.7 having higher odds of staying 
+####Also company's success rate in retaining performaing employees beyong 0.7 is poor
 
 ```{r}
 plot_lst_eval <- hr %>% 
@@ -112,8 +112,8 @@ plot_lst_eval
 ```
 
 
-##Company faring well in retaining employees having average monthly utilization of around 200 hours
-###Company performs poorly in retianing employees lower and higher spectrum of 200 hours
+###Company faring well in retaining employees having average monthly utilization of around 200 hours
+####Company performs poorly in retianing employees lower and higher spectrum of 200 hours
 ```{r}
 plot_avg_montly_hrs <- hr %>% 
   ggplot(aes(average_montly_hours, fill = left)) + 
@@ -152,7 +152,7 @@ lm_emp_leaving <- lm(time_spend_company~left+number_project+last_evaluation+aver
 summary(lm_emp_leaving)
 ```
 
-####Annova for the model
+###Annova for the model
 ```{r}
 anova(lm_emp_leaving)
 ```
