@@ -52,3 +52,35 @@ predictTrain = predict(QualityLog, type = "response")
 summary(predictTrain)
 
 tapply(predictTrain, qualityTrain$PoorCare, mean)
+
+#threshold t>0.5
+table(qualityTrain$PoorCare, predictTrain > 0.5)
+
+sensitivityVal <- 9 / (9 + 14)
+sensitivityVal
+
+specifityVal <- 65 / (65 + 4)
+specifityVal
+
+#threshold t>0.5
+table(qualityTrain$PoorCare, predictTrain > 0.7)
+sensitivityVal <- 5 / (5 + 18)
+sensitivityVal
+
+specifityVal <- 68 / (68 + 1)
+specifityVal
+
+#threshold t>0.2
+table(qualityTrain$PoorCare, predictTrain > 0.2)
+sensitivityVal <- 17 / (17 + 6)
+sensitivityVal
+
+specifityVal <- 47 / (47 + 22)
+specifityVal
+
+library(ROCR)
+
+ROCRPred <- prediction(predictTrain,qualityTrain$PoorCare)
+ROCRPerf <- performance(ROCRPred,"tpr","fpr")
+plot(ROCRPerf)
+

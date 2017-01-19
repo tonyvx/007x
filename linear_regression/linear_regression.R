@@ -144,10 +144,11 @@ plot(energy.mod)
 ##   Select one or more additional predictors to add to your model and
 ##   repeat steps 1-3. Is this model significantly better than the model
 ##   with /metro/ as the only predictor?
-energy.mod <- lm(energy~metro+density+income+miles, data=states.data)
-summary(energy.mod)
-anova(energy.mod)
-plot(energy.mod)
+energy_metro_region.mod <- lm(energy~metro+region, data=states.data)
+summary(energy_metro_region.mod)
+anova(energy.mod,energy_metro_region.mod)
+#INFERENCE adding region p value goes up the least
+plot(energy_metro_region.mod)
 ## Interactions and factors
 ## ══════════════════════════
 
@@ -208,13 +209,14 @@ coef(summary(lm(csat ~ C(region, contr.helmert),
 ## ────────────────────────────────────────
 
 ##   Use the states data set.
-energy.mod <- lm(energy~metro+density+income+miles, data=states.data)
+energy.mod <- lm(energy~metro+region, data=states.data)
 ##   1. Add on to the regression equation that you created in exercise 1 by
 ##      generating an interaction term and testing the interaction.
 summary(energy.mod )
 coef(summary(energy.mod ))
 ##   2. Try adding region to the model. Are there significant differences
 ##      across the four regions?
-energy.mod <- lm(energy~metro+density+income+miles+region, data=states.data)
-summary(energy.mod )
-coef(summary(energy.mod ))
+energy_metro_region_inter.mod <- lm(energy~metro+region+metro*region, data=states.data)
+summary(energy_metro_region_inter.mod )
+anova(energy_inc_miles.mod,energy_metro_region_inter.mod)
+
