@@ -216,7 +216,8 @@ summary(energy.mod )
 coef(summary(energy.mod ))
 ##   2. Try adding region to the model. Are there significant differences
 ##      across the four regions?
-energy_metro_region_inter.mod <- lm(energy~metro+region+metro*region, data=states.data)
+energy_metro_region_inter.mod <- lm(energy~metro*region, data=states.data)
 summary(energy_metro_region_inter.mod )
-anova(energy_inc_miles.mod,energy_metro_region_inter.mod)
+anova(energy_metro_region.mod,energy_metro_region_inter.mod)
 
+#glm.net

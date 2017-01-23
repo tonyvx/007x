@@ -109,15 +109,17 @@ str(NH11[c("everwrk","age_p","r_maritl")])
 # Looks like everwrk has more than 50% as NA
 
 # lets fix it
-library(mice)
-imputed <- complete(mice(NH11[c("everwrk", "age_p", "r_maritl")]))
-NH11$everwrk <- imputed$everwrk
+NH11 <- NH11 %>% filter(is.na(everwrk) == FALSE)
+summary(NH11[c("everwrk","age_p","r_maritl")])
+str(NH11[c("everwrk","age_p","r_maritl")])
 
 everwrk_glm <- glm(everwrk ~ age_p + r_maritl,  
                    data = NH11, 
                    family = "binomial")
 summary(everwrk_glm)
 plot(allEffects(everwrk_glm))
+
+allEffects(everwrk_glm)
 
 ##   2. Predict the probability of working for each level of marital
 ##      status for mean age.
