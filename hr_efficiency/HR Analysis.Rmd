@@ -153,18 +153,50 @@ lm_emp_leaving <- lm(time_spend_company~number_project+last_evaluation+average_m
 
 ###Summary of the Model
 ```{r}
-anova(lm_emp_leaving1,lm_emp_leaving)
+
+summary(lm_emp_leaving1)
+summary(lm_emp_leaving)
 ```
 
 ###Annova for the model
 ```{r}
-summary(lm_emp_leaving)
+anova(lm_emp_leaving1,lm_emp_leaving)
 ```
 
 ###Predict for the model lm_emp_leaving
 ```{r}
 predict_lm_emp_leaving <- predict(lm_emp_leaving, newdata = hrTest)
-Correlation <- cor(predict_lm_emp_leaving,hrTest$time_spend_company)
-Correlation
+summary(predict_lm_emp_leaving)
+
+#Lets predict how long a employee with stay
+predDat <- with(
+  hr,
+  expand.grid(
+    number_project = as.factor(c("2", 
+                                 ceiling(
+                                   mean(as.numeric(number_project))),
+                                 "4","6")),
+    last_evaluation = c(0.1, 0.5, 0.7, 0.8, 0.9, 1.0),
+    average_montly_hours = c(100, 
+                             round(
+                               mean(average_montly_hours)), 
+                             400)
+              )
+  )
+  prediction <- cbind(
+    predDat,
+    predict(
+      lm_emp_leaving,
+      newdata = predDat
+            )
+  )
+   
+  names(prediction)[4] <- "est_time_spent"
+  
+  prediction %>% ggplot(aes(est_time_spent, fill = number_project)) + geom_histogram()
+  
+  prediction %>% ggplot(aes(est_time_spent, fill = as.factor(last_evaluation))) + geom_histogram()
+  
+  prediction %>% ggplot(aes(est_time_spent, fill = as.factor(average_montly_hours))) + geom_histogram()
 
 ```
