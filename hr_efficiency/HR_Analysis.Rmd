@@ -13,37 +13,55 @@ knitr::opts_chunk$set(
 	message = FALSE,
 	warning = FALSE
 )
+library(caret)
 library(dplyr)
 library(ggplot2)
+library(GGally)
 ```
 
 ## Problem
 ###Factors important to retain performing employees
+Why are our best and most experienced employees leaving prematurely? Can we predict which valuable employees will leave next?
 
-## Data
+## Data Source
 https://www.kaggle.com/ludobenistant/hr-analytics
 
 https://www.kaggle.com/ludobenistant/hr-analytics/downloads/human-resources-analytics.zip
 
+Lets load the dataset
 ```{r Loading Data }
-#About Data
   hr <- read.csv("./HR_comma_sep.csv", header = TRUE)
+```
 
-#Lets analyze the structure
+Lets look at the fields in the dataset
+```{r fields }
+  names(hr)
+```
+
+Lets analyze the structure of dataset
+```{r}
   str(hr)
-
-  summary(hr)
-
 ```
 ####Observations
+* Fields 'number_project', 'promotion_last_5years', 'left', 'Work_accident' maybe factors.
+* Also field 'sales' does not seems to have sales figures but departments that employee belongs to.
 
-* There are no NA or blanks values. 
-* Columns number_project, promotion_last_5years, left, Work_accident maybe factors.
-* Also sales columns does not seems to have sales figures but departments that employee belongs to.
+Lets look at the summary of the data set
+```{r }
+  summary(hr)
+```
+####Observations
+* All fields in the dataset have non-NA values. 
+* sales seems to have '(other)'
 
+Lets look at all unique values for field 'sales'. Looks like 'sales' have values.
+```{r}
+unique(hr$sales)
+```
+## Data Wrangling
+
+Lets make fields 'number_project', 'promotion_last_5years', 'left', 'Work_accident' as factors
 ```{r Cleansing Data}
-
-#Lets make columns number_project, promotion_last_5years, left, Work_accident as factors
   hr$number_project <-
     as.factor(hr$number_project)
     hr$promotion_last_5years <-
@@ -51,85 +69,51 @@ https://www.kaggle.com/ludobenistant/hr-analytics/downloads/human-resources-anal
     hr$left <- as.factor(hr$left)
     hr$Work_accident <-
     as.factor(hr$Work_accident)
-  
-#Add a new column for total employee count
-  hr$total_emp <- NROW(hr)
-  
-# Rename the sales column to dept
+```
+
+Rename the 'sales' field to dept
+```{r}
   names(hr)[9] <- "dept"
-  
-#lets look are structure once again
+```
+
+Lets look are structure once again
+```{r}
   str(hr)
 ```
+
 ## Data Exploration
 
-####Analyze time_spend_company 
-Lets check histogram of time_spend_company facetted by various departments
+Lets analyze 'satisfaction_level', 'time_spend_company', 'last_evaluation', 'average_monthly_hours', 'work_accident' 'salary','number_project'
+
 
 ```{r}
-plot_tm_spend <- hr %>% 
-  ggplot(aes(time_spend_company, fill = left)) + 
-  geom_histogram() + 
-  facet_grid(. ~ dept) +
-  labs(x = "Time spend in company (in years)", y = "employees")
-plot_tm_spend
+hr_left <- hr %>% filter(left == 1)
+par(mfrow = c(1, 3))
+hist(hr_left$satisfaction_level, col = "#3090C7", main = "Satisfaction level")
+
+hist(hr_left$last_evaluation, col = "#3090C7", main = "Last evaluation")
+
+hist(hr_left$average_montly_hours,
+col = "#3090C7",
+main = "Average montly hours")
+hist(as.numeric(hr_left$Work_accident),
+col = "#3090C7",
+main = "Work accident")
+plot(hr_left$salary, col = "#3090C7", main = "Salary")
+hist(as.numeric(hr_left$number_project),
+col = "#3090C7",
+main = "Number of projects")
 ```
 
-####Observation
-* Looks like on average employees stay 5 - 7.5 years in the company.
-* Employees who have spent more than 7.5 years tends to have lower attrition.
-
-####Analyze number_project
-Lets check histogram of number_project facetted by various departments
-```{r}
-plot_num_prj <- hr %>% 
-  ggplot(aes(as.numeric(number_project), fill = left)) + 
-  geom_histogram() + 
-  facet_grid(. ~ dept) +
-  labs(x = "Number of projects in a year", y = "employees")
-plot_num_prj
-```
-
-####Observation
-Across departments 2-4 projects seems to provide better percent of employee retention
-
-####Analyze last_evaluation
-Lets check histogram of last_evaluation facetted by various departments
-```{r}
-plot_lst_eval <- hr %>% 
-  ggplot(aes(as.numeric(last_evaluation), fill = left)) + 
-  geom_histogram() + 
-  facet_grid(. ~ dept) +
-  labs(x = "Latest evaluation rating", y = "employees")
-plot_lst_eval
-```
-
-####Observation
-* Looks like employees having evaluation rating of 0.7 have higher odds of staying.
-* Also company's success rate in retaining performaing employees beyond 0.7 is low.
-* There is room for improvement to retain high performers
-
-####Analyze average_monthly_hours
-Lets check histogram of average_monthly_hours facetted by various departments
-```{r}
-plot_avg_montly_hrs <- hr %>% 
-  ggplot(aes(average_montly_hours, fill = left)) + 
-  geom_histogram() + 
-  facet_grid(. ~ dept) +
-  labs(x = "Average monthly untilization (in hours)", y = "employees")
-plot_avg_montly_hrs
-```
-
-####Observation
-* Company faring well in retaining employees having average monthly utilization of around 200 hours
-* Company performs poorly in retaining employees who put higher of 200 hours.
-* Employees who put in less than 200 hours though have high attrition, maybe its ok since they aren't contributing enough or poor performers
 
 ##Regression Model
 
-###Train Data
+###Linear Regression
+Lets build a model to determine how long an employee will stay
+
+####Train Data
 ```{r}
-library(caret)
+
 set.seed(3456)
 trainIndex <- createDataPartition(hr$time_spend_company, p = .8, 
                                   list = FALSE, 
@@ -143,30 +127,31 @@ hrTrain <- hr[ trainIndex,]
 ```{r}
 hrTest  <- hr[-trainIndex,]
 ```
-###Linear Regression Model
+
 
 ```{r}
-lm_emp_leaving1 <- lm(time_spend_company~left+number_project+last_evaluation+average_montly_hours, data = hrTrain)
-lm_emp_leaving <- lm(time_spend_company~number_project+last_evaluation+average_montly_hours, data = hrTrain)
+lm_time_spend_mthly_hrs<- lm(time_spend_company~left+number_project+last_evaluation+average_montly_hours+salary+Work_accident+satisfaction_level, data = hrTrain)
+lm_time_spend <- lm(time_spend_company~left+number_project+last_evaluation+salary+Work_accident+satisfaction_level, data = hrTrain)
 ```
 
 ###Summary of the Model
 ```{r}
 
-summary(lm_emp_leaving1)
-summary(lm_emp_leaving)
+summary(lm_time_spend_mthly_hrs)
+summary(lm_time_spend)
 ```
 
 ###Annova for the model
 ```{r}
-anova(lm_emp_leaving1,lm_emp_leaving)
+anova(lm_time_spend_mthly_hrs,lm_time_spend)
 ```
 
 ###Predict for the model lm_emp_leaving
 ```{r}
-predict_lm_emp_leaving <- predict(lm_emp_leaving, newdata = hrTest)
-summary(predict_lm_emp_leaving)
+predict_lm_emp_leaving <- predict(lm_time_spend_mthly_hrs, newdata = hrTest)
+plot(predict_lm_emp_leaving)
 
+summary(predict_lm_emp_leaving)
 #Lets predict how long a employee with stay
 predDat <- with(
   hr,
