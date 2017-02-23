@@ -87,7 +87,7 @@ Lets look are structure once again
 Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _average_monthly_hours_, _work_accident_, _salary_ and _number_project_
 
 
-```{r}
+```{r plot_data_exp_analysis}
 hr_left <- hr %>% filter(left == 1)
 par(mfrow = c(1, 3))
 hist(hr_left$satisfaction_level, col = "#3090C7", main = "Satisfaction level")

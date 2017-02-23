@@ -160,7 +160,7 @@ col = "#3090C7",
 main = "Average montly hours")
 ```
 
-![](HR_Analysis_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis-1.png)<!-- -->
 
 ```r
 hist(as.numeric(hr_left$Work_accident),
@@ -172,7 +172,7 @@ col = "#3090C7",
 main = "Number of projects")
 ```
 
-![](HR_Analysis_files/figure-html/unnamed-chunk-6-2.png)<!-- -->
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis-2.png)<!-- -->
 
 
 ##Regression Model
