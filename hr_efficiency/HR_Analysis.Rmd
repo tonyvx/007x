@@ -18,6 +18,7 @@ knitr::opts_chunk$set(
 library(caret)
 library(dplyr)
 library(ggplot2)
+library(gridExtra)
 ```
 
 ## Problem
@@ -89,21 +90,36 @@ Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _ave
 
 ```{r plot_data_exp_analysis}
 hr_left <- hr %>% filter(left == 1)
-par(mfrow = c(1, 3))
-hist(hr_left$satisfaction_level, col = "#3090C7", main = "Satisfaction level")
 
-hist(hr_left$last_evaluation, col = "#3090C7", main = "Last evaluation")
+satis_l <- hr_left %>% ggplot(aes(satisfaction_level)) +
+  geom_histogram( binwidth = 0.05) + 
+  labs(x = "satisfaction_level", y = "employees", title = "satisfaction level")
 
-hist(hr_left$average_montly_hours,
-col = "#3090C7",
-main = "Average montly hours")
-hist(as.numeric(hr_left$Work_accident),
-col = "#3090C7",
-main = "Work accident")
-plot(hr_left$salary, col = "#3090C7", main = "Salary")
-hist(as.numeric(hr_left$number_project),
-col = "#3090C7",
-main = "Number of projects")
+tm_spnd <- hr_left %>% ggplot(aes(time_spend_company)) +
+  geom_histogram( binwidth = 0.05) + 
+  labs(x = "time_spend_company", y = "employees", title = "Time Spend in Company")
+
+lst_eval <- hr_left %>% ggplot(aes(last_evaluation)) +
+  geom_histogram( binwidth = 0.05) + 
+  labs(x = "last_evaluation", y = "employees", title = "Last evaluation")
+
+mnthly_hrs <- hr_left %>% ggplot(aes(average_montly_hours)) +
+  geom_histogram( binwidth = 0.05) + 
+  labs(x = "average_montly_hours", y = "employees", title = "Average montly hours")
+
+wrk_accdnt <- hr_left %>% ggplot(aes(as.numeric(Work_accident))) +
+  geom_histogram( binwidth = 0.05) + 
+  labs(x = "Work_accident", y = "employees", title = "Work accident")
+
+sal <- hr_left %>% ggplot(aes(as.numeric(salary))) +
+  geom_histogram( binwidth = 0.05) + 
+  labs(x = "salary", y = "employees", title = "Salary")
+
+nmbr_prj <- hr_left %>% ggplot(aes(as.numeric(number_project))) +
+  geom_histogram( binwidth = 0.05) + 
+  labs(x = "number_project", y = "employees", title = "Number of projects")
+
+grid.arrange(satis_l, tm_spnd, lst_eval,mnthly_hrs,wrk_accdnt,sal,nmbr_prj, ncol=3)
 ```
 
 
@@ -132,14 +148,14 @@ hrTest  <- hr[-trainIndex,]
 ###Models
 
 ```{r}
-lm_time_spend_mthly_hrs<- lm(time_spend_company~left+number_project+last_evaluation+average_montly_hours+salary+Work_accident+satisfaction_level, data = hrTrain)
+lm_time_spend_mthly_hrs <- lm(time_spend_company~left+number_project+last_evaluation+average_montly_hours+salary+Work_accident+satisfaction_level, data = hrTrain)
 ```
 
 ```{r}
 lm_time_spend <- lm(time_spend_company~left+number_project+last_evaluation+salary+Work_accident+satisfaction_level, data = hrTrain)
 ```
 
-###Annova for the model
+###Anova for the model
 ```{r}
 anova(lm_time_spend_mthly_hrs,lm_time_spend)
 ```
@@ -153,24 +169,63 @@ summary(predict_lm_emp_leaving)
 #summary of actuals
 summary(hrTest$time_spend_company)
 
+#plot actual vs predicted
+plot_data <- data.frame(floor(predict_lm_emp_leaving), hrTest$time_spend_company)
+names(plot_data)[1] <- "predicted"
+names(plot_data)[2] <- "actual"
+
+#correlation data
+correlation <- cor(plot_data)
+correlation
+
+#coreelation
+correlation[1,2]
+
 #lets see how good the model prediction was
 
 #Sum of squared errors(SSE)
 sse = sum((hrTest$time_spend_company - predict_lm_emp_leaving ) ^ 2)
 round(sse, digits = 2)
 
-#Total sum of squares(SST)
-sst = sum((hrTest$time_spend_company - mean(hrTrain$time_spend_company) ) ^ 2)
-round(sst, digits = 4)
-
-#R-Squared 
-r_squared = 1 - sse / sst
-round(r_squared, digits = 4)
-
 #Root mean squared errors (RMSE)
 rmse = sqrt(sse / nrow(hrTest))
 round(rmse, digits = 4)
 
 ```
+
+###Logistic Regression
+Lets build a model to predict if the employee will leave
+
+####Train Data
+```{r}
+
+set.seed(3456)
+trainIndex <- createDataPartition(hr$left, p = .8, 
+                                  list = FALSE, 
+                                  times = 1)
+head(trainIndex)
+
+hrTrain <- hr[ trainIndex,]
+
+```
+###Test Data
+```{r}
+hrTest  <- hr[-trainIndex,]
+```
+
+###Models
+
+```{r log_model}
+mod1 <- glm(left ~ time_spend_company + last_evaluation + salary + satisfaction_level, data = hrTrain , family = "binomial")
+summary(mod1)
+```
+
+```{r}
+#Lets test prediction using test data 
+testPredication <- predict(mod1, newdata = hrTest, type = "response")
+table(hrTest$left, testPredication >= 0.18)
+
+```
+
 
 

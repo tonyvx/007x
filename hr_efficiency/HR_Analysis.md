@@ -150,29 +150,39 @@ Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _ave
 
 ```r
 hr_left <- hr %>% filter(left == 1)
-par(mfrow = c(1, 3))
-hist(hr_left$satisfaction_level, col = "#3090C7", main = "Satisfaction level")
 
-hist(hr_left$last_evaluation, col = "#3090C7", main = "Last evaluation")
+satis_l <- hr_left %>% ggplot(aes(satisfaction_level)) +
+  geom_histogram( binwidth = 0.05) + 
+  labs(x = "satisfaction_level", y = "employees", title = "satisfaction level")
 
-hist(hr_left$average_montly_hours,
-col = "#3090C7",
-main = "Average montly hours")
+tm_spnd <- hr_left %>% ggplot(aes(time_spend_company)) +
+  geom_histogram( binwidth = 0.05) + 
+  labs(x = "time_spend_company", y = "employees", title = "Time Spend in Company")
+
+lst_eval <- hr_left %>% ggplot(aes(last_evaluation)) +
+  geom_histogram( binwidth = 0.05) + 
+  labs(x = "last_evaluation", y = "employees", title = "Last evaluation")
+
+mnthly_hrs <- hr_left %>% ggplot(aes(average_montly_hours)) +
+  geom_histogram( binwidth = 0.05) + 
+  labs(x = "average_montly_hours", y = "employees", title = "Average montly hours")
+
+wrk_accdnt <- hr_left %>% ggplot(aes(as.numeric(Work_accident))) +
+  geom_histogram( binwidth = 0.05) + 
+  labs(x = "Work_accident", y = "employees", title = "Work accident")
+
+sal <- hr_left %>% ggplot(aes(as.numeric(salary))) +
+  geom_histogram( binwidth = 0.05) + 
+  labs(x = "salary", y = "employees", title = "Salary")
+
+nmbr_prj <- hr_left %>% ggplot(aes(as.numeric(number_project))) +
+  geom_histogram( binwidth = 0.05) + 
+  labs(x = "number_project", y = "employees", title = "Number of projects")
+
+grid.arrange(satis_l, tm_spnd, lst_eval,mnthly_hrs,wrk_accdnt,sal,nmbr_prj, ncol=3)
 ```
 
 ![](HR_Analysis_files/figure-html/plot_data_exp_analysis-1.png)<!-- -->
-
-```r
-hist(as.numeric(hr_left$Work_accident),
-col = "#3090C7",
-main = "Work accident")
-plot(hr_left$salary, col = "#3090C7", main = "Salary")
-hist(as.numeric(hr_left$number_project),
-col = "#3090C7",
-main = "Number of projects")
-```
-
-![](HR_Analysis_files/figure-html/plot_data_exp_analysis-2.png)<!-- -->
 
 
 ##Regression Model
@@ -213,7 +223,7 @@ hrTest  <- hr[-trainIndex,]
 
 
 ```r
-lm_time_spend_mthly_hrs<- lm(time_spend_company~left+number_project+last_evaluation+average_montly_hours+salary+Work_accident+satisfaction_level, data = hrTrain)
+lm_time_spend_mthly_hrs <- lm(time_spend_company~left+number_project+last_evaluation+average_montly_hours+salary+Work_accident+satisfaction_level, data = hrTrain)
 ```
 
 
@@ -221,7 +231,7 @@ lm_time_spend_mthly_hrs<- lm(time_spend_company~left+number_project+last_evaluat
 lm_time_spend <- lm(time_spend_company~left+number_project+last_evaluation+salary+Work_accident+satisfaction_level, data = hrTrain)
 ```
 
-###Annova for the model
+###Anova for the model
 
 ```r
 anova(lm_time_spend_mthly_hrs,lm_time_spend)
@@ -265,6 +275,32 @@ summary(hrTest$time_spend_company)
 ```
 
 ```r
+#plot actual vs predicted
+plot_data <- data.frame(floor(predict_lm_emp_leaving), hrTest$time_spend_company)
+names(plot_data)[1] <- "predicted"
+names(plot_data)[2] <- "actual"
+
+#correlation data
+correlation <- cor(plot_data)
+correlation
+```
+
+```
+##           predicted    actual
+## predicted 1.0000000 0.2280394
+## actual    0.2280394 1.0000000
+```
+
+```r
+#coreelation
+correlation[1,2]
+```
+
+```
+## [1] 0.2280394
+```
+
+```r
 #lets see how good the model prediction was
 
 #Sum of squared errors(SSE)
@@ -277,26 +313,6 @@ round(sse, digits = 2)
 ```
 
 ```r
-#Total sum of squares(SST)
-sst = sum((hrTest$time_spend_company - mean(hrTrain$time_spend_company) ) ^ 2)
-round(sst, digits = 4)
-```
-
-```
-## [1] 6399.75
-```
-
-```r
-#R-Squared 
-r_squared = 1 - sse / sst
-round(r_squared, digits = 4)
-```
-
-```
-## [1] 0.0697
-```
-
-```r
 #Root mean squared errors (RMSE)
 rmse = sqrt(sse / nrow(hrTest))
 round(rmse, digits = 4)
@@ -305,5 +321,90 @@ round(rmse, digits = 4)
 ```
 ## [1] 1.409
 ```
+
+###Logistic Regression
+Lets build a model to predict if the employee will leave
+
+####Train Data
+
+```r
+set.seed(3456)
+trainIndex <- createDataPartition(hr$left, p = .8, 
+                                  list = FALSE, 
+                                  times = 1)
+head(trainIndex)
+```
+
+```
+##      Resample1
+## [1,]         1
+## [2,]         2
+## [3,]         3
+## [4,]         4
+## [5,]         5
+## [6,]         6
+```
+
+```r
+hrTrain <- hr[ trainIndex,]
+```
+###Test Data
+
+```r
+hrTest  <- hr[-trainIndex,]
+```
+
+###Models
+
+
+```r
+mod1 <- glm(left ~ time_spend_company + last_evaluation + salary + satisfaction_level, data = hrTrain , family = "binomial")
+summary(mod1)
+```
+
+```
+## 
+## Call:
+## glm(formula = left ~ time_spend_company + last_evaluation + salary + 
+##     satisfaction_level, family = "binomial", data = hrTrain)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.8480  -0.6750  -0.4644  -0.1813   2.7326  
+## 
+## Coefficients:
+##                    Estimate Std. Error z value Pr(>|z|)    
+## (Intercept)        -1.69537    0.18040  -9.398   <2e-16 ***
+## time_spend_company  0.21738    0.01624  13.389   <2e-16 ***
+## last_evaluation     0.27295    0.13870   1.968   0.0491 *  
+## salarylow           1.97260    0.13943  14.147   <2e-16 ***
+## salarymedium        1.38961    0.14053   9.889   <2e-16 ***
+## satisfaction_level -3.70631    0.09873 -37.539   <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 13173  on 11999  degrees of freedom
+## Residual deviance: 10843  on 11994  degrees of freedom
+## AIC: 10855
+## 
+## Number of Fisher Scoring iterations: 5
+```
+
+
+```r
+#Lets test prediction using test data 
+testPredication <- predict(mod1, newdata = hrTest, type = "response")
+table(hrTest$left, testPredication >= 0.18)
+```
+
+```
+##    
+##     FALSE TRUE
+##   0  1357  928
+##   1   124  590
+```
+
 
 
