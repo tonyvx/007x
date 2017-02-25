@@ -20,7 +20,7 @@ library(dplyr)
 library(ggplot2)
 library(gridExtra)
 library(RColorBrewer)
-myTheme <- theme( panel.background=element_blank(),panel.grid = element_blank(), legend.key = element_blank(), plot.title = element_text(hjust = 0.5))
+myTheme <- theme( panel.background = element_blank(), panel.grid = element_blank(), legend.key = element_blank(), plot.title = element_text(hjust = 0.5))
 ```
 
 ## Problem
@@ -37,7 +37,7 @@ Lets load the dataset
   hr <- read.csv("./HR_comma_sep.csv", header = TRUE, stringsAsFactors = FALSE)
 ```
 
-####$Lets look at the fields in the dataset
+#####Lets look at the fields in the dataset
 
 * _satisfaction_level_ - Level of satisfaction (0-1)
 * _last_evaluation_ - Evaluation of employee performance (0-1)

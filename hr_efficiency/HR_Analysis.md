@@ -18,7 +18,7 @@ Lets load the dataset
   hr <- read.csv("./HR_comma_sep.csv", header = TRUE, stringsAsFactors = FALSE)
 ```
 
-####$Lets look at the fields in the dataset
+#####Lets look at the fields in the dataset
 
 * _satisfaction_level_ - Level of satisfaction (0-1)
 * _last_evaluation_ - Evaluation of employee performance (0-1)
