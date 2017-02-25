@@ -19,6 +19,8 @@ library(caret)
 library(dplyr)
 library(ggplot2)
 library(gridExtra)
+library(RColorBrewer)
+myTheme <- theme( panel.background=element_blank(),panel.grid = element_blank(), legend.key = element_blank(), plot.title = element_text(hjust = 0.5))
 ```
 
 ## Problem
@@ -32,13 +34,21 @@ https://www.kaggle.com/ludobenistant/hr-analytics/downloads/human-resources-anal
 
 Lets load the dataset
 ```{r Loading Data }
-  hr <- read.csv("./HR_comma_sep.csv", header = TRUE)
+  hr <- read.csv("./HR_comma_sep.csv", header = TRUE, stringsAsFactors = FALSE)
 ```
 
-Lets look at the fields in the dataset
-```{r fields }
-  names(hr)
-```
+####$Lets look at the fields in the dataset
+
+* _satisfaction_level_ - Level of satisfaction (0-1)
+* _last_evaluation_ - Evaluation of employee performance (0-1)
+* _number_project_ - Number of projects completed while at work
+* _average_montly_hours_ - Average monthly hours at workplace
+* _time_spend_company_ - Number of years spent in the company
+* _Work_accident_ - Whether the employee had a workplace accident
+* _left_ - Whether the employee left the workplace or not (1 or 0) 
+* _promotion_last_5years_ - Whether the employee was promoted in the last five years
+* _sales_ - Department in which they work for
+* _salary_ - Salary (High, medium, Low)
 
 Lets analyze the structure of dataset
 ```{r}
@@ -62,16 +72,6 @@ unique(hr$sales)
 ```
 ## Data Wrangling
 
-Lets make fields _number_project_, _promotion_last_5years_, _left_, _Work_accident_ as factors
-```{r Cleansing Data}
-  hr$number_project <-
-    as.factor(hr$number_project)
-    hr$promotion_last_5years <-
-    as.factor(hr$promotion_last_5years)
-    hr$left <- as.factor(hr$left)
-    hr$Work_accident <-
-    as.factor(hr$Work_accident)
-```
 
 Rename the _sales_ field to _dept_
 ```{r}
@@ -93,34 +93,35 @@ hr_left <- hr %>% filter(left == 1)
 
 satis_l <- hr_left %>% ggplot(aes(satisfaction_level)) +
   geom_histogram( binwidth = 0.05) + 
-  labs(x = "satisfaction_level", y = "employees", title = "satisfaction level")
+  labs(x = "satisfaction_level", y = "employees", title = "satisfaction level") + myTheme
 
 tm_spnd <- hr_left %>% ggplot(aes(time_spend_company)) +
   geom_histogram( binwidth = 0.05) + 
-  labs(x = "time_spend_company", y = "employees", title = "Time Spend in Company")
+  labs(x = "time_spend_company", y = "employees", title = "Time Spend in Company") + myTheme
 
 lst_eval <- hr_left %>% ggplot(aes(last_evaluation)) +
   geom_histogram( binwidth = 0.05) + 
-  labs(x = "last_evaluation", y = "employees", title = "Last evaluation")
+  labs(x = "last_evaluation", y = "employees", title = "Last evaluation") + myTheme
 
 mnthly_hrs <- hr_left %>% ggplot(aes(average_montly_hours)) +
   geom_histogram( binwidth = 0.05) + 
-  labs(x = "average_montly_hours", y = "employees", title = "Average montly hours")
+  labs(x = "average_montly_hours", y = "employees", title = "Average montly hours") + myTheme
 
-wrk_accdnt <- hr_left %>% ggplot(aes(as.numeric(Work_accident))) +
+wrk_accdnt <- hr_left %>% ggplot(aes(Work_accident)) +
   geom_histogram( binwidth = 0.05) + 
-  labs(x = "Work_accident", y = "employees", title = "Work accident")
+  labs(x = "Work_accident", y = "employees", title = "Work accident") + myTheme
 
 sal <- hr_left %>% ggplot(aes(as.numeric(salary))) +
   geom_histogram( binwidth = 0.05) + 
-  labs(x = "salary", y = "employees", title = "Salary")
+  labs(x = "salary", y = "employees", title = "Salary") + myTheme
 
-nmbr_prj <- hr_left %>% ggplot(aes(as.numeric(number_project))) +
+nmbr_prj <- hr_left %>% ggplot(aes(number_project)) +
   geom_histogram( binwidth = 0.05) + 
-  labs(x = "number_project", y = "employees", title = "Number of projects")
+  labs(x = "number_project", y = "employees", title = "Number of projects") + myTheme
 
-grid.arrange(satis_l, tm_spnd, lst_eval,mnthly_hrs,wrk_accdnt,sal,nmbr_prj, ncol=3)
+grid.arrange(satis_l, tm_spnd, lst_eval,mnthly_hrs,wrk_accdnt,sal,nmbr_prj, nrow = 4)
 ```
+
 
 
 ##Regression Model
@@ -148,16 +149,18 @@ hrTest  <- hr[-trainIndex,]
 ###Models
 
 ```{r}
-lm_time_spend_mthly_hrs <- lm(time_spend_company~left+number_project+last_evaluation+average_montly_hours+salary+Work_accident+satisfaction_level, data = hrTrain)
+lm_time_spend <- lm(time_spend_company~left+number_project+last_evaluation+salary+Work_accident+satisfaction_level, data = hrTrain)
+summary(lm_time_spend)
 ```
 
 ```{r}
-lm_time_spend <- lm(time_spend_company~left+number_project+last_evaluation+salary+Work_accident+satisfaction_level, data = hrTrain)
+lm_time_spend_mthly_hrs <- lm(time_spend_company~left+number_project+last_evaluation+average_montly_hours+salary+Work_accident+satisfaction_level, data = hrTrain)
+summary(lm_time_spend_mthly_hrs)
 ```
 
 ###Anova for the model
 ```{r}
-anova(lm_time_spend_mthly_hrs,lm_time_spend)
+anova(lm_time_spend,lm_time_spend_mthly_hrs)
 ```
 
 ###Predict using the model _lm_time_spend_mthly_hrs_
@@ -170,11 +173,30 @@ summary(predict_lm_emp_leaving)
 summary(hrTest$time_spend_company)
 
 #plot actual vs predicted
-plot_data <- data.frame(floor(predict_lm_emp_leaving), hrTest$time_spend_company)
+p <- data.frame(predict_lm_emp_leaving)
+p$ID <- as.numeric(rownames(p))
+p$Type <- 'Predicted'
+names(p)[1] <- 'time_spend_company'
+
+a <- data.frame(hrTest$time_spend_company)
+a$ID <- as.numeric(rownames(hrTest))
+a$Type <- 'Actual'
+names(a)[1] <- 'time_spend_company'
+
+m <- data.frame(rbind(a,p))
+
+m %>% ggplot(aes(x = ID, y = time_spend_company, col = Type)) + 
+  geom_line() + 
+  geom_smooth() +
+  labs(x = "Observation", y = "Number of years spent in the company", title = "Plot Predicted & Actual Time spend vs Observation") +
+  scale_colour_brewer(palette = brewer.pal(11,"Spectral")) +
+  myTheme
+
+#correlation data
+plot_data <- data.frame(predict_lm_emp_leaving, hrTest$time_spend_company)
 names(plot_data)[1] <- "predicted"
 names(plot_data)[2] <- "actual"
 
-#correlation data
 correlation <- cor(plot_data)
 correlation
 
@@ -226,6 +248,5 @@ testPredication <- predict(mod1, newdata = hrTest, type = "response")
 table(hrTest$left, testPredication >= 0.18)
 
 ```
-
 
 
