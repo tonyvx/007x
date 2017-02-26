@@ -5,7 +5,10 @@
 
 ## Problem
 ###Factors important to retain performing employees
-Why are our best and most experienced employees leaving prematurely? Can we predict which valuable employees will leave next?
+* Why are our best and most experienced employees leaving prematurely? 
+We will analysing the data available in hand to identify avenues to improving hr efficiency.
+* Can we predict which valuable employees will leave next?
+We will be building a predictive model to determine how long employee would stay and their probability in leaving.
 
 ## Data Source
 https://www.kaggle.com/ludobenistant/hr-analytics
@@ -34,7 +37,7 @@ Lets load the dataset
 Lets analyze the structure of dataset
 
 ```r
-  str(hr)
+str(hr)
 ```
 
 ```
@@ -50,11 +53,38 @@ Lets analyze the structure of dataset
 ##  $ sales                : chr  "sales" "sales" "sales" "sales" ...
 ##  $ salary               : chr  "low" "medium" "medium" "low" ...
 ```
-####Observations
-* Fields _number_project_, _promotion_last_5years_, _left_, _Work_accident_ maybe factors.
-* Also field _sales_ does not seems to have sales figures but departments that employee belongs to.
 
-Lets look at the summary of the data set
+####Observations
+* Fields _number_project_, _promotion_last_5years_, _left_, _Work_accident_, _sales_ have discrete values.
+
+
+```r
+str(as.factor(hr$salary))
+```
+
+```
+##  Factor w/ 3 levels "high","low","medium": 2 3 3 2 2 2 2 2 2 2 ...
+```
+
+####Observations
+* Field _salary_ is also discrete with "high", "medium" & "low". Also looks like "low" is assigned 2, "medium" is assigned 3 and "high" is assigned 1.
+
+Lets look at all unique values for field 'sales'.
+
+```r
+unique(hr$sales)
+```
+
+```
+##  [1] "sales"       "accounting"  "hr"          "technical"   "support"    
+##  [6] "management"  "IT"          "product_mng" "marketing"   "RandD"
+```
+
+####Observations
+* Field _sales_ does not seems to have sales figures but departments that employee belongs to.
+
+
+Lets look at the summary of the data set to see if there are no invalid data
 
 ```r
   summary(hr)
@@ -85,25 +115,18 @@ Lets look at the summary of the data set
 ```
 ####Observations
 * All fields in the dataset have non-NA values. 
-* _sales_ seems to have _(other)_
 
-Lets look at all unique values for field 'sales'. Looks like 'sales' have values.
 
-```r
-unique(hr$sales)
-```
-
-```
-##  [1] "sales"       "accounting"  "hr"          "technical"   "support"    
-##  [6] "management"  "IT"          "product_mng" "marketing"   "RandD"
-```
 ## Data Wrangling
 
-
-Rename the _sales_ field to _dept_
+Rename the _sales_ field to _dept_ and create seperate field salary_level 3: High, 2: Medium & 1: low
 
 ```r
-  names(hr)[9] <- "dept"
+names(hr)[9] <- "dept"
+hr <- hr %>% mutate(salary_level = case_when(
+  .$salary == "high" ~ 3, 
+  .$salary == "medium" ~ 2, 
+  .$salary == "low" ~ 1))
 ```
 
 Lets look are structure once again
@@ -113,7 +136,7 @@ Lets look are structure once again
 ```
 
 ```
-## 'data.frame':	14999 obs. of  10 variables:
+## 'data.frame':	14999 obs. of  11 variables:
 ##  $ satisfaction_level   : num  0.38 0.8 0.11 0.72 0.37 0.41 0.1 0.92 0.89 0.42 ...
 ##  $ last_evaluation      : num  0.53 0.86 0.88 0.87 0.52 0.5 0.77 0.85 1 0.53 ...
 ##  $ number_project       : int  2 5 7 5 2 2 6 5 5 2 ...
@@ -124,6 +147,7 @@ Lets look are structure once again
 ##  $ promotion_last_5years: int  0 0 0 0 0 0 0 0 0 0 ...
 ##  $ dept                 : chr  "sales" "sales" "sales" "sales" ...
 ##  $ salary               : chr  "low" "medium" "medium" "low" ...
+##  $ salary_level         : num  1 2 2 1 1 1 1 1 1 1 ...
 ```
 
 ## Data Exploration
@@ -136,37 +160,52 @@ Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _ave
 hr_left <- hr %>% filter(left == 1)
 
 satis_l <- hr_left %>% ggplot(aes(satisfaction_level)) +
-  geom_histogram( binwidth = 0.05) + 
+  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
+  scale_fill_gradient("Count", low = "green", high = "red") +
   labs(x = "satisfaction_level", y = "employees", title = "satisfaction level") + myTheme
 
 tm_spnd <- hr_left %>% ggplot(aes(time_spend_company)) +
-  geom_histogram( binwidth = 0.05) + 
+  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
+  scale_fill_gradient("Count", low = "green", high = "red") +
   labs(x = "time_spend_company", y = "employees", title = "Time Spend in Company") + myTheme
 
 lst_eval <- hr_left %>% ggplot(aes(last_evaluation)) +
-  geom_histogram( binwidth = 0.05) + 
+  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
+  scale_fill_gradient("Count", low = "green", high = "red") +
   labs(x = "last_evaluation", y = "employees", title = "Last evaluation") + myTheme
 
 mnthly_hrs <- hr_left %>% ggplot(aes(average_montly_hours)) +
-  geom_histogram( binwidth = 0.05) + 
+  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
+  scale_fill_gradient("Count", low = "green", high = "red") +
   labs(x = "average_montly_hours", y = "employees", title = "Average montly hours") + myTheme
 
 wrk_accdnt <- hr_left %>% ggplot(aes(Work_accident)) +
-  geom_histogram( binwidth = 0.05) + 
+  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
+  scale_fill_gradient("Count", low = "green", high = "red") +
   labs(x = "Work_accident", y = "employees", title = "Work accident") + myTheme
 
-sal <- hr_left %>% ggplot(aes(as.numeric(salary))) +
-  geom_histogram( binwidth = 0.05) + 
+sal <- hr_left %>% ggplot(aes(salary_level)) +
+  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
+  scale_fill_gradient("Count", low = "green", high = "red") +
   labs(x = "salary", y = "employees", title = "Salary") + myTheme
 
-nmbr_prj <- hr_left %>% ggplot(aes(number_project)) +
-  geom_histogram( binwidth = 0.05) + 
+nmbr_prj <- hr_left %>% ggplot(aes(as.numeric(number_project))) +
+  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
+  scale_fill_gradient("Count", low = "green", high = "red") +
   labs(x = "number_project", y = "employees", title = "Number of projects") + myTheme
 
 grid.arrange(satis_l, tm_spnd, lst_eval,mnthly_hrs,wrk_accdnt,sal,nmbr_prj, nrow = 4)
 ```
 
 ![](HR_Analysis_files/figure-html/plot_data_exp_analysis-1.png)<!-- -->
+
+####Notice high number of employees leaving the company 
+* had been with company for less than 3 years
+* had an evaluation rating less than 0.5
+* had an average monthly hours in work at less than 170 hrs
+* had 2 projects or less
+* Overall lower performing employees are leaving more. This warrants improvement in hiring process to avoid low performers
+* Aside from low performers, we can notice number of employees leaving creeeping up among mid to high performing. This is an area that needs to be also looked into for reduction in rate of attrition.  
 
 
 
@@ -209,7 +248,8 @@ hrTest  <- hr[-trainIndex,]
 
 ```r
 lm_time_spend <- lm(time_spend_company~left+number_project+last_evaluation+salary+Work_accident+satisfaction_level, data = hrTrain)
-summary(lm_time_spend)
+lm_time_spend_summary <- summary(lm_time_spend)
+lm_time_spend_summary
 ```
 
 ```
@@ -243,7 +283,8 @@ summary(lm_time_spend)
 
 ```r
 lm_time_spend_mthly_hrs <- lm(time_spend_company~left+number_project+last_evaluation+average_montly_hours+salary+Work_accident+satisfaction_level, data = hrTrain)
-summary(lm_time_spend_mthly_hrs)
+lm_time_spend_mthly_hrs_summary <- summary(lm_time_spend_mthly_hrs)
+lm_time_spend_mthly_hrs_summary
 ```
 
 ```
@@ -276,10 +317,11 @@ summary(lm_time_spend_mthly_hrs)
 ## F-statistic: 117.3 on 8 and 11991 DF,  p-value: < 2.2e-16
 ```
 
-###Anova for the model
+###Lets compare the two models
 
 ```r
-anova(lm_time_spend,lm_time_spend_mthly_hrs)
+lm_model_anova <- anova(lm_time_spend,lm_time_spend_mthly_hrs)
+lm_model_anova
 ```
 
 ```
@@ -295,6 +337,13 @@ anova(lm_time_spend,lm_time_spend_mthly_hrs)
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
+
+_lm_time_spend_ has an R Squared of 0.0718649 and adjusted R-Squared of 0.0713232
+
+_lm_time_spend_mthly_hrs_ has an R Squared of 0.0725582 and adjusted R-Squared of 0.0719394
+
+#####Based on anova and both R Squared and Adjusted R Squared model _lm_time_spend_mthly_hrs_ seems to be a better fit
+
 
 ###Predict using the model _lm_time_spend_mthly_hrs_
 
@@ -341,7 +390,7 @@ m %>% ggplot(aes(x = ID, y = time_spend_company, col = Type)) +
   myTheme
 ```
 
-![](HR_Analysis_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+![](HR_Analysis_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
 
 ```r
 #correlation data
@@ -360,7 +409,7 @@ correlation
 ```
 
 ```r
-#coreelation
+#correlation
 correlation[1,2]
 ```
 
@@ -383,12 +432,13 @@ round(sse, digits = 2)
 ```r
 #Root mean squared errors (RMSE)
 rmse = sqrt(sse / nrow(hrTest))
-round(rmse, digits = 4)
+round(rmse, digits = 2)
 ```
 
 ```
-## [1] 1.4133
+## [1] 1.41
 ```
+####_lm_time_spend_mthly_hrs_ prediction has an 'Root mean squared errors' 1.41 and correlation coefficient of 0.25
 
 ###Logistic Regression
 Lets build a model to predict if the employee will leave
