@@ -20,6 +20,8 @@ library(dplyr)
 library(ggplot2)
 library(gridExtra)
 library(RColorBrewer)
+library(arm)
+library(cluster)
 myTheme <- theme( panel.grid = element_blank(), legend.key = element_blank(), plot.title = element_text(hjust = 0.5))
 ```
 
@@ -180,15 +182,19 @@ hrTest  <- hr[-trainIndex,]
 ```
 
 ###Models
+####Lets use caret package to anlyze significant fields for linear model
+```{r fields_lm}
+plot(varImp(train(time_spend_company ~ ., data = hrTrain, method = "lm")))
+```
 
 ```{r}
-lm_time_spend <- lm(time_spend_company~left+number_project+last_evaluation+salary+Work_accident+satisfaction_level, data = hrTrain)
+lm_time_spend <- lm(time_spend_company~left+ dept+ promotion_last_5years + number_project+last_evaluation+salary+Work_accident+satisfaction_level, data = hrTrain)
 lm_time_spend_summary <- summary(lm_time_spend)
 lm_time_spend_summary
 ```
 
 ```{r}
-lm_time_spend_mthly_hrs <- lm(time_spend_company~left+number_project+last_evaluation+average_montly_hours+salary+Work_accident+satisfaction_level, data = hrTrain)
+lm_time_spend_mthly_hrs <- lm(time_spend_company~left+ dept+ promotion_last_5years + number_project+last_evaluation+average_montly_hours+salary+Work_accident+satisfaction_level, data = hrTrain)
 lm_time_spend_mthly_hrs_summary <- summary(lm_time_spend_mthly_hrs)
 lm_time_spend_mthly_hrs_summary
 ```
@@ -202,6 +208,8 @@ lm_model_anova
 _lm_time_spend_ has an R Squared of `r lm_time_spend_summary$r.squared` and adjusted R-Squared of `r lm_time_spend_summary$adj.r.squared`
 
 _lm_time_spend_mthly_hrs_ has an R Squared of `r lm_time_spend_mthly_hrs_summary$r.squared` and adjusted R-Squared of `r lm_time_spend_mthly_hrs_summary$adj.r.squared`
+
+
 
 #####Based on anova and both R Squared and Adjusted R Squared model _lm_time_spend_mthly_hrs_ seems to be a better fit
 
@@ -290,16 +298,69 @@ hrTest  <- hr[-trainIndex,]
 
 ###Models
 
+#####Significant fields
+
+```{r log_reg_model_signi_fields}
+plot(varImp(train(left ~ ., data = hrTrain, method = "bayesglm")))
+```
+
+#####Significant fields
+* _satisfaction_level_, _Work_accident_, _salary_, _time_spend_company_, _number_project_, _average_montly_hours_, _promotion_last_5years_, _dept_
+
 ```{r log_model}
-mod1 <- glm(left ~ time_spend_company + last_evaluation + salary + satisfaction_level, data = hrTrain , family = "binomial")
-summary(mod1)
+
+fitControl <- trainControl(method = "bayesglm",
+                           number = 10,repeats = 10)
+log_model <- train(left ~ satisfaction_level + Work_accident  + salary + time_spend_company + number_project + average_montly_hours + promotion_last_5years + dept, data = hrTrain, method = "bayesglm" )
+
+summary(log_model)
 ```
 
 ```{r}
 #Lets test prediction using test data 
-testPredication <- predict(mod1, newdata = hrTest, type = "response")
-table(hrTest$left, testPredication >= 0.18)
+testPredication <- predict(log_model,hrTest)
+d<- table(hrTest$left, testPredication)
 
+defaultSummary(data.frame(obs = hrTest$left, pred=testPredication))
 ```
 
+###Cluster Analysis
+```{r cluster}
+wssplot <- function(data, nc = 15, seed = 1234) {
+  wss <- (nrow(data) - 1) * sum(apply(data, 2, var))
+  for (i in 2:nc) {
+    set.seed(seed)
+    wss[i] <- sum(kmeans(data, centers = i)$withinss)
+  }
+  plot(1:nc,
+       wss,
+       type = "b",
+       xlab = "Number of Clusters",
+       ylab = "Within groups sum of squares")
+  print(wss[1])
+}
+
+#lets make all fields numeric
+hr_clust <- hr
+hr_clust$dept <- as.numeric( as.factor(hr_clust$dept))
+hr_clust$salary <- as.numeric( as.factor(hr_clust$salary))
+hr_clust$number_project <- as.numeric( hr_clust$number_project)
+hr_clust$Work_accident <- as.numeric( hr_clust$Work_accident)
+hr_clust$left <- as.numeric(hr_clust$left)
+hr_clust$promotion_last_5years <- as.numeric(hr_clust$promotion_last_5years)
+
+#lets identify optimum number of clusters
+wssplot(scale(hr_clust))
+
+# there are two turns one at 4 and another at 7
+
+fit.km <- kmeans(scale(hr_clust), 3)
+clusplot(hr_clust,fit.km$cluster)
+
+fit.km <- kmeans(scale(hr_clust), 4)
+clusplot(hr_clust,fit.km$cluster)
+
+fit.km <- kmeans(scale(hr_clust), 7)
+clusplot(hr_clust,fit.km$cluster)
+```
 
