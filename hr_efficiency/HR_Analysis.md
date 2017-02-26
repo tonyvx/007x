@@ -368,8 +368,9 @@ summary(hrTest$time_spend_company)
 ##   2.000   3.000   3.000   3.491   4.000  10.000
 ```
 
+
 ```r
-#plot actual vs predicted
+#Create data frame actual vs predicted
 p <- data.frame(predict_lm_emp_leaving)
 p$ID <- as.numeric(rownames(p))
 p$Type <- 'Predicted'
@@ -381,7 +382,11 @@ a$Type <- 'Actual'
 names(a)[1] <- 'time_spend_company'
 
 m <- data.frame(rbind(a,p))
+```
 
+
+```r
+#plot predict and actual
 m %>% ggplot(aes(x = ID, y = time_spend_company, col = Type)) + 
   geom_line() + 
   geom_smooth() +
@@ -390,7 +395,8 @@ m %>% ggplot(aes(x = ID, y = time_spend_company, col = Type)) +
   myTheme
 ```
 
-![](HR_Analysis_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
+![](HR_Analysis_files/figure-html/plot_predict_vs_actual_df-1.png)<!-- -->
+
 
 ```r
 #correlation data
@@ -416,6 +422,7 @@ correlation[1,2]
 ```
 ## [1] 0.2539589
 ```
+
 
 ```r
 #lets see how good the model prediction was

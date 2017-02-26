@@ -214,8 +214,10 @@ summary(predict_lm_emp_leaving)
 
 #summary of actuals
 summary(hrTest$time_spend_company)
+```
 
-#plot actual vs predicted
+```{r predict_vs_actual_df}
+#Create data frame actual vs predicted
 p <- data.frame(predict_lm_emp_leaving)
 p$ID <- as.numeric(rownames(p))
 p$Type <- 'Predicted'
@@ -227,14 +229,19 @@ a$Type <- 'Actual'
 names(a)[1] <- 'time_spend_company'
 
 m <- data.frame(rbind(a,p))
+```
 
+```{r plot_predict_vs_actual_df}
+#plot predict and actual
 m %>% ggplot(aes(x = ID, y = time_spend_company, col = Type)) + 
   geom_line() + 
   geom_smooth() +
   labs(x = "Observation", y = "Number of years spent in the company", title = "Plot Predicted & Actual Time spend vs Observation") +
   scale_colour_brewer(palette = brewer.pal(11,"Spectral")) +
   myTheme
+```
 
+```{r compute_correlation_coef}
 #correlation data
 plot_data <- data.frame(predict_lm_emp_leaving, hrTest$time_spend_company)
 names(plot_data)[1] <- "predicted"
@@ -245,7 +252,9 @@ correlation
 
 #correlation
 correlation[1,2]
+```
 
+```{r compute_rmse}
 #lets see how good the model prediction was
 
 #Sum of squared errors(SSE)
