@@ -301,17 +301,25 @@ hrTest  <- hr[-trainIndex,]
 #####Significant fields
 
 ```{r log_reg_model_signi_fields}
+<<<<<<< HEAD
 plot(varImp(train(left ~ ., data = hrTrain, method = "bayesglm")))
+=======
+plot(varImp(train(left ~ ., data = hrTrain, method = "glm")))
+>>>>>>> d288218e3650708e01fda336ecfff3ec57d7c5b1
 ```
 
 #####Significant fields
 * _satisfaction_level_, _Work_accident_, _salary_, _time_spend_company_, _number_project_, _average_montly_hours_, _promotion_last_5years_, _dept_
 
 ```{r log_model}
+<<<<<<< HEAD
 
 fitControl <- trainControl(method = "bayesglm",
                            number = 10,repeats = 10)
 log_model <- train(left ~ satisfaction_level + Work_accident  + salary + time_spend_company + number_project + average_montly_hours + promotion_last_5years + dept, data = hrTrain, method = "bayesglm" )
+=======
+log_model <- train(left ~ satisfaction_level + Work_accident  + salary + time_spend_company + number_project + average_montly_hours + promotion_last_5years + dept, data = hrTrain, method = "glm")
+>>>>>>> d288218e3650708e01fda336ecfff3ec57d7c5b1
 
 summary(log_model)
 ```
@@ -319,9 +327,17 @@ summary(log_model)
 ```{r}
 #Lets test prediction using test data 
 testPredication <- predict(log_model,hrTest)
+<<<<<<< HEAD
 d<- table(hrTest$left, testPredication)
 
 defaultSummary(data.frame(obs = hrTest$left, pred=testPredication))
+=======
+table(hrTest$left, testPredication >= 0.18)
+
+modelvalues<-data.frame(obs = hrTest$left, pred=testPredication)
+
+defaultSummary(modelvalues)
+>>>>>>> d288218e3650708e01fda336ecfff3ec57d7c5b1
 ```
 
 ###Cluster Analysis

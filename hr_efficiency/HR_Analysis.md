@@ -514,6 +514,7 @@ hrTest  <- hr[-trainIndex,]
 
 #####Significant fields
 
+<<<<<<< HEAD
 
 ```r
 plot(varImp(train(left ~ ., data = hrTrain, method = "bayesglm")))
@@ -529,6 +530,21 @@ plot(varImp(train(left ~ ., data = hrTrain, method = "bayesglm")))
 fitControl <- trainControl(method = "bayesglm",
                            number = 10,repeats = 10)
 log_model <- train(left ~ satisfaction_level + Work_accident  + salary + time_spend_company + number_project + average_montly_hours + promotion_last_5years + dept, data = hrTrain, method = "bayesglm" )
+=======
+
+```r
+plot(varImp(train(left ~ ., data = hrTrain, method = "glm")))
+```
+
+![](HR_Analysis_files/figure-html/log_reg_model_signi_fields-1.png)<!-- -->
+
+#####Significant fields
+* _satisfaction_level_, _Work_accident_, _salary_, _time_spend_company_, _number_project_, _average_montly_hours_, _promotion_last_5years_, _dept_
+
+
+```r
+log_model <- train(left ~ satisfaction_level + Work_accident  + salary + time_spend_company + number_project + average_montly_hours + promotion_last_5years + dept, data = hrTrain, method = "glm")
+>>>>>>> d288218e3650708e01fda336ecfff3ec57d7c5b1
 
 summary(log_model)
 ```
@@ -544,6 +560,7 @@ summary(log_model)
 ## 
 ## Coefficients:
 ##                         Estimate Std. Error t value Pr(>|t|)    
+<<<<<<< HEAD
 ## (Intercept)            0.3479630  0.0271127  12.834  < 2e-16 ***
 ## satisfaction_level    -0.6274304  0.0141424 -44.365  < 2e-16 ***
 ## Work_accident         -0.1561928  0.0098761 -15.815  < 2e-16 ***
@@ -562,6 +579,26 @@ summary(log_model)
 ## deptsales             -0.0010504  0.0168063  -0.062  0.95017    
 ## deptsupport            0.0077418  0.0178222   0.434  0.66401    
 ## depttechnical          0.0125827  0.0174527   0.721  0.47095    
+=======
+## (Intercept)            0.3479929  0.0271173  12.833  < 2e-16 ***
+## satisfaction_level    -0.6274793  0.0141430 -44.367  < 2e-16 ***
+## Work_accident         -0.1561966  0.0098763 -15.815  < 2e-16 ***
+## salarylow              0.2083115  0.0132975  15.665  < 2e-16 ***
+## salarymedium           0.1328013  0.0133528   9.946  < 2e-16 ***
+## time_spend_company     0.0374297  0.0024524  15.262  < 2e-16 ***
+## number_project        -0.0324466  0.0031551 -10.284  < 2e-16 ***
+## average_montly_hours   0.0006856  0.0000763   8.985  < 2e-16 ***
+## promotion_last_5years -0.1196806  0.0237631  -5.036 4.81e-07 ***
+## depthr                 0.0317265  0.0219542   1.445  0.14845    
+## deptIT                -0.0244805  0.0195747  -1.251  0.21110    
+## deptmanagement        -0.0564644  0.0233415  -2.419  0.01558 *  
+## deptmarketing         -0.0035841  0.0211697  -0.169  0.86556    
+## deptproduct_mng       -0.0261063  0.0208980  -1.249  0.21161    
+## deptRandD             -0.0780065  0.0215206  -3.625  0.00029 ***
+## deptsales             -0.0010643  0.0168133  -0.063  0.94953    
+## deptsupport            0.0077277  0.0178291   0.433  0.66471    
+## depttechnical          0.0125690  0.0174597   0.720  0.47161    
+>>>>>>> d288218e3650708e01fda336ecfff3ec57d7c5b1
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
@@ -571,13 +608,18 @@ summary(log_model)
 ## Residual deviance: 1712.4  on 11982  degrees of freedom
 ## AIC: 10728
 ## 
+<<<<<<< HEAD
 ## Number of Fisher Scoring iterations: 4
+=======
+## Number of Fisher Scoring iterations: 2
+>>>>>>> d288218e3650708e01fda336ecfff3ec57d7c5b1
 ```
 
 
 ```r
 #Lets test prediction using test data 
 testPredication <- predict(log_model,hrTest)
+<<<<<<< HEAD
 d<- table(hrTest$left, testPredication)
 
 defaultSummary(data.frame(obs = hrTest$left, pred=testPredication))
@@ -643,6 +685,27 @@ clusplot(hr_clust,fit.km$cluster)
 ```r
 fit.km <- kmeans(scale(hr_clust), 7)
 clusplot(hr_clust,fit.km$cluster)
+=======
+table(hrTest$left, testPredication >= 0.18)
+```
+
+```
+##    
+##     FALSE TRUE
+##   0  1185 1095
+##   1    58  661
+```
+
+```r
+modelvalues<-data.frame(obs = hrTest$left, pred=testPredication)
+
+defaultSummary(modelvalues)
+```
+
+```
+##      RMSE  Rsquared 
+## 0.3765633 0.2223742
+>>>>>>> d288218e3650708e01fda336ecfff3ec57d7c5b1
 ```
 
 ![](HR_Analysis_files/figure-html/cluster-4.png)<!-- -->
