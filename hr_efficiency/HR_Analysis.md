@@ -5,89 +5,19 @@
 
 ## Problem
 ###Factors important to retain performing employees
-* Why are our best and most experienced employees leaving prematurely? 
-We will analysing the data available in hand to identify avenues to improving hr efficiency.
-* Can we predict which valuable employees will leave next?
-We will be building a predictive model to determine how long employee would stay and their probability in leaving.
+* We will be analysing the data available in hand to identify avenues to improving hr efficiency.
+* We will be building a predictive model to determine how long employee would stay and their probability in leaving.
 
 ## Data Source
 https://www.kaggle.com/ludobenistant/hr-analytics
 
 https://www.kaggle.com/ludobenistant/hr-analytics/downloads/human-resources-analytics.zip
 
-Lets load the dataset
+#####Lets load the dataset
 
 ```r
-  hr <- read.csv("./HR_comma_sep.csv", header = TRUE, stringsAsFactors = FALSE)
-```
-
-#####Lets look at the fields in the dataset
-
-* _satisfaction_level_ - Level of satisfaction (0-1)
-* _last_evaluation_ - Evaluation of employee performance (0-1)
-* _number_project_ - Number of projects completed while at work
-* _average_montly_hours_ - Average monthly hours at workplace
-* _time_spend_company_ - Number of years spent in the company
-* _Work_accident_ - Whether the employee had a workplace accident
-* _left_ - Whether the employee left the workplace or not (1 or 0) 
-* _promotion_last_5years_ - Whether the employee was promoted in the last five years
-* _sales_ - Department in which they work for
-* _salary_ - Salary (High, medium, Low)
-
-Lets analyze the structure of dataset
-
-```r
-str(hr)
-```
-
-```
-## 'data.frame':	14999 obs. of  10 variables:
-##  $ satisfaction_level   : num  0.38 0.8 0.11 0.72 0.37 0.41 0.1 0.92 0.89 0.42 ...
-##  $ last_evaluation      : num  0.53 0.86 0.88 0.87 0.52 0.5 0.77 0.85 1 0.53 ...
-##  $ number_project       : int  2 5 7 5 2 2 6 5 5 2 ...
-##  $ average_montly_hours : int  157 262 272 223 159 153 247 259 224 142 ...
-##  $ time_spend_company   : int  3 6 4 5 3 3 4 5 5 3 ...
-##  $ Work_accident        : int  0 0 0 0 0 0 0 0 0 0 ...
-##  $ left                 : int  1 1 1 1 1 1 1 1 1 1 ...
-##  $ promotion_last_5years: int  0 0 0 0 0 0 0 0 0 0 ...
-##  $ sales                : chr  "sales" "sales" "sales" "sales" ...
-##  $ salary               : chr  "low" "medium" "medium" "low" ...
-```
-
-####Observations
-* Fields _number_project_, _promotion_last_5years_, _left_, _Work_accident_, _sales_ have discrete values.
-
-
-```r
-str(as.factor(hr$salary))
-```
-
-```
-##  Factor w/ 3 levels "high","low","medium": 2 3 3 2 2 2 2 2 2 2 ...
-```
-
-####Observations
-* Field _salary_ is also discrete with "high", "medium" & "low". Also looks like "low" is assigned 2, "medium" is assigned 3 and "high" is assigned 1.
-
-Lets look at all unique values for field 'sales'.
-
-```r
-unique(hr$sales)
-```
-
-```
-##  [1] "sales"       "accounting"  "hr"          "technical"   "support"    
-##  [6] "management"  "IT"          "product_mng" "marketing"   "RandD"
-```
-
-####Observations
-* Field _sales_ does not seems to have sales figures but departments that employee belongs to.
-
-
-Lets look at the summary of the data set to see if there are no invalid data
-
-```r
-  summary(hr)
+hr <- read.csv("./HR_comma_sep.csv", header = TRUE, stringsAsFactors = FALSE)
+summary(hr)
 ```
 
 ```
@@ -113,41 +43,77 @@ Lets look at the summary of the data set to see if there are no invalid data
 ##  3rd Qu.:0.00000                                            
 ##  Max.   :1.00000
 ```
-####Observations
-* All fields in the dataset have non-NA values. 
 
+* _satisfaction_level_ - Employee Level of satisfaction. It ranges from __0 (low satisfaction)__ to __1 (high satisfaction)__
+* _last_evaluation_ - Latest performance evaluation rating of employee. It ranges from __0 (low rating)__ to __1 (high rating)__
+* _number_project_ - Number of projects completed while at work. It varies from __2__ to __7__ projects, on an average an employee has worked on __4__ projects.
+* _average_montly_hours_ - Average monthly work hours at workplace. It varies from __96 hrs__ to __310 hrs__ with a mean of __201 hrs__ per month.
+* _time_spend_company_ - Number of years spent in the company. It ranges from __2__ years to __10__ years, with an average of around __4__ years until now or until they left.
+* _Work_accident_ - Whether the employee had a workplace accident
+* _left_ - Whether the employee left the workplace or not. __1__ means __left__ and __0__ means still with company. Probability of leaving is __0.23__.
+* _promotion_last_5years_ - Whether the employee was promoted in the last five years. __1__ means promoted and __0__ means no promotion in last 5 years. Probability of promotion in last 5 years is __0.02__.
+
+
+* _sales_ - Department in which they work for. _accounting_, _hr_, _IT_, _management_,  _marketing_, _product_mng_, _RandD_, _sales_, _support_, _technical_ are various departments employees belong to.
+
+```r
+summary(as.factor(hr$sales))
+```
+
+```
+##  accounting          hr          IT  management   marketing product_mng 
+##         767         739        1227         630         858         902 
+##       RandD       sales     support   technical 
+##         787        4140        2229        2720
+```
+
+* _salary_ - Salary as high, medium & low.
+
+```r
+summary(as.factor(hr$salary))
+```
+
+```
+##   high    low medium 
+##   1237   7316   6446
+```
+
+* Fields _number_project_, _promotion_last_5years_, _left_, _Work_accident_, _sales_,_salary_ have discrete values.
+* Looking at the summary of the data set there are no bad data , 'blanks', 'NA', null etc.
 
 ## Data Wrangling
 
-Rename the _sales_ field to _dept_ and create seperate field salary_level 3: High, 2: Medium & 1: low
+Rename the _sales_ column to _dept_ and make columns _number_project_, _promotion_last_5years_, _left_, _Work_accident_, _sales_,_salary_ as factor
 
 ```r
+hr$number_project <- as.factor(hr$number_project)
+hr$promotion_last_5years <- as.factor(hr$promotion_last_5years)
+hr$left <- as.factor(hr$left)
+hr$Work_accident <- as.factor(hr$Work_accident)
+hr$sales <- as.factor(hr$sales)
+hr$salary <- as.factor(hr$salary)
+
 names(hr)[9] <- "dept"
-hr <- hr %>% mutate(salary_level = case_when(
-  .$salary == "high" ~ 3, 
-  .$salary == "medium" ~ 2, 
-  .$salary == "low" ~ 1))
 ```
 
-Lets look are structure once again
+Lets look are structure
 
 ```r
   str(hr)
 ```
 
 ```
-## 'data.frame':	14999 obs. of  11 variables:
+## 'data.frame':	14999 obs. of  10 variables:
 ##  $ satisfaction_level   : num  0.38 0.8 0.11 0.72 0.37 0.41 0.1 0.92 0.89 0.42 ...
 ##  $ last_evaluation      : num  0.53 0.86 0.88 0.87 0.52 0.5 0.77 0.85 1 0.53 ...
-##  $ number_project       : int  2 5 7 5 2 2 6 5 5 2 ...
+##  $ number_project       : Factor w/ 6 levels "2","3","4","5",..: 1 4 6 4 1 1 5 4 4 1 ...
 ##  $ average_montly_hours : int  157 262 272 223 159 153 247 259 224 142 ...
 ##  $ time_spend_company   : int  3 6 4 5 3 3 4 5 5 3 ...
-##  $ Work_accident        : int  0 0 0 0 0 0 0 0 0 0 ...
-##  $ left                 : int  1 1 1 1 1 1 1 1 1 1 ...
-##  $ promotion_last_5years: int  0 0 0 0 0 0 0 0 0 0 ...
-##  $ dept                 : chr  "sales" "sales" "sales" "sales" ...
-##  $ salary               : chr  "low" "medium" "medium" "low" ...
-##  $ salary_level         : num  1 2 2 1 1 1 1 1 1 1 ...
+##  $ Work_accident        : Factor w/ 2 levels "0","1": 1 1 1 1 1 1 1 1 1 1 ...
+##  $ left                 : Factor w/ 2 levels "0","1": 2 2 2 2 2 2 2 2 2 2 ...
+##  $ promotion_last_5years: Factor w/ 2 levels "0","1": 1 1 1 1 1 1 1 1 1 1 ...
+##  $ dept                 : Factor w/ 10 levels "accounting","hr",..: 8 8 8 8 8 8 8 8 8 8 ...
+##  $ salary               : Factor w/ 3 levels "high","low","medium": 2 3 3 2 2 2 2 2 2 2 ...
 ```
 
 ## Data Exploration
@@ -157,55 +123,49 @@ Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _ave
 
 
 ```r
-hr_left <- hr %>% filter(left == 1)
+hr_left <- hr
 
 satis_l <- hr_left %>% ggplot(aes(satisfaction_level)) +
-  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
-  scale_fill_gradient("Count", low = "green", high = "red") +
+  geom_histogram( binwidth = 0.05, aes(fill = left)) +
   labs(x = "satisfaction_level", y = "employees", title = "satisfaction level") + myTheme
 
-tm_spnd <- hr_left %>% ggplot(aes(time_spend_company)) +
-  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
-  scale_fill_gradient("Count", low = "green", high = "red") +
-  labs(x = "time_spend_company", y = "employees", title = "Time Spend in Company") + myTheme
-
 lst_eval <- hr_left %>% ggplot(aes(last_evaluation)) +
-  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
-  scale_fill_gradient("Count", low = "green", high = "red") +
+  geom_histogram( binwidth = 0.05, aes(fill = left)) +
   labs(x = "last_evaluation", y = "employees", title = "Last evaluation") + myTheme
 
+tm_spnd <- hr_left %>% ggplot(aes(time_spend_company)) +
+  geom_histogram( binwidth = 0.05, aes(fill = left)) +
+  labs(x = "time_spend_company", y = "employees", title = "Time Spend in Company") + myTheme
+
+
 mnthly_hrs <- hr_left %>% ggplot(aes(average_montly_hours)) +
-  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
-  scale_fill_gradient("Count", low = "green", high = "red") +
+  geom_histogram( binwidth = 0.05, aes(fill = left)) +
   labs(x = "average_montly_hours", y = "employees", title = "Average montly hours") + myTheme
 
 wrk_accdnt <- hr_left %>% ggplot(aes(Work_accident)) +
-  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
-  scale_fill_gradient("Count", low = "green", high = "red") +
+  geom_histogram( binwidth = 0.05, aes(fill = left), stat = "count") +
   labs(x = "Work_accident", y = "employees", title = "Work accident") + myTheme
 
-sal <- hr_left %>% ggplot(aes(salary_level)) +
-  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
-  scale_fill_gradient("Count", low = "green", high = "red") +
+sal <- hr_left %>% ggplot(aes(salary)) +
+  geom_histogram( binwidth = 0.05, aes(fill = left), stat = "count") +
   labs(x = "salary", y = "employees", title = "Salary") + myTheme
 
 nmbr_prj <- hr_left %>% ggplot(aes(as.numeric(number_project))) +
-  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
-  scale_fill_gradient("Count", low = "green", high = "red") +
+  geom_histogram( binwidth = 0.05, aes(fill = left)) +
   labs(x = "number_project", y = "employees", title = "Number of projects") + myTheme
 
-grid.arrange(satis_l, tm_spnd, lst_eval,mnthly_hrs,wrk_accdnt,sal,nmbr_prj, nrow = 4)
+grid.arrange(satis_l, lst_eval, sal, tm_spnd, mnthly_hrs,nmbr_prj, wrk_accdnt, nrow = 3)
 ```
 
 ![](HR_Analysis_files/figure-html/plot_data_exp_analysis-1.png)<!-- -->
 
-####Notice high number of employees leaving the company 
-* had been with company for less than 3 years
-* had an evaluation rating less than 0.5
-* had an average monthly hours in work at less than 170 hrs
-* had 2 projects or less
+
 * Overall lower performing employees are leaving more. This warrants improvement in hiring process to avoid low performers
 * Aside from low performers, we can notice number of employees leaving creeeping up among mid to high performing. This is an area that needs to be also looked into for reduction in rate of attrition.  
+* Retention is higher for employees who have
+  + been with the company for 4 or less (3rd quartile)
+  + Average monthly hours of 245 hrs or less
+  + No work accident
 
 
 
@@ -268,34 +228,38 @@ lm_time_spend_summary
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -3.1150 -0.7926 -0.3166  0.5317  7.1978 
+## -3.0400 -0.7504 -0.3007  0.5320  7.3900 
 ## 
 ## Coefficients:
-##                       Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)            2.45958    0.09748  25.231  < 2e-16 ***
-## left                   0.51713    0.03340  15.484  < 2e-16 ***
-## depthr                -0.13809    0.08098  -1.705 0.088162 .  
-## deptIT                -0.02501    0.07201  -0.347 0.728412    
-## deptmanagement         0.75147    0.08612   8.726  < 2e-16 ***
-## deptmarketing          0.05118    0.07763   0.659 0.509723    
-## deptproduct_mng       -0.02685    0.07690  -0.349 0.726977    
-## deptRandD             -0.10389    0.07954  -1.306 0.191521    
-## deptsales              0.04942    0.06170   0.801 0.423132    
-## deptsupport           -0.10682    0.06552  -1.630 0.103049    
-## depttechnical         -0.11247    0.06409  -1.755 0.079314 .  
-## promotion_last_5years  0.65541    0.08753   7.488 7.48e-14 ***
-## number_project         0.19585    0.01122  17.451  < 2e-16 ***
-## last_evaluation        0.65229    0.08063   8.090 6.55e-16 ***
-## salarylow             -0.26156    0.04953  -5.281 1.31e-07 ***
-## salarymedium          -0.16047    0.04950  -3.242 0.001191 ** 
-## Work_accident          0.10839    0.03655   2.965 0.003029 ** 
-## satisfaction_level    -0.19734    0.05702  -3.461 0.000541 ***
+##                        Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)             2.77912    0.09433  29.462  < 2e-16 ***
+## left1                   0.63893    0.03876  16.486  < 2e-16 ***
+## depthr                 -0.13112    0.08079  -1.623  0.10462    
+## deptIT                 -0.01996    0.07184  -0.278  0.78109    
+## deptmanagement          0.76761    0.08592   8.934  < 2e-16 ***
+## deptmarketing           0.06117    0.07744   0.790  0.42961    
+## deptproduct_mng        -0.01471    0.07673  -0.192  0.84793    
+## deptRandD              -0.09905    0.07934  -1.248  0.21193    
+## deptsales               0.05646    0.06155   0.917  0.35905    
+## deptsupport            -0.10529    0.06536  -1.611  0.10721    
+## depttechnical          -0.10663    0.06394  -1.668  0.09538 .  
+## promotion_last_5years1  0.66069    0.08732   7.566 4.12e-14 ***
+## number_project3         0.44959    0.04950   9.083  < 2e-16 ***
+## number_project4         0.57525    0.04861  11.833  < 2e-16 ***
+## number_project5         0.81733    0.05003  16.337  < 2e-16 ***
+## number_project6         0.90317    0.06061  14.900  < 2e-16 ***
+## number_project7         0.43963    0.10828   4.060 4.93e-05 ***
+## last_evaluation         0.58316    0.08245   7.073 1.60e-12 ***
+## salarylow              -0.25741    0.04942  -5.208 1.94e-07 ***
+## salarymedium           -0.15532    0.04939  -3.145  0.00166 ** 
+## Work_accident1          0.10552    0.03646   2.894  0.00381 ** 
+## satisfaction_level     -0.33098    0.06315  -5.242 1.62e-07 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 1.393 on 11982 degrees of freedom
-## Multiple R-squared:  0.09117,	Adjusted R-squared:  0.08988 
-## F-statistic:  70.7 on 17 and 11982 DF,  p-value: < 2.2e-16
+## Residual standard error: 1.389 on 11978 degrees of freedom
+## Multiple R-squared:  0.09614,	Adjusted R-squared:  0.09456 
+## F-statistic: 60.67 on 21 and 11978 DF,  p-value: < 2.2e-16
 ```
 
 
@@ -314,35 +278,39 @@ lm_time_spend_mthly_hrs_summary
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -3.0473 -0.7915 -0.3123  0.5380  7.2344 
+## -3.0786 -0.7528 -0.2949  0.5295  7.4144 
 ## 
 ## Coefficients:
-##                         Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)            2.3783952  0.1013933  23.457  < 2e-16 ***
-## left                   0.5090793  0.0335020  15.195  < 2e-16 ***
-## depthr                -0.1368928  0.0809544  -1.691 0.090865 .  
-## deptIT                -0.0262221  0.0719920  -0.364 0.715688    
-## deptmanagement         0.7512288  0.0860928   8.726  < 2e-16 ***
-## deptmarketing          0.0513290  0.0776063   0.661 0.508367    
-## deptproduct_mng       -0.0253644  0.0768819  -0.330 0.741471    
-## deptRandD             -0.1031343  0.0795114  -1.297 0.194621    
-## deptsales              0.0492171  0.0616796   0.798 0.424917    
-## deptsupport           -0.1059576  0.0654991  -1.618 0.105755    
-## depttechnical         -0.1123214  0.0640736  -1.753 0.079626 .  
-## promotion_last_5years  0.6542157  0.0874997   7.477 8.15e-14 ***
-## number_project         0.1844071  0.0118936  15.505  < 2e-16 ***
-## last_evaluation        0.5998043  0.0826133   7.260 4.10e-13 ***
-## average_montly_hours   0.0008324  0.0002871   2.900 0.003741 ** 
-## salarylow             -0.2599815  0.0495206  -5.250 1.55e-07 ***
-## salarymedium          -0.1594062  0.0494880  -3.221 0.001280 ** 
-## Work_accident          0.1076267  0.0365410   2.945 0.003232 ** 
-## satisfaction_level    -0.2040043  0.0570533  -3.576 0.000351 ***
+##                          Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)             2.6867716  0.1002150  26.810  < 2e-16 ***
+## left1                   0.6249161  0.0390866  15.988  < 2e-16 ***
+## depthr                 -0.1293365  0.0807707  -1.601  0.10934    
+## deptIT                 -0.0212317  0.0718190  -0.296  0.76752    
+## deptmanagement          0.7671733  0.0858984   8.931  < 2e-16 ***
+## deptmarketing           0.0613582  0.0774212   0.793  0.42807    
+## deptproduct_mng        -0.0135680  0.0767115  -0.177  0.85961    
+## deptRandD              -0.0982576  0.0793240  -1.239  0.21549    
+## deptsales               0.0559841  0.0615346   0.910  0.36295    
+## deptsupport            -0.1046692  0.0653385  -1.602  0.10919    
+## depttechnical          -0.1066023  0.0639189  -1.668  0.09539 .  
+## promotion_last_5years1  0.6591716  0.0872989   7.551 4.64e-14 ***
+## number_project3         0.4194255  0.0507082   8.271  < 2e-16 ***
+## number_project4         0.5411451  0.0501890  10.782  < 2e-16 ***
+## number_project5         0.7804544  0.0518179  15.061  < 2e-16 ***
+## number_project6         0.8480698  0.0638870  13.275  < 2e-16 ***
+## number_project7         0.3636052  0.1117920   3.253  0.00115 ** 
+## last_evaluation         0.5414941  0.0838334   6.459 1.09e-10 ***
+## average_montly_hours    0.0007928  0.0002911   2.723  0.00647 ** 
+## salarylow              -0.2558201  0.0494136  -5.177 2.29e-07 ***
+## salarymedium           -0.1540695  0.0493761  -3.120  0.00181 ** 
+## Work_accident1          0.1047198  0.0364529   2.873  0.00408 ** 
+## satisfaction_level     -0.3380187  0.0631810  -5.350 8.96e-08 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 1.392 on 11981 degrees of freedom
-## Multiple R-squared:  0.0918,	Adjusted R-squared:  0.09044 
-## F-statistic: 67.28 on 18 and 11981 DF,  p-value: < 2.2e-16
+## Residual standard error: 1.389 on 11977 degrees of freedom
+## Multiple R-squared:  0.0967,	Adjusted R-squared:  0.09504 
+## F-statistic: 58.28 on 22 and 11977 DF,  p-value: < 2.2e-16
 ```
 
 ###Lets compare the two models
@@ -361,15 +329,15 @@ lm_model_anova
 ##     last_evaluation + average_montly_hours + salary + Work_accident + 
 ##     satisfaction_level
 ##   Res.Df   RSS Df Sum of Sq      F   Pr(>F)   
-## 1  11982 23244                                
-## 2  11981 23228  1    16.303 8.4089 0.003741 **
+## 1  11978 23117                                
+## 2  11977 23103  1    14.306 7.4165 0.006472 **
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
-_lm_time_spend_ has an R Squared of 0.0911651 and adjusted R-Squared of 0.0898757
+_lm_time_spend_ has an R Squared of 0.0961402 and adjusted R-Squared of 0.0945555
 
-_lm_time_spend_mthly_hrs_ has an R Squared of 0.0918025 and adjusted R-Squared of 0.0904381
+_lm_time_spend_mthly_hrs_ has an R Squared of 0.0966995 and adjusted R-Squared of 0.0950403
 
 
 
@@ -386,7 +354,7 @@ summary(predict_lm_emp_leaving)
 
 ```
 ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##   2.595   3.224   3.397   3.515   3.681   5.567
+##   2.412   3.227   3.390   3.515   3.703   5.460
 ```
 
 ```r
@@ -435,14 +403,16 @@ plot_data <- data.frame(predict_lm_emp_leaving, hrTest$time_spend_company)
 names(plot_data)[1] <- "predicted"
 names(plot_data)[2] <- "actual"
 
+plot_data$predicted <- round(plot_data$predicted)
+
 correlation <- cor(plot_data)
 correlation
 ```
 
 ```
 ##           predicted    actual
-## predicted 1.0000000 0.2742372
-## actual    0.2742372 1.0000000
+## predicted 1.0000000 0.2653889
+## actual    0.2653889 1.0000000
 ```
 
 ```r
@@ -451,7 +421,7 @@ correlation[1,2]
 ```
 
 ```
-## [1] 0.2742372
+## [1] 0.2653889
 ```
 
 
@@ -464,7 +434,7 @@ round(sse, digits = 2)
 ```
 
 ```
-## [1] 5926.38
+## [1] 5886.96
 ```
 
 ```r
@@ -474,9 +444,9 @@ round(rmse, digits = 2)
 ```
 
 ```
-## [1] 1.41
+## [1] 1.4
 ```
-####_lm_time_spend_mthly_hrs_ prediction has an 'Root mean squared errors' 1.41 and correlation coefficient of 0.27
+####_lm_time_spend_mthly_hrs_ prediction has an 'Root mean squared errors' 1.4 and correlation coefficient of 0.27
 
 ###Logistic Regression
 Lets build a model to predict if the employee will leave
@@ -540,52 +510,87 @@ summary(log_model)
 ## 
 ## Deviance Residuals: 
 ##     Min       1Q   Median       3Q      Max  
-## -0.8249  -0.2554  -0.1079   0.1704   1.1495  
+## -2.9440  -0.4501  -0.1985  -0.0488   3.3761  
 ## 
 ## Coefficients:
-##                         Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)            0.3479630  0.0271127  12.834  < 2e-16 ***
-## satisfaction_level    -0.6274304  0.0141424 -44.365  < 2e-16 ***
-## Work_accident         -0.1561928  0.0098761 -15.815  < 2e-16 ***
-## salarylow              0.2082899  0.0132966  15.665  < 2e-16 ***
-## salarymedium           0.1327789  0.0133519   9.945  < 2e-16 ***
-## time_spend_company     0.0374300  0.0024524  15.262  < 2e-16 ***
-## number_project        -0.0324449  0.0031550 -10.283  < 2e-16 ***
-## average_montly_hours   0.0006856  0.0000763   8.985  < 2e-16 ***
-## promotion_last_5years -0.1196571  0.0237601  -5.036 4.82e-07 ***
-## depthr                 0.0317380  0.0219473   1.446  0.14818    
-## deptIT                -0.0244649  0.0195680  -1.250  0.21123    
-## deptmanagement        -0.0564528  0.0233344  -2.419  0.01557 *  
-## deptmarketing         -0.0035712  0.0211629  -0.169  0.86600    
-## deptproduct_mng       -0.0260903  0.0208911  -1.249  0.21174    
-## deptRandD             -0.0779857  0.0215138  -3.625  0.00029 ***
-## deptsales             -0.0010504  0.0168063  -0.062  0.95017    
-## deptsupport            0.0077418  0.0178222   0.434  0.66401    
-## depttechnical          0.0125827  0.0174527   0.721  0.47095    
+##                          Estimate Std. Error z value Pr(>|z|)    
+## (Intercept)            -2.6828342  0.2401230 -11.173  < 2e-16 ***
+## satisfaction_level     -1.7539349  0.1355339 -12.941  < 2e-16 ***
+## Work_accident1         -1.5383925  0.1115533 -13.791  < 2e-16 ***
+## salarylow               2.0035527  0.1562474  12.823  < 2e-16 ***
+## salarymedium            1.4026695  0.1572798   8.918  < 2e-16 ***
+## time_spend_company      0.3862053  0.0208829  18.494  < 2e-16 ***
+## number_project3        -5.1284886  0.1542371 -33.251  < 2e-16 ***
+## number_project4        -3.4627180  0.0976779 -35.450  < 2e-16 ***
+## number_project5        -2.4907441  0.0949466 -26.233  < 2e-16 ***
+## number_project6        -1.9716310  0.1173970 -16.795  < 2e-16 ***
+## number_project7         3.6884820  1.5495571   2.380 0.017296 *  
+## average_montly_hours    0.0104773  0.0007006  14.956  < 2e-16 ***
+## promotion_last_5years1 -1.5184458  0.3130866  -4.850 1.24e-06 ***
+## depthr                  0.2233547  0.1750196   1.276 0.201896    
+## deptIT                 -0.3576959  0.1586627  -2.254 0.024168 *  
+## deptmanagement         -0.6965299  0.2113314  -3.296 0.000981 ***
+## deptmarketing          -0.0962021  0.1736328  -0.554 0.579541    
+## deptproduct_mng        -0.3870671  0.1700673  -2.276 0.022848 *  
+## deptRandD              -0.7334726  0.1911180  -3.838 0.000124 ***
+## deptsales              -0.2587630  0.1336867  -1.936 0.052918 .  
+## deptsupport            -0.0595977  0.1427255  -0.418 0.676262    
+## depttechnical          -0.0698578  0.1388474  -0.503 0.614875    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## (Dispersion parameter for gaussian family taken to be 0.1429121)
+## (Dispersion parameter for binomial family taken to be 1)
 ## 
-##     Null deviance: 2174.2  on 11999  degrees of freedom
-## Residual deviance: 1712.4  on 11982  degrees of freedom
-## AIC: 10728
+##     Null deviance: 13172.7  on 11999  degrees of freedom
+## Residual deviance:  7490.5  on 11978  degrees of freedom
+## AIC: 7534.5
 ## 
-## Number of Fisher Scoring iterations: 4
+## Number of Fisher Scoring iterations: 16
 ```
 
 
 ```r
 #Lets test prediction using test data 
 testPredication <- predict(log_model,hrTest)
-#d <- table(hrTest$left, testPredication)
+confusionMatrix(testPredication,hrTest$left, dnn = c("Predicted","actual"), mode = "sens_spec")
+```
 
+```
+## Confusion Matrix and Statistics
+## 
+##          actual
+## Predicted    0    1
+##         0 2098  227
+##         1  187  487
+##                                           
+##                Accuracy : 0.862           
+##                  95% CI : (0.8491, 0.8741)
+##     No Information Rate : 0.7619          
+##     P-Value [Acc > NIR] : < 2e-16         
+##                                           
+##                   Kappa : 0.612           
+##  Mcnemar's Test P-Value : 0.05527         
+##                                           
+##             Sensitivity : 0.9182          
+##             Specificity : 0.6821          
+##          Pos Pred Value : 0.9024          
+##          Neg Pred Value : 0.7226          
+##              Prevalence : 0.7619          
+##          Detection Rate : 0.6996          
+##    Detection Prevalence : 0.7753          
+##       Balanced Accuracy : 0.8001          
+##                                           
+##        'Positive' Class : 0               
+## 
+```
+
+```r
 defaultSummary(data.frame(obs = hrTest$left, pred = testPredication))
 ```
 
 ```
-##      RMSE  Rsquared 
-## 0.3765634 0.2223748
+##  Accuracy     Kappa 
+## 0.8619540 0.6120213
 ```
 
 ###Cluster Analysis
@@ -621,7 +626,7 @@ wssplot(scale(hr_clust))
 ![](HR_Analysis_files/figure-html/cluster-1.png)<!-- -->
 
 ```
-## [1] 164978
+## [1] 149980
 ```
 
 ```r
@@ -648,7 +653,7 @@ clusplot(hr_clust,fit.km$cluster)
 ![](HR_Analysis_files/figure-html/cluster-4.png)<!-- -->
 
 ```r
-fit.km <- kmeans(scale(hr_clust), 10)
+fit.km <- kmeans(scale(hr_clust), 12)
 clusplot(hr_clust,fit.km$cluster)
 ```
 

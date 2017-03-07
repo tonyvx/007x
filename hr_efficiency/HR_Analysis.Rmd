@@ -27,78 +27,60 @@ myTheme <- theme( panel.grid = element_blank(), legend.key = element_blank(), pl
 
 ## Problem
 ###Factors important to retain performing employees
-* Why are our best and most experienced employees leaving prematurely? 
-We will analysing the data available in hand to identify avenues to improving hr efficiency.
-* Can we predict which valuable employees will leave next?
-We will be building a predictive model to determine how long employee would stay and their probability in leaving.
+* We will be analysing the data available in hand to identify avenues to improving hr efficiency.
+* We will be building a predictive model to determine how long employee would stay and their probability in leaving.
 
 ## Data Source
 https://www.kaggle.com/ludobenistant/hr-analytics
 
 https://www.kaggle.com/ludobenistant/hr-analytics/downloads/human-resources-analytics.zip
 
-Lets load the dataset
+#####Lets load the dataset
 ```{r Loading Data }
-  hr <- read.csv("./HR_comma_sep.csv", header = TRUE, stringsAsFactors = FALSE)
+hr <- read.csv("./HR_comma_sep.csv", header = TRUE, stringsAsFactors = FALSE)
+summary(hr)
 ```
 
-#####Lets look at the fields in the dataset
-
-* _satisfaction_level_ - Level of satisfaction (0-1)
-* _last_evaluation_ - Evaluation of employee performance (0-1)
-* _number_project_ - Number of projects completed while at work
-* _average_montly_hours_ - Average monthly hours at workplace
-* _time_spend_company_ - Number of years spent in the company
+* _satisfaction_level_ - Employee Level of satisfaction. It ranges from __0 (low satisfaction)__ to __1 (high satisfaction)__
+* _last_evaluation_ - Latest performance evaluation rating of employee. It ranges from __0 (low rating)__ to __1 (high rating)__
+* _number_project_ - Number of projects completed while at work. It varies from __2__ to __7__ projects, on an average an employee has worked on __4__ projects.
+* _average_montly_hours_ - Average monthly work hours at workplace. It varies from __96 hrs__ to __310 hrs__ with a mean of __201 hrs__ per month.
+* _time_spend_company_ - Number of years spent in the company. It ranges from __2__ years to __10__ years, with an average of around __4__ years until now or until they left.
 * _Work_accident_ - Whether the employee had a workplace accident
-* _left_ - Whether the employee left the workplace or not (1 or 0) 
-* _promotion_last_5years_ - Whether the employee was promoted in the last five years
-* _sales_ - Department in which they work for
-* _salary_ - Salary (High, medium, Low)
+* _left_ - Whether the employee left the workplace or not. __1__ means __left__ and __0__ means still with company. Probability of leaving is __0.23__.
+* _promotion_last_5years_ - Whether the employee was promoted in the last five years. __1__ means promoted and __0__ means no promotion in last 5 years. Probability of promotion in last 5 years is __0.02__.
 
-Lets analyze the structure of dataset
-```{r data_str}
-str(hr)
+
+* _sales_ - Department in which they work for. _accounting_, _hr_, _IT_, _management_,  _marketing_, _product_mng_, _RandD_, _sales_, _support_, _technical_ are various departments employees belong to.
+```{r summary_sales }
+summary(as.factor(hr$sales))
 ```
 
-####Observations
-* Fields _number_project_, _promotion_last_5years_, _left_, _Work_accident_, _sales_ have discrete values.
-
-```{r salary_str}
-str(as.factor(hr$salary))
+* _salary_ - Salary as high, medium & low.
+```{r summary_salary}
+summary(as.factor(hr$salary))
 ```
 
-####Observations
-* Field _salary_ is also discrete with "high", "medium" & "low". Also looks like "low" is assigned 2, "medium" is assigned 3 and "high" is assigned 1.
-
-Lets look at all unique values for field 'sales'.
-```{r sales_str}
-unique(hr$sales)
-```
-
-####Observations
-* Field _sales_ does not seems to have sales figures but departments that employee belongs to.
-
-
-Lets look at the summary of the data set to see if there are no invalid data
-```{r }
-  summary(hr)
-```
-####Observations
-* All fields in the dataset have non-NA values. 
-
+* Fields _number_project_, _promotion_last_5years_, _left_, _Work_accident_, _sales_,_salary_ have discrete values.
+* Looking at the summary of the data set there are no bad data , 'blanks', 'NA', null etc.
 
 ## Data Wrangling
 
-Rename the _sales_ field to _dept_ and create seperate field salary_level 3: High, 2: Medium & 1: low
+Rename the _sales_ column to _dept_ and make columns _number_project_, _promotion_last_5years_, _left_, _Work_accident_, _sales_,_salary_ as factor
 ```{r}
+
+hr$number_project <- as.factor(hr$number_project)
+hr$promotion_last_5years <- as.factor(hr$promotion_last_5years)
+hr$left <- as.factor(hr$left)
+hr$Work_accident <- as.factor(hr$Work_accident)
+hr$sales <- as.factor(hr$sales)
+hr$salary <- as.factor(hr$salary)
+
 names(hr)[9] <- "dept"
-hr <- hr %>% mutate(salary_level = case_when(
-  .$salary == "high" ~ 3, 
-  .$salary == "medium" ~ 2, 
-  .$salary == "low" ~ 1))
+
 ```
 
-Lets look are structure once again
+Lets look are structure
 ```{r}
   str(hr)
 ```
@@ -109,53 +91,47 @@ Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _ave
 
 
 ```{r plot_data_exp_analysis}
-hr_left <- hr %>% filter(left == 1)
+hr_left <- hr
 
 satis_l <- hr_left %>% ggplot(aes(satisfaction_level)) +
-  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
-  scale_fill_gradient("Count", low = "green", high = "red") +
+  geom_histogram( binwidth = 0.05, aes(fill = left)) +
   labs(x = "satisfaction_level", y = "employees", title = "satisfaction level") + myTheme
 
-tm_spnd <- hr_left %>% ggplot(aes(time_spend_company)) +
-  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
-  scale_fill_gradient("Count", low = "green", high = "red") +
-  labs(x = "time_spend_company", y = "employees", title = "Time Spend in Company") + myTheme
-
 lst_eval <- hr_left %>% ggplot(aes(last_evaluation)) +
-  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
-  scale_fill_gradient("Count", low = "green", high = "red") +
+  geom_histogram( binwidth = 0.05, aes(fill = left)) +
   labs(x = "last_evaluation", y = "employees", title = "Last evaluation") + myTheme
 
+tm_spnd <- hr_left %>% ggplot(aes(time_spend_company)) +
+  geom_histogram( binwidth = 0.05, aes(fill = left)) +
+  labs(x = "time_spend_company", y = "employees", title = "Time Spend in Company") + myTheme
+
+
 mnthly_hrs <- hr_left %>% ggplot(aes(average_montly_hours)) +
-  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
-  scale_fill_gradient("Count", low = "green", high = "red") +
+  geom_histogram( binwidth = 0.05, aes(fill = left)) +
   labs(x = "average_montly_hours", y = "employees", title = "Average montly hours") + myTheme
 
 wrk_accdnt <- hr_left %>% ggplot(aes(Work_accident)) +
-  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
-  scale_fill_gradient("Count", low = "green", high = "red") +
+  geom_histogram( binwidth = 0.05, aes(fill = left), stat = "count") +
   labs(x = "Work_accident", y = "employees", title = "Work accident") + myTheme
 
-sal <- hr_left %>% ggplot(aes(salary_level)) +
-  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
-  scale_fill_gradient("Count", low = "green", high = "red") +
+sal <- hr_left %>% ggplot(aes(salary)) +
+  geom_histogram( binwidth = 0.05, aes(fill = left), stat = "count") +
   labs(x = "salary", y = "employees", title = "Salary") + myTheme
 
 nmbr_prj <- hr_left %>% ggplot(aes(as.numeric(number_project))) +
-  geom_histogram( binwidth = 0.05, aes(fill = ..count..)) +
-  scale_fill_gradient("Count", low = "green", high = "red") +
+  geom_histogram( binwidth = 0.05, aes(fill = left)) +
   labs(x = "number_project", y = "employees", title = "Number of projects") + myTheme
 
-grid.arrange(satis_l, tm_spnd, lst_eval,mnthly_hrs,wrk_accdnt,sal,nmbr_prj, nrow = 4)
+grid.arrange(satis_l, lst_eval, sal, tm_spnd, mnthly_hrs,nmbr_prj, wrk_accdnt, nrow = 3)
 ```
 
-####Notice high number of employees leaving the company 
-* had been with company for less than 3 years
-* had an evaluation rating less than 0.5
-* had an average monthly hours in work at less than 170 hrs
-* had 2 projects or less
+
 * Overall lower performing employees are leaving more. This warrants improvement in hiring process to avoid low performers
 * Aside from low performers, we can notice number of employees leaving creeeping up among mid to high performing. This is an area that needs to be also looked into for reduction in rate of attrition.  
+* Retention is higher for employees who have
+  + been with the company for 4 or less (3rd quartile)
+  + Average monthly hours of 245 hrs or less
+  + No work accident
 
 
 
@@ -255,6 +231,8 @@ plot_data <- data.frame(predict_lm_emp_leaving, hrTest$time_spend_company)
 names(plot_data)[1] <- "predicted"
 names(plot_data)[2] <- "actual"
 
+plot_data$predicted <- round(plot_data$predicted)
+
 correlation <- cor(plot_data)
 correlation
 
@@ -318,7 +296,7 @@ summary(log_model)
 ```{r}
 #Lets test prediction using test data 
 testPredication <- predict(log_model,hrTest)
-#d <- table(hrTest$left, testPredication)
+confusionMatrix(testPredication,hrTest$left, dnn = c("Predicted","actual"), mode = "sens_spec")
 
 defaultSummary(data.frame(obs = hrTest$left, pred = testPredication))
 ```
@@ -362,7 +340,7 @@ clusplot(hr_clust,fit.km$cluster)
 fit.km <- kmeans(scale(hr_clust), 7)
 clusplot(hr_clust,fit.km$cluster)
 
-fit.km <- kmeans(scale(hr_clust), 10)
+fit.km <- kmeans(scale(hr_clust), 12)
 clusplot(hr_clust,fit.km$cluster)
 ```
 
