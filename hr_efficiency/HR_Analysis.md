@@ -17,6 +17,7 @@ https://www.kaggle.com/ludobenistant/hr-analytics/downloads/human-resources-anal
 
 ```r
 hr <- read.csv("./HR_comma_sep.csv", header = TRUE, stringsAsFactors = FALSE)
+hr_corrplot = hr
 summary(hr)
 ```
 
@@ -118,6 +119,20 @@ Lets look are structure
 
 ## Data Exploration
 
+Lets look at correaltion between these various columns
+
+
+```r
+hr_corrplot$sales = as.numeric(as.factor(hr_corrplot$sales))
+hr_corrplot$salary = as.numeric(as.factor(hr_corrplot$salary))
+corrplot(hr_corrplot, color=TRUE)
+```
+
+![](HR_Analysis_files/figure-html/corr_plot-1.png)<!-- -->
+
+* There is strong correlation between _last_evaluation_, _number_project_, _average_monthly_hours_.
+* There is also strong correlation between _satisfaction_level_ & _left_.
+
 Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _average_monthly_hours_, _work_accident_, _salary_ and _number_project_
 
 
@@ -168,11 +183,11 @@ grid.arrange(satis_l, lst_eval, sal, tm_spnd, mnthly_hrs,nmbr_prj, wrk_accdnt, n
   + No work accident
 
 
-
 ##Regression Model
 
 ###Linear Regression
 Lets build a model to determine how long an employee will stay
+
 
 ####Train Data
 
@@ -341,7 +356,7 @@ _lm_time_spend_mthly_hrs_ has an R Squared of 0.0966995 and adjusted R-Squared o
 
 
 
-#####Based on anova and both R Squared and Adjusted R Squared model _lm_time_spend_mthly_hrs_ seems to be a better fit
+#####Based on anova and both R Squared and Adjusted R Squared model _lm_time_spend_mthly_hrs_ seems to be a better fit. However R-Squared is very low and close to 0, model is a poor fit.
 
 
 ###Predict using the model _lm_time_spend_mthly_hrs_
@@ -423,6 +438,8 @@ correlation[1,2]
 ```
 ## [1] 0.2653889
 ```
+
+The correlation coefficient is low __0.2653889__
 
 
 ```r
@@ -592,6 +609,7 @@ defaultSummary(data.frame(obs = hrTest$left, pred = testPredication))
 ##  Accuracy     Kappa 
 ## 0.8619540 0.6120213
 ```
+
 
 ###Cluster Analysis
 
