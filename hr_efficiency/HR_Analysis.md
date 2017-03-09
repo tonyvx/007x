@@ -614,6 +614,7 @@ defaultSummary(data.frame(obs = hrTest$left, pred = testPredication))
 ###Cluster Analysis
 
 ```r
+#lets identify optimum number of clusters
 wssplot <- function(data, nc = 15, seed = 1234) {
   wss <- (nrow(data) - 1) * sum(apply(data, 2, var))
   for (i in 2:nc) {
@@ -624,8 +625,7 @@ wssplot <- function(data, nc = 15, seed = 1234) {
        wss,
        type = "b",
        xlab = "Number of Clusters",
-       ylab = "Within groups sum of squares")
-  print(wss[1])
+       ylab = "Within groups sum of squares")   
 }
 
 #lets make all fields numeric
@@ -637,43 +637,31 @@ hr_clust$Work_accident <- as.numeric( hr_clust$Work_accident)
 hr_clust$left <- as.numeric(hr_clust$left)
 hr_clust$promotion_last_5years <- as.numeric(hr_clust$promotion_last_5years)
 
-#lets identify optimum number of clusters
 wssplot(scale(hr_clust))
 ```
 
-![](HR_Analysis_files/figure-html/cluster-1.png)<!-- -->
+![](HR_Analysis_files/figure-html/cluster1-1.png)<!-- -->
 
-```
-## [1] 149980
-```
 
 ```r
-# there are two turns one at 4 and another at 7
+# lets consider 9 clusters 
 
-fit.km <- kmeans(scale(hr_clust), 3)
+fit.km <- kmeans(scale(hr_clust), 9)
 clusplot(hr_clust,fit.km$cluster)
 ```
 
-![](HR_Analysis_files/figure-html/cluster-2.png)<!-- -->
+![](HR_Analysis_files/figure-html/clustering-1.png)<!-- -->
+
 
 ```r
-fit.km <- kmeans(scale(hr_clust), 4)
-clusplot(hr_clust,fit.km$cluster)
+# lets analyze 9 clusters 
+corrplot_cluster <- function(data, nc = 15) {
+  for (i in 1:nc) {
+  corrplot(data %>% filter(`fit.km$cluster` == i), color = TRUE)
+  }
+}
+corrplot_cluster(cbind(hr_clust, fit.km$cluster),nc = 9)
 ```
 
-![](HR_Analysis_files/figure-html/cluster-3.png)<!-- -->
-
-```r
-fit.km <- kmeans(scale(hr_clust), 7)
-clusplot(hr_clust,fit.km$cluster)
-```
-
-![](HR_Analysis_files/figure-html/cluster-4.png)<!-- -->
-
-```r
-fit.km <- kmeans(scale(hr_clust), 12)
-clusplot(hr_clust,fit.km$cluster)
-```
-
-![](HR_Analysis_files/figure-html/cluster-5.png)<!-- -->
+![](HR_Analysis_files/figure-html/cluster_analysis-1.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-2.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-3.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-4.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-5.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-6.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-7.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-8.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-9.png)<!-- -->
 
