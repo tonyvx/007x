@@ -137,13 +137,59 @@ nmbr_prj <- hr_left %>% ggplot(aes(as.numeric(number_project))) +
 grid.arrange(satis_l, lst_eval, sal, tm_spnd, mnthly_hrs,nmbr_prj, wrk_accdnt, nrow = 3)
 ```
 
-
 * Overall lower performing employees are leaving more. This warrants improvement in hiring process to avoid low performers
 * Aside from low performers, we can notice number of employees leaving creeeping up among mid to high performing. This is an area that needs to be also looked into for reduction in rate of attrition.  
 * Retention is higher for employees who have
   + been with the company for 4 or less (3rd quartile)
   + Average monthly hours of 245 hrs or less
   + No work accident
+
+
+###Cluster Analysis
+```{r cluster1}
+#lets identify optimum number of clusters
+wssplot <- function(data, nc = 15, seed = 1234) {
+  wss <- (nrow(data) - 1) * sum(apply(data, 2, var))
+  for (i in 2:nc) {
+    set.seed(seed)
+    wss[i] <- sum(kmeans(data, centers = i)$withinss)
+  }
+  plot(1:nc,
+       wss,
+       type = "b",
+       xlab = "Number of Clusters",
+       ylab = "Within groups sum of squares")   
+}
+
+#lets make all fields numeric
+hr_clust <- hr
+hr_clust$dept <- as.numeric( as.factor(hr_clust$dept))
+hr_clust$salary <- as.numeric( as.factor(hr_clust$salary))
+hr_clust$number_project <- as.numeric( hr_clust$number_project)
+hr_clust$Work_accident <- as.numeric( hr_clust$Work_accident)
+hr_clust$left <- as.numeric(hr_clust$left)
+hr_clust$promotion_last_5years <- as.numeric(hr_clust$promotion_last_5years)
+
+wssplot(scale(hr_clust))
+```
+
+```{r clustering}
+# lets consider 9 clusters 
+
+fit.km <- kmeans(scale(hr_clust), 9)
+clusplot(hr_clust,fit.km$cluster)
+```
+
+```{r cluster_analysis}
+# lets analyze 9 clusters 
+corrplot_cluster <- function(data, nc = 15) {
+  for (i in 1:nc) {
+  corrplot(data %>% filter(`fit.km$cluster` == i), color = TRUE)
+  }
+}
+corrplot_cluster(cbind(hr_clust, fit.km$cluster),nc = 9)
+```
+
 
 
 ##Regression Model
@@ -196,7 +242,6 @@ lm_model_anova
 _lm_time_spend_ has an R Squared of `r lm_time_spend_summary$r.squared` and adjusted R-Squared of `r lm_time_spend_summary$adj.r.squared`
 
 _lm_time_spend_mthly_hrs_ has an R Squared of `r lm_time_spend_mthly_hrs_summary$r.squared` and adjusted R-Squared of `r lm_time_spend_mthly_hrs_summary$adj.r.squared`
-
 
 
 #####Based on anova and both R Squared and Adjusted R Squared model _lm_time_spend_mthly_hrs_ seems to be a better fit. However R-Squared is very low and close to 0, model is a poor fit.
@@ -307,6 +352,7 @@ log_model <- train(left ~ satisfaction_level + Work_accident  + salary + time_sp
 summary(log_model)
 ```
 
+
 ```{r}
 #Lets test prediction using test data 
 testPredication <- predict(log_model,hrTest)
@@ -315,49 +361,13 @@ confusionMatrix(testPredication,hrTest$left, dnn = c("Predicted","actual"), mode
 defaultSummary(data.frame(obs = hrTest$left, pred = testPredication))
 ```
 
-
-###Cluster Analysis
-```{r cluster1}
-#lets identify optimum number of clusters
-wssplot <- function(data, nc = 15, seed = 1234) {
-  wss <- (nrow(data) - 1) * sum(apply(data, 2, var))
-  for (i in 2:nc) {
-    set.seed(seed)
-    wss[i] <- sum(kmeans(data, centers = i)$withinss)
-  }
-  plot(1:nc,
-       wss,
-       type = "b",
-       xlab = "Number of Clusters",
-       ylab = "Within groups sum of squares")   
-}
-
-#lets make all fields numeric
-hr_clust <- hr
-hr_clust$dept <- as.numeric( as.factor(hr_clust$dept))
-hr_clust$salary <- as.numeric( as.factor(hr_clust$salary))
-hr_clust$number_project <- as.numeric( hr_clust$number_project)
-hr_clust$Work_accident <- as.numeric( hr_clust$Work_accident)
-hr_clust$left <- as.numeric(hr_clust$left)
-hr_clust$promotion_last_5years <- as.numeric(hr_clust$promotion_last_5years)
-
-wssplot(scale(hr_clust))
-```
-
-```{r clustering}
-# lets consider 9 clusters 
-
-fit.km <- kmeans(scale(hr_clust), 9)
-clusplot(hr_clust,fit.km$cluster)
-```
-
-```{r cluster_analysis}
-# lets analyze 9 clusters 
-corrplot_cluster <- function(data, nc = 15) {
-  for (i in 1:nc) {
-  corrplot(data %>% filter(`fit.km$cluster` == i), color = TRUE)
-  }
-}
-corrplot_cluster(cbind(hr_clust, fit.km$cluster),nc = 9)
+```{r rf}
+library(doMC)
+registerDoMC(5)
+hrTrain_1 <- hrTrain [createDataPartition(y=hrTrain$left,p=0.3,list=FALSE),]
+rf_model<-train(left~.,data=hrTrain_1,method="rf",
+                trControl=trainControl(method="cv",number=5),
+                prox=TRUE,allowParallel=TRUE)
+print(rf_model)
 ```
 

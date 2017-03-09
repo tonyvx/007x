@@ -174,13 +174,68 @@ grid.arrange(satis_l, lst_eval, sal, tm_spnd, mnthly_hrs,nmbr_prj, wrk_accdnt, n
 
 ![](HR_Analysis_files/figure-html/plot_data_exp_analysis-1.png)<!-- -->
 
-
 * Overall lower performing employees are leaving more. This warrants improvement in hiring process to avoid low performers
 * Aside from low performers, we can notice number of employees leaving creeeping up among mid to high performing. This is an area that needs to be also looked into for reduction in rate of attrition.  
 * Retention is higher for employees who have
   + been with the company for 4 or less (3rd quartile)
   + Average monthly hours of 245 hrs or less
   + No work accident
+
+
+###Cluster Analysis
+
+```r
+#lets identify optimum number of clusters
+wssplot <- function(data, nc = 15, seed = 1234) {
+  wss <- (nrow(data) - 1) * sum(apply(data, 2, var))
+  for (i in 2:nc) {
+    set.seed(seed)
+    wss[i] <- sum(kmeans(data, centers = i)$withinss)
+  }
+  plot(1:nc,
+       wss,
+       type = "b",
+       xlab = "Number of Clusters",
+       ylab = "Within groups sum of squares")   
+}
+
+#lets make all fields numeric
+hr_clust <- hr
+hr_clust$dept <- as.numeric( as.factor(hr_clust$dept))
+hr_clust$salary <- as.numeric( as.factor(hr_clust$salary))
+hr_clust$number_project <- as.numeric( hr_clust$number_project)
+hr_clust$Work_accident <- as.numeric( hr_clust$Work_accident)
+hr_clust$left <- as.numeric(hr_clust$left)
+hr_clust$promotion_last_5years <- as.numeric(hr_clust$promotion_last_5years)
+
+wssplot(scale(hr_clust))
+```
+
+![](HR_Analysis_files/figure-html/cluster1-1.png)<!-- -->
+
+
+```r
+# lets consider 9 clusters 
+
+fit.km <- kmeans(scale(hr_clust), 9)
+clusplot(hr_clust,fit.km$cluster)
+```
+
+![](HR_Analysis_files/figure-html/clustering-1.png)<!-- -->
+
+
+```r
+# lets analyze 9 clusters 
+corrplot_cluster <- function(data, nc = 15) {
+  for (i in 1:nc) {
+  corrplot(data %>% filter(`fit.km$cluster` == i), color = TRUE)
+  }
+}
+corrplot_cluster(cbind(hr_clust, fit.km$cluster),nc = 9)
+```
+
+![](HR_Analysis_files/figure-html/cluster_analysis-1.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-2.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-3.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-4.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-5.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-6.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-7.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-8.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-9.png)<!-- -->
+
 
 
 ##Regression Model
@@ -353,7 +408,6 @@ lm_model_anova
 _lm_time_spend_ has an R Squared of 0.0961402 and adjusted R-Squared of 0.0945555
 
 _lm_time_spend_mthly_hrs_ has an R Squared of 0.0966995 and adjusted R-Squared of 0.0950403
-
 
 
 #####Based on anova and both R Squared and Adjusted R Squared model _lm_time_spend_mthly_hrs_ seems to be a better fit. However R-Squared is very low and close to 0, model is a poor fit.
@@ -566,6 +620,7 @@ summary(log_model)
 ```
 
 
+
 ```r
 #Lets test prediction using test data 
 testPredication <- predict(log_model,hrTest)
@@ -611,57 +666,34 @@ defaultSummary(data.frame(obs = hrTest$left, pred = testPredication))
 ```
 
 
-###Cluster Analysis
-
 ```r
-#lets identify optimum number of clusters
-wssplot <- function(data, nc = 15, seed = 1234) {
-  wss <- (nrow(data) - 1) * sum(apply(data, 2, var))
-  for (i in 2:nc) {
-    set.seed(seed)
-    wss[i] <- sum(kmeans(data, centers = i)$withinss)
-  }
-  plot(1:nc,
-       wss,
-       type = "b",
-       xlab = "Number of Clusters",
-       ylab = "Within groups sum of squares")   
-}
-
-#lets make all fields numeric
-hr_clust <- hr
-hr_clust$dept <- as.numeric( as.factor(hr_clust$dept))
-hr_clust$salary <- as.numeric( as.factor(hr_clust$salary))
-hr_clust$number_project <- as.numeric( hr_clust$number_project)
-hr_clust$Work_accident <- as.numeric( hr_clust$Work_accident)
-hr_clust$left <- as.numeric(hr_clust$left)
-hr_clust$promotion_last_5years <- as.numeric(hr_clust$promotion_last_5years)
-
-wssplot(scale(hr_clust))
+library(doMC)
+registerDoMC(5)
+hrTrain_1 <- hrTrain [createDataPartition(y=hrTrain$left,p=0.3,list=FALSE),]
+rf_model<-train(left~.,data=hrTrain_1,method="rf",
+                trControl=trainControl(method="cv",number=5),
+                prox=TRUE,allowParallel=TRUE)
+print(rf_model)
 ```
 
-![](HR_Analysis_files/figure-html/cluster1-1.png)<!-- -->
-
-
-```r
-# lets consider 9 clusters 
-
-fit.km <- kmeans(scale(hr_clust), 9)
-clusplot(hr_clust,fit.km$cluster)
 ```
-
-![](HR_Analysis_files/figure-html/clustering-1.png)<!-- -->
-
-
-```r
-# lets analyze 9 clusters 
-corrplot_cluster <- function(data, nc = 15) {
-  for (i in 1:nc) {
-  corrplot(data %>% filter(`fit.km$cluster` == i), color = TRUE)
-  }
-}
-corrplot_cluster(cbind(hr_clust, fit.km$cluster),nc = 9)
+## Random Forest 
+## 
+## 3601 samples
+##    9 predictor
+##    2 classes: '0', '1' 
+## 
+## No pre-processing
+## Resampling: Cross-Validated (5 fold) 
+## Summary of sample sizes: 2880, 2881, 2880, 2881, 2882 
+## Resampling results across tuning parameters:
+## 
+##   mtry  Accuracy   Kappa    
+##    2    0.9461315  0.8400073
+##   12    0.9805644  0.9452727
+##   22    0.9791759  0.9416091
+## 
+## Accuracy was used to select the optimal model using  the largest value.
+## The final value used for the model was mtry = 12.
 ```
-
-![](HR_Analysis_files/figure-html/cluster_analysis-1.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-2.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-3.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-4.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-5.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-6.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-7.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-8.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-9.png)<!-- -->
 
