@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2017-03-09" />
+<meta name="date" content="2017-03-10" />
 
 <title>HR Efficiency Analysis</title>
 
@@ -117,7 +117,7 @@ $(document).ready(function () {
 
 
 <h1 class="title toc-ignore">HR Efficiency Analysis</h1>
-<h4 class="date"><em>2017-03-09</em></h4>
+<h4 class="date"><em>2017-03-10</em></h4>
 
 </div>
 
@@ -228,28 +228,33 @@ corrplot(corr_plot_data, color = TRUE)</code></pre>
 <li>There is strong correlation between <em>last_evaluation</em>, <em>number_project</em>, <em>average_monthly_hours</em>.</li>
 <li>There is also strong correlation between <em>satisfaction_level</em> &amp; <em>left</em>.</li>
 </ul>
-<pre class="r"><code>#Work_accident vs left
-conf_matrix &lt;- confusionMatrix(hr$left,hr$Work_accident , dnn = c(&quot;Left&quot;,&quot;Work_accident&quot;), mode = &quot;sens_spec&quot;)
-conf_matrix$table</code></pre>
-<pre><code>##     Work_accident
-## Left    0    1
-##    0 9428 2000
-##    1 3402  169</code></pre>
+<pre class="r"><code>fetch_attrition_rate &lt;- function(left, attr, attr_name){
+  print(attr_name)
+  attrition_matrix &lt;- data.frame(table(left, attr) ) %&gt;% tidyr::spread(left, Freq)
+  names(attrition_matrix)[1] &lt;- attr_name
+  names(attrition_matrix)[2] &lt;- &quot;Emp_Remain&quot;
+  names(attrition_matrix)[3] &lt;- &quot;Emp_Left&quot;
+  
+  attrition_matrix &lt;- attrition_matrix %&gt;% mutate(rate = Emp_Left/Emp_Remain )
+  
+  #attrition by dept
+  attrition_matrix %&gt;% arrange(desc(rate))
+}
+#Work_accident vs left
+fetch_attrition_rate(hr$left,hr$Work_accident ,&quot;Work_accident&quot;)</code></pre>
+<pre><code>## [1] &quot;Work_accident&quot;</code></pre>
+<pre><code>##   Work_accident Emp_Remain Emp_Left      rate
+## 1             0       9428     3402 0.3608401
+## 2             1       2000      169 0.0845000</code></pre>
 <ul>
-<li>Specificity is low - Proportion of folks leaving due to accident is lower 0.0779161</li>
-<li>Sensitivity is high - Indicates large proportion of accident continue to stay 0.7348402</li>
-<li>Overall Work_accident is not top reason for leaving</li>
+<li>Propability of folks leaving due to accident is low 0.08</li>
+<li>Indicates 0.36 probaility of employees leaving among employess who did not have accident.</li>
+<li>Overall Work_accident does not seem to have very low correlation with employees’ leaving</li>
 </ul>
 <pre class="r"><code>#dept vs left
-attrition_matrix &lt;- data.frame(table(hr$left, hr$dept) ) %&gt;% tidyr::spread(Var1, Freq)
-names(attrition_matrix)[1] &lt;- &quot;dept&quot;
-names(attrition_matrix)[2] &lt;- &quot;Emp_Remain&quot;
-names(attrition_matrix)[3] &lt;- &quot;Emp_Left&quot;
 
-attrition_matrix &lt;- attrition_matrix %&gt;% mutate(rate = Emp_Left/Emp_Remain )
-
-#attrition by dept
-attrition_matrix %&gt;% arrange(desc(rate))</code></pre>
+fetch_attrition_rate(hr$left, hr$dept,&quot;dept&quot;)</code></pre>
+<pre><code>## [1] &quot;dept&quot;</code></pre>
 <pre><code>##           dept Emp_Remain Emp_Left      rate
 ## 1           hr        524      215 0.4103053
 ## 2   accounting        563      204 0.3623446
@@ -265,16 +270,9 @@ attrition_matrix %&gt;% arrange(desc(rate))</code></pre>
 <li>hr dept with 0.41 has highest attrition and management dept at 0.16 has least attrition</li>
 </ul>
 <pre class="r"><code>#salary vs left
-attrition_matrix &lt;- data.frame(table(hr$left, hr$salary) ) %&gt;% tidyr::spread(Var1, Freq)
-names(attrition_matrix)[1] &lt;- &quot;Salary&quot;
-names(attrition_matrix)[2] &lt;- &quot;Emp_Remain&quot;
-names(attrition_matrix)[3] &lt;- &quot;Emp_Left&quot;
-
-attrition_matrix &lt;- attrition_matrix %&gt;% mutate(rate = Emp_Left/Emp_Remain )
-
-#attrition by salary level
-attrition_matrix %&gt;% arrange(desc(rate))</code></pre>
-<pre><code>##   Salary Emp_Remain Emp_Left       rate
+fetch_attrition_rate(hr$left, hr$salary,&quot;salary&quot;)</code></pre>
+<pre><code>## [1] &quot;salary&quot;</code></pre>
+<pre><code>##   salary Emp_Remain Emp_Left       rate
 ## 1    low       5144     2172 0.42223950
 ## 2 medium       5129     1317 0.25677520
 ## 3   high       1155       82 0.07099567</code></pre>
@@ -282,16 +280,15 @@ attrition_matrix %&gt;% arrange(desc(rate))</code></pre>
 <li>Emplyees with low salary has the highest attrition and attrition tapers for employees in medium and high salary brackets.</li>
 </ul>
 <pre class="r"><code>#promotion_last_5years vs left
-conf_matrix &lt;- confusionMatrix(hr$left,hr$promotion_last_5years, dnn= c(&quot;Left&quot;,&quot;promotion_last_5years&quot;), mode = &quot;sens_spec&quot;)
-conf_matrix$table</code></pre>
-<pre><code>##     promotion_last_5years
-## Left     0     1
-##    0 11128   300
-##    1  3552    19</code></pre>
+fetch_attrition_rate(hr$left, hr$promotion_last_5years,&quot;promotion_last_5years&quot;)</code></pre>
+<pre><code>## [1] &quot;promotion_last_5years&quot;</code></pre>
+<pre><code>##   promotion_last_5years Emp_Remain Emp_Left       rate
+## 1                     0      11128     3552 0.31919482
+## 2                     1        300       19 0.06333333</code></pre>
 <ul>
-<li><p>Specificity is low - Proportion of folks leaving is low among folks with promotion 0.0595611</p></li>
-<li>Sensitivity is high - Indicates high percent of employees who did not get promoted yet continued to stay 0.7580381</li>
-<li><p>Overall promotion_last_5years is not top reason for leaving</p></li>
+<li>Proportion of folks leaving is low among folks with promotion 0.06.</li>
+<li>Indicates 0.31 is probability of employees leaving who did not get promoted yet</li>
+<li>Overall promotion_last_5years has low correlation for employees’ leaving</li>
 </ul>
 <p>Lets analyze <em>satisfaction_level</em>, <em>time_spend_company</em>, <em>last_evaluation</em>, <em>average_monthly_hours</em>, <em>work_accident</em>, <em>salary</em> and <em>number_project</em></p>
 <pre class="r"><code>satis_l &lt;- hr %&gt;% ggplot(aes(satisfaction_level)) +

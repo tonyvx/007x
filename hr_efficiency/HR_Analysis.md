@@ -137,33 +137,44 @@ corrplot(corr_plot_data, color = TRUE)
 
 
 ```r
+fetch_attrition_rate <- function(left, attr, attr_name){
+  print(attr_name)
+  attrition_matrix <- data.frame(table(left, attr) ) %>% tidyr::spread(left, Freq)
+  names(attrition_matrix)[1] <- attr_name
+  names(attrition_matrix)[2] <- "Emp_Remain"
+  names(attrition_matrix)[3] <- "Emp_Left"
+  
+  attrition_matrix <- attrition_matrix %>% mutate(rate = Emp_Left/Emp_Remain )
+  
+  #attrition by dept
+  attrition_matrix %>% arrange(desc(rate))
+}
 #Work_accident vs left
-conf_matrix <- confusionMatrix(hr$left,hr$Work_accident , dnn = c("Left","Work_accident"), mode = "sens_spec")
-conf_matrix$table
+fetch_attrition_rate(hr$left,hr$Work_accident ,"Work_accident")
 ```
 
 ```
-##     Work_accident
-## Left    0    1
-##    0 9428 2000
-##    1 3402  169
+## [1] "Work_accident"
 ```
-* Specificity is low - Proportion of folks leaving due to accident is lower 0.0779161
-* Sensitivity is high - Indicates large proportion of accident continue to stay 0.7348402
-* Overall Work_accident is not top reason for leaving
+
+```
+##   Work_accident Emp_Remain Emp_Left      rate
+## 1             0       9428     3402 0.3608401
+## 2             1       2000      169 0.0845000
+```
+* Propability of folks leaving due to accident is low 0.08
+* Indicates 0.36 probaility of employees leaving among employess who did not have accident.
+* Overall Work_accident does not seem to have very low correlation with employees' leaving
 
 
 ```r
 #dept vs left
-attrition_matrix <- data.frame(table(hr$left, hr$dept) ) %>% tidyr::spread(Var1, Freq)
-names(attrition_matrix)[1] <- "dept"
-names(attrition_matrix)[2] <- "Emp_Remain"
-names(attrition_matrix)[3] <- "Emp_Left"
 
-attrition_matrix <- attrition_matrix %>% mutate(rate = Emp_Left/Emp_Remain )
+fetch_attrition_rate(hr$left, hr$dept,"dept")
+```
 
-#attrition by dept
-attrition_matrix %>% arrange(desc(rate))
+```
+## [1] "dept"
 ```
 
 ```
@@ -184,19 +195,15 @@ attrition_matrix %>% arrange(desc(rate))
 
 ```r
 #salary vs left
-attrition_matrix <- data.frame(table(hr$left, hr$salary) ) %>% tidyr::spread(Var1, Freq)
-names(attrition_matrix)[1] <- "Salary"
-names(attrition_matrix)[2] <- "Emp_Remain"
-names(attrition_matrix)[3] <- "Emp_Left"
-
-attrition_matrix <- attrition_matrix %>% mutate(rate = Emp_Left/Emp_Remain )
-
-#attrition by salary level
-attrition_matrix %>% arrange(desc(rate))
+fetch_attrition_rate(hr$left, hr$salary,"salary")
 ```
 
 ```
-##   Salary Emp_Remain Emp_Left       rate
+## [1] "salary"
+```
+
+```
+##   salary Emp_Remain Emp_Left       rate
 ## 1    low       5144     2172 0.42223950
 ## 2 medium       5129     1317 0.25677520
 ## 3   high       1155       82 0.07099567
@@ -207,21 +214,22 @@ attrition_matrix %>% arrange(desc(rate))
 
 ```r
 #promotion_last_5years vs left
-conf_matrix <- confusionMatrix(hr$left,hr$promotion_last_5years, dnn= c("Left","promotion_last_5years"), mode = "sens_spec")
-conf_matrix$table
+fetch_attrition_rate(hr$left, hr$promotion_last_5years,"promotion_last_5years")
 ```
 
 ```
-##     promotion_last_5years
-## Left     0     1
-##    0 11128   300
-##    1  3552    19
+## [1] "promotion_last_5years"
 ```
 
-* Specificity is low - Proportion of folks leaving is low among folks with promotion 0.0595611
+```
+##   promotion_last_5years Emp_Remain Emp_Left       rate
+## 1                     0      11128     3552 0.31919482
+## 2                     1        300       19 0.06333333
+```
 
-* Sensitivity is high - Indicates high percent of employees who did not get promoted yet continued to stay 0.7580381
-* Overall promotion_last_5years is not top reason for leaving 
+* Proportion of folks leaving is low among folks with promotion 0.06.
+* Indicates 0.31 is probability of employees leaving who did not get promoted yet
+* Overall promotion_last_5years has low correlation for employees' leaving 
 
 Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _average_monthly_hours_, _work_accident_, _salary_ and _number_project_
 
