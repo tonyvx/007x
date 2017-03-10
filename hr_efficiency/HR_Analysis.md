@@ -257,7 +257,7 @@ nmbr_prj <- hr %>% ggplot(aes(as.numeric(number_project))) +
   geom_histogram( binwidth = 1, aes(fill = left)) +
   labs(x = "number_project", y = "employees", title = "Number of projects") + myTheme
 
-grid.arrange(satis_l, lst_eval, sal, tm_spnd, mnthly_hrs,nmbr_prj, wrk_accdnt, nrow = 3)
+grid.arrange(satis_l, lst_eval, sal, tm_spnd, mnthly_hrs,nmbr_prj, wrk_accdnt, nrow = 4)
 ```
 
 ![](HR_Analysis_files/figure-html/plot_data_exp_analysis-1.png)<!-- -->
