@@ -38,7 +38,7 @@ https://www.kaggle.com/ludobenistant/hr-analytics/downloads/human-resources-anal
 #####Lets load the dataset
 ```{r Loading Data }
 hr <- read.csv("./HR_comma_sep.csv", header = TRUE, stringsAsFactors = FALSE)
-hr_corrplot = hr
+#hr_corrplot = hr
 summary(hr)
 ```
 
@@ -91,47 +91,97 @@ Lets look are structure
 Lets look at correaltion between these various columns
 
 ```{r corr_plot}
-hr_corrplot$sales = as.numeric(as.factor(hr_corrplot$sales))
-hr_corrplot$salary = as.numeric(as.factor(hr_corrplot$salary))
-corrplot(hr_corrplot, color=TRUE)
+corr_plot_data <- hr %>%  dplyr::select(satisfaction_level,last_evaluation,average_montly_hours,number_project,time_spend_company,left)
+
+corr_plot_data$number_project <- as.numeric(corr_plot_data$number_project)
+corr_plot_data$left <- as.numeric(corr_plot_data$left)
+corrplot(corr_plot_data, color = TRUE)
 ```
 
 * There is strong correlation between _last_evaluation_, _number_project_, _average_monthly_hours_.
 * There is also strong correlation between _satisfaction_level_ & _left_.
 
+```{r accident_left}
+#Work_accident vs left
+conf_matrix <- confusionMatrix(hr$left,hr$Work_accident , dnn = c("Left","Work_accident"), mode = "sens_spec")
+conf_matrix$table
+```
+* Specificity is low - Proportion of folks leaving due to accident is lower `r conf_matrix$byClass["Specificity"]`
+* Sensitivity is high - Indicates large proportion of accident continue to stay `r conf_matrix$byClass["Sensitivity"]`
+* Overall Work_accident is not top reason for leaving
+
+```{r dept_left}
+#dept vs left
+attrition_matrix <- data.frame(table(hr$left, hr$dept) ) %>% tidyr::spread(Var1, Freq)
+names(attrition_matrix)[1] <- "dept"
+names(attrition_matrix)[2] <- "Emp_Remain"
+names(attrition_matrix)[3] <- "Emp_Left"
+
+attrition_matrix <- attrition_matrix %>% mutate(rate = Emp_Left/Emp_Remain )
+
+#attrition by dept
+attrition_matrix %>% arrange(desc(rate))
+```
+* hr dept with 0.41 has highest attrition and management dept at 0.16 has least attrition
+
+```{r salary_left }
+#salary vs left
+attrition_matrix <- data.frame(table(hr$left, hr$salary) ) %>% tidyr::spread(Var1, Freq)
+names(attrition_matrix)[1] <- "Salary"
+names(attrition_matrix)[2] <- "Emp_Remain"
+names(attrition_matrix)[3] <- "Emp_Left"
+
+attrition_matrix <- attrition_matrix %>% mutate(rate = Emp_Left/Emp_Remain )
+
+#attrition by salary level
+attrition_matrix %>% arrange(desc(rate))
+```
+* Emplyees with low salary has the highest attrition and attrition tapers for employees in medium and high salary brackets.
+
+
+```{r promotions_left}
+#promotion_last_5years vs left
+conf_matrix <- confusionMatrix(hr$left,hr$promotion_last_5years, dnn= c("Left","promotion_last_5years"), mode = "sens_spec")
+conf_matrix$table
+```
+
+* Specificity is low - Proportion of folks leaving is low among folks with promotion `r conf_matrix$byClass["Specificity"]`
+
+* Sensitivity is high - Indicates high percent of employees who did not get promoted yet continued to stay `r conf_matrix$byClass["Sensitivity"]`
+* Overall promotion_last_5years is not top reason for leaving 
+
 Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _average_monthly_hours_, _work_accident_, _salary_ and _number_project_
 
 
 ```{r plot_data_exp_analysis}
-hr_left <- hr
 
-satis_l <- hr_left %>% ggplot(aes(satisfaction_level)) +
+satis_l <- hr %>% ggplot(aes(satisfaction_level)) +
   geom_histogram( binwidth = 0.05, aes(fill = left)) +
   labs(x = "satisfaction_level", y = "employees", title = "satisfaction level") + myTheme
 
-lst_eval <- hr_left %>% ggplot(aes(last_evaluation)) +
+lst_eval <- hr %>% ggplot(aes(last_evaluation)) +
   geom_histogram( binwidth = 0.05, aes(fill = left)) +
   labs(x = "last_evaluation", y = "employees", title = "Last evaluation") + myTheme
 
-tm_spnd <- hr_left %>% ggplot(aes(time_spend_company)) +
-  geom_histogram( binwidth = 0.05, aes(fill = left)) +
+tm_spnd <- hr %>% ggplot(aes(time_spend_company)) +
+  geom_histogram( binwidth = 1, aes(fill = left)) +
   labs(x = "time_spend_company", y = "employees", title = "Time Spend in Company") + myTheme
 
 
-mnthly_hrs <- hr_left %>% ggplot(aes(average_montly_hours)) +
-  geom_histogram( binwidth = 0.05, aes(fill = left)) +
+mnthly_hrs <- hr %>% ggplot(aes(average_montly_hours)) +
+  geom_histogram( binwidth = 1, aes(fill = left)) +
   labs(x = "average_montly_hours", y = "employees", title = "Average montly hours") + myTheme
 
-wrk_accdnt <- hr_left %>% ggplot(aes(Work_accident)) +
+wrk_accdnt <- hr %>% ggplot(aes(Work_accident)) +
   geom_histogram( binwidth = 0.05, aes(fill = left), stat = "count") +
   labs(x = "Work_accident", y = "employees", title = "Work accident") + myTheme
 
-sal <- hr_left %>% ggplot(aes(salary)) +
+sal <- hr %>% ggplot(aes(salary)) +
   geom_histogram( binwidth = 0.05, aes(fill = left), stat = "count") +
   labs(x = "salary", y = "employees", title = "Salary") + myTheme
 
-nmbr_prj <- hr_left %>% ggplot(aes(as.numeric(number_project))) +
-  geom_histogram( binwidth = 0.05, aes(fill = left)) +
+nmbr_prj <- hr %>% ggplot(aes(as.numeric(number_project))) +
+  geom_histogram( binwidth = 1, aes(fill = left)) +
   labs(x = "number_project", y = "employees", title = "Number of projects") + myTheme
 
 grid.arrange(satis_l, lst_eval, sal, tm_spnd, mnthly_hrs,nmbr_prj, wrk_accdnt, nrow = 3)
@@ -369,5 +419,6 @@ rf_model<-train(left~.,data=hrTrain_1,method="rf",
                 trControl=trainControl(method="cv",number=5),
                 prox=TRUE,allowParallel=TRUE)
 print(rf_model)
+
 ```
 

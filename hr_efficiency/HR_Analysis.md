@@ -17,7 +17,7 @@ https://www.kaggle.com/ludobenistant/hr-analytics/downloads/human-resources-anal
 
 ```r
 hr <- read.csv("./HR_comma_sep.csv", header = TRUE, stringsAsFactors = FALSE)
-hr_corrplot = hr
+#hr_corrplot = hr
 summary(hr)
 ```
 
@@ -123,9 +123,11 @@ Lets look at correaltion between these various columns
 
 
 ```r
-hr_corrplot$sales = as.numeric(as.factor(hr_corrplot$sales))
-hr_corrplot$salary = as.numeric(as.factor(hr_corrplot$salary))
-corrplot(hr_corrplot, color=TRUE)
+corr_plot_data <- hr %>%  dplyr::select(satisfaction_level,last_evaluation,average_montly_hours,number_project,time_spend_company,left)
+
+corr_plot_data$number_project <- as.numeric(corr_plot_data$number_project)
+corr_plot_data$left <- as.numeric(corr_plot_data$left)
+corrplot(corr_plot_data, color = TRUE)
 ```
 
 ![](HR_Analysis_files/figure-html/corr_plot-1.png)<!-- -->
@@ -133,40 +135,126 @@ corrplot(hr_corrplot, color=TRUE)
 * There is strong correlation between _last_evaluation_, _number_project_, _average_monthly_hours_.
 * There is also strong correlation between _satisfaction_level_ & _left_.
 
+
+```r
+#Work_accident vs left
+conf_matrix <- confusionMatrix(hr$left,hr$Work_accident , dnn = c("Left","Work_accident"), mode = "sens_spec")
+conf_matrix$table
+```
+
+```
+##     Work_accident
+## Left    0    1
+##    0 9428 2000
+##    1 3402  169
+```
+* Specificity is low - Proportion of folks leaving due to accident is lower 0.0779161
+* Sensitivity is high - Indicates large proportion of accident continue to stay 0.7348402
+* Overall Work_accident is not top reason for leaving
+
+
+```r
+#dept vs left
+attrition_matrix <- data.frame(table(hr$left, hr$dept) ) %>% tidyr::spread(Var1, Freq)
+names(attrition_matrix)[1] <- "dept"
+names(attrition_matrix)[2] <- "Emp_Remain"
+names(attrition_matrix)[3] <- "Emp_Left"
+
+attrition_matrix <- attrition_matrix %>% mutate(rate = Emp_Left/Emp_Remain )
+
+#attrition by dept
+attrition_matrix %>% arrange(desc(rate))
+```
+
+```
+##           dept Emp_Remain Emp_Left      rate
+## 1           hr        524      215 0.4103053
+## 2   accounting        563      204 0.3623446
+## 3    technical       2023      697 0.3445378
+## 4      support       1674      555 0.3315412
+## 5        sales       3126     1014 0.3243762
+## 6    marketing        655      203 0.3099237
+## 7           IT        954      273 0.2861635
+## 8  product_mng        704      198 0.2812500
+## 9        RandD        666      121 0.1816817
+## 10  management        539       91 0.1688312
+```
+* hr dept with 0.41 has highest attrition and management dept at 0.16 has least attrition
+
+
+```r
+#salary vs left
+attrition_matrix <- data.frame(table(hr$left, hr$salary) ) %>% tidyr::spread(Var1, Freq)
+names(attrition_matrix)[1] <- "Salary"
+names(attrition_matrix)[2] <- "Emp_Remain"
+names(attrition_matrix)[3] <- "Emp_Left"
+
+attrition_matrix <- attrition_matrix %>% mutate(rate = Emp_Left/Emp_Remain )
+
+#attrition by salary level
+attrition_matrix %>% arrange(desc(rate))
+```
+
+```
+##   Salary Emp_Remain Emp_Left       rate
+## 1    low       5144     2172 0.42223950
+## 2 medium       5129     1317 0.25677520
+## 3   high       1155       82 0.07099567
+```
+* Emplyees with low salary has the highest attrition and attrition tapers for employees in medium and high salary brackets.
+
+
+
+```r
+#promotion_last_5years vs left
+conf_matrix <- confusionMatrix(hr$left,hr$promotion_last_5years, dnn= c("Left","promotion_last_5years"), mode = "sens_spec")
+conf_matrix$table
+```
+
+```
+##     promotion_last_5years
+## Left     0     1
+##    0 11128   300
+##    1  3552    19
+```
+
+* Specificity is low - Proportion of folks leaving is low among folks with promotion 0.0595611
+
+* Sensitivity is high - Indicates high percent of employees who did not get promoted yet continued to stay 0.7580381
+* Overall promotion_last_5years is not top reason for leaving 
+
 Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _average_monthly_hours_, _work_accident_, _salary_ and _number_project_
 
 
 
 ```r
-hr_left <- hr
-
-satis_l <- hr_left %>% ggplot(aes(satisfaction_level)) +
+satis_l <- hr %>% ggplot(aes(satisfaction_level)) +
   geom_histogram( binwidth = 0.05, aes(fill = left)) +
   labs(x = "satisfaction_level", y = "employees", title = "satisfaction level") + myTheme
 
-lst_eval <- hr_left %>% ggplot(aes(last_evaluation)) +
+lst_eval <- hr %>% ggplot(aes(last_evaluation)) +
   geom_histogram( binwidth = 0.05, aes(fill = left)) +
   labs(x = "last_evaluation", y = "employees", title = "Last evaluation") + myTheme
 
-tm_spnd <- hr_left %>% ggplot(aes(time_spend_company)) +
-  geom_histogram( binwidth = 0.05, aes(fill = left)) +
+tm_spnd <- hr %>% ggplot(aes(time_spend_company)) +
+  geom_histogram( binwidth = 1, aes(fill = left)) +
   labs(x = "time_spend_company", y = "employees", title = "Time Spend in Company") + myTheme
 
 
-mnthly_hrs <- hr_left %>% ggplot(aes(average_montly_hours)) +
-  geom_histogram( binwidth = 0.05, aes(fill = left)) +
+mnthly_hrs <- hr %>% ggplot(aes(average_montly_hours)) +
+  geom_histogram( binwidth = 1, aes(fill = left)) +
   labs(x = "average_montly_hours", y = "employees", title = "Average montly hours") + myTheme
 
-wrk_accdnt <- hr_left %>% ggplot(aes(Work_accident)) +
+wrk_accdnt <- hr %>% ggplot(aes(Work_accident)) +
   geom_histogram( binwidth = 0.05, aes(fill = left), stat = "count") +
   labs(x = "Work_accident", y = "employees", title = "Work accident") + myTheme
 
-sal <- hr_left %>% ggplot(aes(salary)) +
+sal <- hr %>% ggplot(aes(salary)) +
   geom_histogram( binwidth = 0.05, aes(fill = left), stat = "count") +
   labs(x = "salary", y = "employees", title = "Salary") + myTheme
 
-nmbr_prj <- hr_left %>% ggplot(aes(as.numeric(number_project))) +
-  geom_histogram( binwidth = 0.05, aes(fill = left)) +
+nmbr_prj <- hr %>% ggplot(aes(as.numeric(number_project))) +
+  geom_histogram( binwidth = 1, aes(fill = left)) +
   labs(x = "number_project", y = "employees", title = "Number of projects") + myTheme
 
 grid.arrange(satis_l, lst_eval, sal, tm_spnd, mnthly_hrs,nmbr_prj, wrk_accdnt, nrow = 3)
