@@ -270,12 +270,13 @@ grid.arrange(satis_l, lst_eval, sal, tm_spnd, mnthly_hrs,nmbr_prj, wrk_accdnt, n
 
 ![](HR_Analysis_files/figure-html/plot_data_exp_analysis-1.png)<!-- -->
 
-* Overall lower performing employees are leaving more. This warrants improvement in hiring process to avoid low performers
-* Aside from low performers, we can notice number of employees leaving creeeping up among mid to high performing. This is an area that needs to be also looked into for reduction in rate of attrition.  
-* Retention is higher for employees who have
-  + been with the company for 4 or less (3rd quartile)
-  + Average monthly hours of 245 hrs or less
-  + No work accident
+* Using plots for __avaerage_monthly_hours__, __last_evaluation__ & __number_projects__,
+  + Overall lower performing employees are leaving more. This warrants improvement in hiring process to avoid low performers
+  + Aside from low performers, we can notice number of employees leaving creeeping up among mid to high performing. This is an area that needs to be also looked into for reduction in rate of attrition.  
+
+* Most employees seem to have had 2- 4 projects. It looks like employees that remain having more than 4 are very low.
+* Average monthly hours of 160 to 215 hrs or less, seems to show very low attrition.
+* Most employees have been with company 5 or less.
 
 
 ###Cluster Analysis
@@ -324,10 +325,13 @@ clusplot(hr_clust,fit.km$cluster)
 # lets analyze 9 clusters 
 corrplot_cluster <- function(data, nc = 15) {
   for (i in 1:nc) {
-  corrplot(data %>% filter(`fit.km$cluster` == i), color = TRUE)
+  data %>% filter(`fit.km$cluster` == i) %>% dplyr::select(satisfaction_level,
+  last_evaluation,
+  time_spend_company,
+  average_montly_hours) %>% corrplot(color = TRUE)
   }
 }
-corrplot_cluster(cbind(hr_clust, fit.km$cluster),nc = 9)
+corrplot_cluster(cbind(hr_clust, fit.km$cluster), nc = 9)
 ```
 
 ![](HR_Analysis_files/figure-html/cluster_analysis-1.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-2.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-3.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-4.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-5.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-6.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-7.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-8.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-9.png)<!-- -->
@@ -765,10 +769,10 @@ defaultSummary(data.frame(obs = hrTest$left, pred = testPredication))
 ```r
 library(doMC)
 registerDoMC(5)
-hrTrain_1 <- hrTrain [createDataPartition(y=hrTrain$left,p=0.3,list=FALSE),]
-rf_model<-train(left~.,data=hrTrain_1,method="rf",
-                trControl=trainControl(method="cv",number=5),
-                prox=TRUE,allowParallel=TRUE)
+hrTrain_1 <- hrTrain[createDataPartition(y = hrTrain$left,p = 0.3,list = FALSE),]
+rf_model <- train(left~.,data = hrTrain_1,method = "rf",
+                trControl = trainControl(method = "cv",number = 5),
+                pallowParallel = TRUE)
 print(rf_model)
 ```
 
@@ -792,4 +796,18 @@ print(rf_model)
 ## Accuracy was used to select the optimal model using  the largest value.
 ## The final value used for the model was mtry = 12.
 ```
+
+```r
+rf_prediction = predict(rf_model, newdata = hrTest)
+
+rf_conf_matrix <- confusionMatrix(rf_prediction, hrTest$left)
+```
+
+#####Random Forest analysis has provided a very good model. 
+* __Sensitivity__ : 0.9960613
+* __Specificity__ : 0.9257703
+* __Accuracy__    : 0.9793264
+* __Kappa__       : 0.9417826
+
+
 
