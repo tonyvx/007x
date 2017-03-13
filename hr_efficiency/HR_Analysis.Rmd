@@ -92,60 +92,23 @@ Lets look are structure
 Lets look at correaltion between these various columns
 
 ```{r corr_plot}
-corr_plot_data <- hr %>%  dplyr::select(satisfaction_level,last_evaluation,average_montly_hours,number_project,time_spend_company,left)
+hr %>%  dplyr::select(
+  satisfaction_level,
+  last_evaluation,
+  average_montly_hours,
+  number_project,
+  time_spend_company,
+  left
+  ) %>% ggpairs()
 
-corr_plot_data$number_project <- as.numeric(corr_plot_data$number_project)
-corr_plot_data$left <- as.numeric(corr_plot_data$left)
-corrplot(corr_plot_data, color = TRUE)
+hr %>%  dplyr::select(Work_accident, promotion_last_5years, dept, salary, left) %>% ggpairs()
 
 ```
 
 * There is strong correlation between _last_evaluation_, _number_project_, _average_monthly_hours_.
 * There is also strong correlation between _satisfaction_level_ & _left_.
 
-```{r accident_left}
-fetch_attrition_rate <- function(left, attr, attr_name){
-  print(attr_name)
-  attrition_matrix <- data.frame(table(left, attr) ) %>% tidyr::spread(left, Freq)
-  names(attrition_matrix)[1] <- attr_name
-  names(attrition_matrix)[2] <- "Emp_Remain"
-  names(attrition_matrix)[3] <- "Emp_Left"
-  
-  attrition_matrix <- attrition_matrix %>% mutate(rate = Emp_Left/Emp_Remain )
-  
-  #attrition by dept
-  attrition_matrix %>% arrange(desc(rate))
-}
-#Work_accident vs left
-fetch_attrition_rate(hr$left,hr$Work_accident ,"Work_accident")
-```
-* Propability of folks leaving due to accident is low 0.08
-* Indicates 0.36 probaility of employees leaving among employess who did not have accident.
-* Overall Work_accident does not seem to have very low correlation with employees' leaving
 
-```{r dept_left}
-#dept vs left
-
-fetch_attrition_rate(hr$left, hr$dept,"dept")
-
-```
-* hr dept with 0.41 has highest attrition and management dept at 0.16 has least attrition
-
-```{r salary_left }
-#salary vs left
-fetch_attrition_rate(hr$left, hr$salary,"salary")
-```
-* Emplyees with low salary has the highest attrition and attrition tapers for employees in medium and high salary brackets.
-
-
-```{r promotions_left}
-#promotion_last_5years vs left
-fetch_attrition_rate(hr$left, hr$promotion_last_5years,"promotion_last_5years")
-```
-
-* Proportion of folks leaving is low among folks with promotion 0.06.
-* Indicates 0.31 is probability of employees leaving who did not get promoted yet
-* Overall promotion_last_5years has low correlation for employees' leaving 
 
 Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _average_monthly_hours_, _work_accident_, _salary_ and _number_project_
 
@@ -227,20 +190,6 @@ wssplot(scale(hr_clust))
 fit.km <- kmeans(scale(hr_clust), 9)
 clusplot(hr_clust,fit.km$cluster)
 ```
-
-```{r cluster_analysis}
-# lets analyze 9 clusters 
-corrplot_cluster <- function(data, nc = 15) {
-  for (i in 1:nc) {
-  data %>% filter(`fit.km$cluster` == i) %>% dplyr::select(satisfaction_level,
-  last_evaluation,
-  time_spend_company,
-  average_montly_hours) %>% corrplot(color = TRUE)
-  }
-}
-corrplot_cluster(cbind(hr_clust, fit.km$cluster), nc = 9)
-```
-
 
 
 ##Regression Model
@@ -399,17 +348,19 @@ plot(varImp(train(left ~ ., data = hrTrain, method = "bayesglm")))
 fitControl <- trainControl(method = "bayesglm",
                            number = 10,repeats = 10)
 log_model <- train(left ~ satisfaction_level + Work_accident  + salary + time_spend_company + number_project + average_montly_hours + promotion_last_5years + dept, data = hrTrain, method = "bayesglm" )
-
+glm_prediction_train <- predict(log_model, newdata = hrTrain)
+glm_confustion_matrix_train <- confusionMatrix(glm_prediction_train, hrTrain$left, dnn = c("Predicted","actual"))
 summary(log_model)
+glm_confustion_matrix_train
 ```
 
 
 ```{r}
 #Lets test prediction using test data 
 testPredication <- predict(log_model,hrTest)
-confusionMatrix(testPredication,hrTest$left, dnn = c("Predicted","actual"), mode = "sens_spec")
+glm_confustion_matrix_test <- confusionMatrix(testPredication,hrTest$left, dnn = c("Predicted","actual"))
 
-defaultSummary(data.frame(obs = hrTest$left, pred = testPredication))
+glm_confustion_matrix_test
 ```
 
 ```{r rf}
@@ -420,10 +371,15 @@ rf_model <- train(left~.,data = hrTrain_1,method = "rf",
                 trControl = trainControl(method = "cv",number = 5),
                 pallowParallel = TRUE)
 print(rf_model)
+rf_prediction_train = predict(rf_model, newdata = hrTrain)
+
+rf_conf_matrix_train <- confusionMatrix(rf_prediction_train, hrTrain$left)
+rf_conf_matrix_train
 
 rf_prediction = predict(rf_model, newdata = hrTest)
 
 rf_conf_matrix <- confusionMatrix(rf_prediction, hrTest$left)
+rf_conf_matrix
 
 ```
 
@@ -432,6 +388,35 @@ rf_conf_matrix <- confusionMatrix(rf_prediction, hrTest$left)
 * __Specificity__ : `r rf_conf_matrix$byClass["Specificity"]`
 * __Accuracy__    : `r rf_conf_matrix$overall["Accuracy"]`
 * __Kappa__       : `r rf_conf_matrix$overall["Kappa"]`
+
+```{r reg_summary}
+overall <- cbind(
+  glm_confustion_matrix_train$overall,
+  glm_confustion_matrix_test$overall,
+  rf_conf_matrix_train$overall,
+  rf_conf_matrix$overall
+  )
+  
+byClass <- cbind(
+  glm_confustion_matrix_train$byClass,
+  glm_confustion_matrix_test$byClass,
+  rf_conf_matrix_train$byClass,
+  rf_conf_matrix$byClass
+  )
+  
+all_conf_matrix <- rbind(overall, byClass)
+all_conf_matrix <- data.frame(all_conf_matrix)
+names(all_conf_matrix) <- c("glm_train", "glm_test", "rf_train", "rf_test")
+
+all_conf_matrix$glm_train <- round(all_conf_matrix$glm_train, digits = 4)
+all_conf_matrix$glm_test <- round(all_conf_matrix$glm_test, digits = 4)
+all_conf_matrix$rf_train <- round(all_conf_matrix$rf_train, digits = 4)
+all_conf_matrix$rf_test <- round(all_conf_matrix$rf_test, digits = 4)
+
+all_conf_matrix
+
+```
+
 
 
 

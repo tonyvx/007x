@@ -123,113 +123,28 @@ Lets look at correaltion between these various columns
 
 
 ```r
-corr_plot_data <- hr %>%  dplyr::select(satisfaction_level,last_evaluation,average_montly_hours,number_project,time_spend_company,left)
-
-corr_plot_data$number_project <- as.numeric(corr_plot_data$number_project)
-corr_plot_data$left <- as.numeric(corr_plot_data$left)
-corrplot(corr_plot_data, color = TRUE)
+hr %>%  dplyr::select(
+  satisfaction_level,
+  last_evaluation,
+  average_montly_hours,
+  number_project,
+  time_spend_company,
+  left
+  ) %>% ggpairs()
 ```
 
 ![](HR_Analysis_files/figure-html/corr_plot-1.png)<!-- -->
+
+```r
+hr %>%  dplyr::select(Work_accident, promotion_last_5years, dept, salary, left) %>% ggpairs()
+```
+
+![](HR_Analysis_files/figure-html/corr_plot-2.png)<!-- -->
 
 * There is strong correlation between _last_evaluation_, _number_project_, _average_monthly_hours_.
 * There is also strong correlation between _satisfaction_level_ & _left_.
 
 
-```r
-fetch_attrition_rate <- function(left, attr, attr_name){
-  print(attr_name)
-  attrition_matrix <- data.frame(table(left, attr) ) %>% tidyr::spread(left, Freq)
-  names(attrition_matrix)[1] <- attr_name
-  names(attrition_matrix)[2] <- "Emp_Remain"
-  names(attrition_matrix)[3] <- "Emp_Left"
-  
-  attrition_matrix <- attrition_matrix %>% mutate(rate = Emp_Left/Emp_Remain )
-  
-  #attrition by dept
-  attrition_matrix %>% arrange(desc(rate))
-}
-#Work_accident vs left
-fetch_attrition_rate(hr$left,hr$Work_accident ,"Work_accident")
-```
-
-```
-## [1] "Work_accident"
-```
-
-```
-##   Work_accident Emp_Remain Emp_Left      rate
-## 1             0       9428     3402 0.3608401
-## 2             1       2000      169 0.0845000
-```
-* Propability of folks leaving due to accident is low 0.08
-* Indicates 0.36 probaility of employees leaving among employess who did not have accident.
-* Overall Work_accident does not seem to have very low correlation with employees' leaving
-
-
-```r
-#dept vs left
-
-fetch_attrition_rate(hr$left, hr$dept,"dept")
-```
-
-```
-## [1] "dept"
-```
-
-```
-##           dept Emp_Remain Emp_Left      rate
-## 1           hr        524      215 0.4103053
-## 2   accounting        563      204 0.3623446
-## 3    technical       2023      697 0.3445378
-## 4      support       1674      555 0.3315412
-## 5        sales       3126     1014 0.3243762
-## 6    marketing        655      203 0.3099237
-## 7           IT        954      273 0.2861635
-## 8  product_mng        704      198 0.2812500
-## 9        RandD        666      121 0.1816817
-## 10  management        539       91 0.1688312
-```
-* hr dept with 0.41 has highest attrition and management dept at 0.16 has least attrition
-
-
-```r
-#salary vs left
-fetch_attrition_rate(hr$left, hr$salary,"salary")
-```
-
-```
-## [1] "salary"
-```
-
-```
-##   salary Emp_Remain Emp_Left       rate
-## 1    low       5144     2172 0.42223950
-## 2 medium       5129     1317 0.25677520
-## 3   high       1155       82 0.07099567
-```
-* Emplyees with low salary has the highest attrition and attrition tapers for employees in medium and high salary brackets.
-
-
-
-```r
-#promotion_last_5years vs left
-fetch_attrition_rate(hr$left, hr$promotion_last_5years,"promotion_last_5years")
-```
-
-```
-## [1] "promotion_last_5years"
-```
-
-```
-##   promotion_last_5years Emp_Remain Emp_Left       rate
-## 1                     0      11128     3552 0.31919482
-## 2                     1        300       19 0.06333333
-```
-
-* Proportion of folks leaving is low among folks with promotion 0.06.
-* Indicates 0.31 is probability of employees leaving who did not get promoted yet
-* Overall promotion_last_5years has low correlation for employees' leaving 
 
 Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _average_monthly_hours_, _work_accident_, _salary_ and _number_project_
 
@@ -319,23 +234,6 @@ clusplot(hr_clust,fit.km$cluster)
 ```
 
 ![](HR_Analysis_files/figure-html/clustering-1.png)<!-- -->
-
-
-```r
-# lets analyze 9 clusters 
-corrplot_cluster <- function(data, nc = 15) {
-  for (i in 1:nc) {
-  data %>% filter(`fit.km$cluster` == i) %>% dplyr::select(satisfaction_level,
-  last_evaluation,
-  time_spend_company,
-  average_montly_hours) %>% corrplot(color = TRUE)
-  }
-}
-corrplot_cluster(cbind(hr_clust, fit.km$cluster), nc = 9)
-```
-
-![](HR_Analysis_files/figure-html/cluster_analysis-1.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-2.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-3.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-4.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-5.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-6.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-7.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-8.png)<!-- -->![](HR_Analysis_files/figure-html/cluster_analysis-9.png)<!-- -->
-
 
 
 ##Regression Model
@@ -670,7 +568,8 @@ plot(varImp(train(left ~ ., data = hrTrain, method = "bayesglm")))
 fitControl <- trainControl(method = "bayesglm",
                            number = 10,repeats = 10)
 log_model <- train(left ~ satisfaction_level + Work_accident  + salary + time_spend_company + number_project + average_montly_hours + promotion_last_5years + dept, data = hrTrain, method = "bayesglm" )
-
+glm_prediction_train <- predict(log_model, newdata = hrTrain)
+glm_confustion_matrix_train <- confusionMatrix(glm_prediction_train, hrTrain$left, dnn = c("Predicted","actual"))
 summary(log_model)
 ```
 
@@ -719,12 +618,47 @@ summary(log_model)
 ## Number of Fisher Scoring iterations: 16
 ```
 
+```r
+glm_confustion_matrix_train
+```
+
+```
+## Confusion Matrix and Statistics
+## 
+##          actual
+## Predicted    0    1
+##         0 8431  953
+##         1  712 1904
+##                                           
+##                Accuracy : 0.8612          
+##                  95% CI : (0.8549, 0.8674)
+##     No Information Rate : 0.7619          
+##     P-Value [Acc > NIR] : < 2.2e-16       
+##                                           
+##                   Kappa : 0.6061          
+##  Mcnemar's Test P-Value : 4.06e-09        
+##                                           
+##             Sensitivity : 0.9221          
+##             Specificity : 0.6664          
+##          Pos Pred Value : 0.8984          
+##          Neg Pred Value : 0.7278          
+##              Prevalence : 0.7619          
+##          Detection Rate : 0.7026          
+##    Detection Prevalence : 0.7820          
+##       Balanced Accuracy : 0.7943          
+##                                           
+##        'Positive' Class : 0               
+## 
+```
+
 
 
 ```r
 #Lets test prediction using test data 
 testPredication <- predict(log_model,hrTest)
-confusionMatrix(testPredication,hrTest$left, dnn = c("Predicted","actual"), mode = "sens_spec")
+glm_confustion_matrix_test <- confusionMatrix(testPredication,hrTest$left, dnn = c("Predicted","actual"))
+
+glm_confustion_matrix_test
 ```
 
 ```
@@ -754,15 +688,6 @@ confusionMatrix(testPredication,hrTest$left, dnn = c("Predicted","actual"), mode
 ##                                           
 ##        'Positive' Class : 0               
 ## 
-```
-
-```r
-defaultSummary(data.frame(obs = hrTest$left, pred = testPredication))
-```
-
-```
-##  Accuracy     Kappa 
-## 0.8619540 0.6120213
 ```
 
 
@@ -798,9 +723,75 @@ print(rf_model)
 ```
 
 ```r
+rf_prediction_train = predict(rf_model, newdata = hrTrain)
+
+rf_conf_matrix_train <- confusionMatrix(rf_prediction_train, hrTrain$left)
+rf_conf_matrix_train
+```
+
+```
+## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    0    1
+##          0 9120  130
+##          1   23 2727
+##                                           
+##                Accuracy : 0.9872          
+##                  95% CI : (0.9851, 0.9892)
+##     No Information Rate : 0.7619          
+##     P-Value [Acc > NIR] : < 2.2e-16       
+##                                           
+##                   Kappa : 0.9644          
+##  Mcnemar's Test P-Value : < 2.2e-16       
+##                                           
+##             Sensitivity : 0.9975          
+##             Specificity : 0.9545          
+##          Pos Pred Value : 0.9859          
+##          Neg Pred Value : 0.9916          
+##              Prevalence : 0.7619          
+##          Detection Rate : 0.7600          
+##    Detection Prevalence : 0.7708          
+##       Balanced Accuracy : 0.9760          
+##                                           
+##        'Positive' Class : 0               
+## 
+```
+
+```r
 rf_prediction = predict(rf_model, newdata = hrTest)
 
 rf_conf_matrix <- confusionMatrix(rf_prediction, hrTest$left)
+rf_conf_matrix
+```
+
+```
+## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    0    1
+##          0 2276   53
+##          1    9  661
+##                                           
+##                Accuracy : 0.9793          
+##                  95% CI : (0.9736, 0.9841)
+##     No Information Rate : 0.7619          
+##     P-Value [Acc > NIR] : < 2.2e-16       
+##                                           
+##                   Kappa : 0.9418          
+##  Mcnemar's Test P-Value : 4.734e-08       
+##                                           
+##             Sensitivity : 0.9961          
+##             Specificity : 0.9258          
+##          Pos Pred Value : 0.9772          
+##          Neg Pred Value : 0.9866          
+##              Prevalence : 0.7619          
+##          Detection Rate : 0.7589          
+##    Detection Prevalence : 0.7766          
+##       Balanced Accuracy : 0.9609          
+##                                           
+##        'Positive' Class : 0               
+## 
 ```
 
 #####Random Forest analysis has provided a very good model. 
@@ -808,6 +799,57 @@ rf_conf_matrix <- confusionMatrix(rf_prediction, hrTest$left)
 * __Specificity__ : 0.9257703
 * __Accuracy__    : 0.9793264
 * __Kappa__       : 0.9417826
+
+
+```r
+overall <- cbind(
+  glm_confustion_matrix_train$overall,
+  glm_confustion_matrix_test$overall,
+  rf_conf_matrix_train$overall,
+  rf_conf_matrix$overall
+  )
+  
+byClass <- cbind(
+  glm_confustion_matrix_train$byClass,
+  glm_confustion_matrix_test$byClass,
+  rf_conf_matrix_train$byClass,
+  rf_conf_matrix$byClass
+  )
+  
+all_conf_matrix <- rbind(overall, byClass)
+all_conf_matrix <- data.frame(all_conf_matrix)
+names(all_conf_matrix) <- c("glm_train", "glm_test", "rf_train", "rf_test")
+
+all_conf_matrix$glm_train <- round(all_conf_matrix$glm_train, digits = 4)
+all_conf_matrix$glm_test <- round(all_conf_matrix$glm_test, digits = 4)
+all_conf_matrix$rf_train <- round(all_conf_matrix$rf_train, digits = 4)
+all_conf_matrix$rf_test <- round(all_conf_matrix$rf_test, digits = 4)
+
+all_conf_matrix
+```
+
+```
+##                      glm_train glm_test rf_train rf_test
+## Accuracy                0.8612   0.8620   0.9872  0.9793
+## Kappa                   0.6061   0.6120   0.9644  0.9418
+## AccuracyLower           0.8549   0.8491   0.9851  0.9736
+## AccuracyUpper           0.8674   0.8741   0.9892  0.9841
+## AccuracyNull            0.7619   0.7619   0.7619  0.7619
+## AccuracyPValue          0.0000   0.0000   0.0000  0.0000
+## McnemarPValue           0.0000   0.0553   0.0000  0.0000
+## Sensitivity             0.9221   0.9182   0.9975  0.9961
+## Specificity             0.6664   0.6821   0.9545  0.9258
+## Pos Pred Value          0.8984   0.9024   0.9859  0.9772
+## Neg Pred Value          0.7278   0.7226   0.9916  0.9866
+## Precision               0.8984   0.9024   0.9859  0.9772
+## Recall                  0.9221   0.9182   0.9975  0.9961
+## F1                      0.9101   0.9102   0.9917  0.9866
+## Prevalence              0.7619   0.7619   0.7619  0.7619
+## Detection Rate          0.7026   0.6996   0.7600  0.7589
+## Detection Prevalence    0.7820   0.7753   0.7708  0.7766
+## Balanced Accuracy       0.7943   0.8001   0.9760  0.9609
+```
+
 
 
 
