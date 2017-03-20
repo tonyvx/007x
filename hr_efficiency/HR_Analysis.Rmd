@@ -97,11 +97,10 @@ hr %>%  dplyr::select(
   last_evaluation,
   average_montly_hours,
   number_project,
-  time_spend_company,
   left
   ) %>% ggpairs()
 
-hr %>%  dplyr::select(Work_accident, promotion_last_5years, dept, salary, left) %>% ggpairs()
+hr %>%  dplyr::select(Work_accident, promotion_last_5years, salary, left) %>% ggpairs()
 
 ```
 

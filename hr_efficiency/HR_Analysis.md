@@ -128,7 +128,6 @@ hr %>%  dplyr::select(
   last_evaluation,
   average_montly_hours,
   number_project,
-  time_spend_company,
   left
   ) %>% ggpairs()
 ```
@@ -136,7 +135,7 @@ hr %>%  dplyr::select(
 ![](HR_Analysis_files/figure-html/corr_plot-1.png)<!-- -->
 
 ```r
-hr %>%  dplyr::select(Work_accident, promotion_last_5years, dept, salary, left) %>% ggpairs()
+hr %>%  dplyr::select(Work_accident, promotion_last_5years, salary, left) %>% ggpairs()
 ```
 
 ![](HR_Analysis_files/figure-html/corr_plot-2.png)<!-- -->
