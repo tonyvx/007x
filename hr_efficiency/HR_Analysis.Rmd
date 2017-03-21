@@ -186,7 +186,7 @@ wssplot(scale(hr_clust))
 ```{r clustering}
 # lets consider 9 clusters 
 
-fit.km <- kmeans(scale(hr_clust), 9)
+fit.km <- kmeans(scale(hr_clust), 11)
 clusplot(hr_clust,fit.km$cluster)
 ```
 
