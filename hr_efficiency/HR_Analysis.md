@@ -132,20 +132,59 @@ hr %>%  dplyr::select(
   ) %>% ggpairs()
 ```
 
-![](HR_Analysis_files/figure-html/corr_plot-1.png)<!-- -->
+![](HR_Analysis_files/figure-html/ggpairs_continous_attibutes-1.png)<!-- -->
+
+###__number_project__ 
+* employees involved in 3-5 projects have high satisfaction level, less than 3 projects or more than 5 projects satisfaction is low
+* last_evaluation increases with number_project
+* average_monthly_hours also increases with number_project
+* number of employees leaving (left=1) is high at 2 or less improves for 3 projects and then slowly creeps up until 5 projects and goes down
+* Overall Looks like 3-5 projects would mean less employees quiting and good employee satisfaction.
+
+###__average_monthly_hours__
+* relation to satisfaction or last_evaluation is not very obvious
+* average_monthly_hours seems to increase with number_project
+* employees leaving (left=1)
+  + 150 hours +/- 25 shows high number of employees leaving
+	+ Again 225 hours and more employees leaving creaps to peak at around 250 hours and dips gradually to 300 hours
+	+ 175 hours - 225 hours for average_monthly_hours seems to have low rate of employees leaving
+
+###__last_evaluation__
+* Between 0.4 to 0.6 evaluation rating, employees leaving (left=1) is high.
+* It goes down at mid level and then picks up at around 0.75 and peaks around 0.85
+* So low and higher end of evaluation rating employees leaving is high.
+* Though one's leaving at lower rating is good for the company but the employees leaving having high rating is a concern for the company. 	
+	
+###__satisfaction_level__
+* number projects between 3-5 show high satisfaction, less projects or too many projects tend to lower satisfaction
+* employees leaving have lower satisfaction than employees not leaving the company
+
+###__overall__
+Looks like employees involved in 3 -5 projects and putting in 175 hours - 225 hours average monthly hours have lower rate of leaving company and have high satisfaction level.
+
 
 ```r
 hr %>%  dplyr::select(Work_accident, promotion_last_5years, salary, left) %>% ggpairs()
 ```
 
-![](HR_Analysis_files/figure-html/corr_plot-2.png)<!-- -->
+![](HR_Analysis_files/figure-html/ggpairs_discrete_attributes-1.png)<!-- -->
 
-* There is strong correlation between _last_evaluation_, _number_project_, _average_monthly_hours_.
-* There is also strong correlation between _satisfaction_level_ & _left_.
+###__Work_accident__
+* A small percent of employees involved in Work_accident are actually leaving company. Either Work_accident is not a very significant accident.
+* Work_accident is higher at medium and low salary level than in higher salary level
+
+###__promotion_last_5years__
+* Very few employees are getting promoted
+* number of employees getting promoted are even at different salary level.
+
+###__salary__
+* Higher number of employees leaving are in the medium & low salary level
+
+###__overall__
+Work_accident, promotion_last_5years & salary dont seem to have significant impact on employees leaving company.
 
 
-
-Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _average_monthly_hours_, _work_accident_, _salary_ and _number_project_
+Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _average_monthly_hours_ and _number_project_
 
 
 
@@ -154,46 +193,35 @@ satis_l <- hr %>% ggplot(aes(satisfaction_level)) +
   geom_histogram( binwidth = 0.05, aes(fill = left)) +
   labs(x = "satisfaction_level", y = "employees", title = "satisfaction level") + myTheme
 
+nmbr_prj <- hr %>% ggplot(aes(as.numeric(number_project))) +
+  geom_histogram( binwidth = 1, aes(fill = left)) +
+  labs(x = "number_project", y = "employees", title = "Number of projects") + myTheme
+
 lst_eval <- hr %>% ggplot(aes(last_evaluation)) +
   geom_histogram( binwidth = 0.05, aes(fill = left)) +
   labs(x = "last_evaluation", y = "employees", title = "Last evaluation") + myTheme
+
+mnthly_hrs <- hr %>% ggplot(aes(average_montly_hours)) +
+  geom_histogram( binwidth = 1, aes(fill = left)) +
+  labs(x = "average_montly_hours", y = "employees", title = "Average montly hours") + myTheme
 
 tm_spnd <- hr %>% ggplot(aes(time_spend_company)) +
   geom_histogram( binwidth = 1, aes(fill = left)) +
   labs(x = "time_spend_company", y = "employees", title = "Time Spend in Company") + myTheme
 
 
-mnthly_hrs <- hr %>% ggplot(aes(average_montly_hours)) +
-  geom_histogram( binwidth = 1, aes(fill = left)) +
-  labs(x = "average_montly_hours", y = "employees", title = "Average montly hours") + myTheme
-
-wrk_accdnt <- hr %>% ggplot(aes(Work_accident)) +
-  geom_histogram( binwidth = 0.05, aes(fill = left), stat = "count") +
-  labs(x = "Work_accident", y = "employees", title = "Work accident") + myTheme
-
-sal <- hr %>% ggplot(aes(salary)) +
-  geom_histogram( binwidth = 0.05, aes(fill = left), stat = "count") +
-  labs(x = "salary", y = "employees", title = "Salary") + myTheme
-
-nmbr_prj <- hr %>% ggplot(aes(as.numeric(number_project))) +
-  geom_histogram( binwidth = 1, aes(fill = left)) +
-  labs(x = "number_project", y = "employees", title = "Number of projects") + myTheme
-
-grid.arrange(satis_l, lst_eval, sal, tm_spnd, mnthly_hrs,nmbr_prj, wrk_accdnt, nrow = 4)
+grid.arrange(satis_l, nmbr_prj, lst_eval, mnthly_hrs,tm_spnd,  nrow = 3)
 ```
 
 ![](HR_Analysis_files/figure-html/plot_data_exp_analysis-1.png)<!-- -->
 
-* Using plots for __avaerage_monthly_hours__, __last_evaluation__ & __number_projects__,
+* Using plots for __satisfaction_level__, __avaerage_monthly_hours__, __last_evaluation__ & __number_projects__:
   + Overall lower performing employees are leaving more. This warrants improvement in hiring process to avoid low performers
   + Aside from low performers, we can notice number of employees leaving creeeping up among mid to high performing. This is an area that needs to be also looked into for reduction in rate of attrition.  
-
-* Most employees seem to have had 2- 4 projects. It looks like employees that remain having more than 4 are very low.
-* Average monthly hours of 160 to 215 hrs or less, seems to show very low attrition.
-* Most employees have been with company 5 or less.
+  + Looks like employees involved in 3 -5 projects and putting in 175 hours - 225 hours average monthly hours have lower rate of leaving company and have high satisfaction level.
 
 
-###Cluster Analysis
+###Cluster Analysis 
 
 ```r
 #lets identify optimum number of clusters
@@ -210,15 +238,20 @@ wssplot <- function(data, nc = 15, seed = 1234) {
        ylab = "Within groups sum of squares")   
 }
 
+#lets consider employees who left the company
+hr_clust <- hr %>% filter(left == 1)
+
+#remove attribute left
+hr_clust <- hr_clust[-7]
+
 #lets make all fields numeric
-hr_clust <- hr
 hr_clust$dept <- as.numeric( as.factor(hr_clust$dept))
 hr_clust$salary <- as.numeric( as.factor(hr_clust$salary))
 hr_clust$number_project <- as.numeric( hr_clust$number_project)
 hr_clust$Work_accident <- as.numeric( hr_clust$Work_accident)
-hr_clust$left <- as.numeric(hr_clust$left)
 hr_clust$promotion_last_5years <- as.numeric(hr_clust$promotion_last_5years)
 
+#lets identify optimum number of clusters
 wssplot(scale(hr_clust))
 ```
 
@@ -226,26 +259,82 @@ wssplot(scale(hr_clust))
 
 
 ```r
-# lets consider 9 clusters 
+# lets consider 3 clusters 
 
-fit.km <- kmeans(scale(hr_clust), 9)
-clusplot(hr_clust,fit.km$cluster)
+fit.km <- kmeans(scale(hr_clust), 3)
+clusplot(hr_clust,fit.km$cluster, color = TRUE)
 ```
 
 ![](HR_Analysis_files/figure-html/clustering-1.png)<!-- -->
 
 
+```r
+cluster_analysis <- cbind(hr_clust,fit.km$cluster)
+names(cluster_analysis)[10] <- 'cluster'
+
+satis_2 <- cluster_analysis %>% ggplot(aes(satisfaction_level)) + geom_histogram() + facet_grid(.~cluster)
+
+num_prj2 <- cluster_analysis %>% ggplot(aes(number_project)) + geom_histogram() + facet_grid(.~cluster)
+
+last_eval2 <- cluster_analysis %>% ggplot(aes(last_evaluation)) + geom_histogram() + facet_grid(.~cluster)
+
+avg_hrs2 <- cluster_analysis %>% ggplot(aes(average_montly_hours)) + geom_histogram() + facet_grid(.~cluster)
+
+grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2, nrow = 4)
+```
+
+![](HR_Analysis_files/figure-html/clustering_analysis_signifanct-1.png)<!-- -->
+
+###__cluster 1__
+* Employees having overall higher satisfaction level, 
+* involved 3-5 projects, 
+* higher evaluation rating (0.8 -1) and 
+* average monthly hours of 225  - 275 hours.
+
+###__cluster 2__
+* Employees having overall medium satisfaction level, 
+* involved in less than 2 projects, 
+* low to medium evaluation rating (<0.6) and 
+* low average monthly hours of less than 175 hours.
+
+###__cluster 3__
+* Employees having overall low satisfaction level, 
+* involved in more than 4 projects, 
+* high evaluation rating (0.8-1) and 
+* high average monthly hours of 225 - 350 hours.
+
+###__overall__
+* cluster 1 are employees that comapany need to find ways to retain.
+* cluster 3 are over worked employees, company need to find ways to optimise work load and improve satisfaction level
+* cluster 2 are under performing employees and company need to focus to minimize hiring employees of this category.
+
+
+```r
+promotion2 <- cluster_analysis %>% ggplot(aes(promotion_last_5years)) + geom_histogram() + facet_grid(.~cluster)
+dept2 <- cluster_analysis %>% ggplot(aes(dept)) + geom_histogram() + facet_grid(.~cluster)
+wrk_accdnt2 <- cluster_analysis %>% ggplot(aes(Work_accident)) + geom_histogram() + facet_grid(.~cluster)
+sal2 <- cluster_analysis %>% ggplot(aes(salary)) + geom_histogram() + facet_grid(.~cluster)
+
+grid.arrange(promotion2,dept2, wrk_accdnt2, sal2, nrow = 4)
+```
+
+![](HR_Analysis_files/figure-html/cluster_analysis_not_imp-1.png)<!-- -->
+
+###__overall__
+All clusters have even distribution for promotion, department, work accident and salary. Not much significant observation that can be made.
+
 ##Regression Model
 
 ###Linear Regression
-Lets build a model to determine how long an employee will stay
+Lets build a model to determine how long an employee will stay using data from employees who already left
 
 
 ####Train Data
 
 ```r
 set.seed(3456)
-trainIndex <- createDataPartition(hr$time_spend_company, p = .8, 
+hr_left <- hr %>% filter(left==1)
+trainIndex <- createDataPartition(hr_left$time_spend_company, p = .8, 
                                   list = FALSE, 
                                   times = 1)
 head(trainIndex)
@@ -257,17 +346,17 @@ head(trainIndex)
 ## [2,]         2
 ## [3,]         3
 ## [4,]         4
-## [5,]         6
-## [6,]         7
+## [5,]         5
+## [6,]         6
 ```
 
 ```r
-hrTrain <- hr[ trainIndex,]
+hrTrain <- hr_left[ trainIndex,]
 ```
 ###Test Data
 
 ```r
-hrTest  <- hr[-trainIndex,]
+hrTest  <- hr_left[-trainIndex,]
 ```
 
 ###Models
@@ -278,10 +367,10 @@ plot(varImp(train(time_spend_company ~ ., data = hrTrain, method = "lm")))
 ```
 
 ![](HR_Analysis_files/figure-html/fields_lm-1.png)<!-- -->
-
+Attributes satisfaction_level,number_project, avaerage_monthly_hours,promotion_last_5years, dept seems to be significant for linear regression
 
 ```r
-lm_time_spend <- lm(time_spend_company~left+ dept+ promotion_last_5years + number_project+last_evaluation+salary+Work_accident+satisfaction_level, data = hrTrain)
+lm_time_spend <- lm(time_spend_company~ satisfaction_level+number_project+ average_montly_hours+promotion_last_5years+ dept, data = hrTrain)
 lm_time_spend_summary <- summary(lm_time_spend)
 lm_time_spend_summary
 ```
@@ -289,138 +378,58 @@ lm_time_spend_summary
 ```
 ## 
 ## Call:
-## lm(formula = time_spend_company ~ left + dept + promotion_last_5years + 
-##     number_project + last_evaluation + salary + Work_accident + 
-##     satisfaction_level, data = hrTrain)
+## lm(formula = time_spend_company ~ satisfaction_level + number_project + 
+##     average_montly_hours + promotion_last_5years + dept, data = hrTrain)
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -3.0400 -0.7504 -0.3007  0.5320  7.3900 
-## 
-## Coefficients:
-##                        Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)             2.77912    0.09433  29.462  < 2e-16 ***
-## left1                   0.63893    0.03876  16.486  < 2e-16 ***
-## depthr                 -0.13112    0.08079  -1.623  0.10462    
-## deptIT                 -0.01996    0.07184  -0.278  0.78109    
-## deptmanagement          0.76761    0.08592   8.934  < 2e-16 ***
-## deptmarketing           0.06117    0.07744   0.790  0.42961    
-## deptproduct_mng        -0.01471    0.07673  -0.192  0.84793    
-## deptRandD              -0.09905    0.07934  -1.248  0.21193    
-## deptsales               0.05646    0.06155   0.917  0.35905    
-## deptsupport            -0.10529    0.06536  -1.611  0.10721    
-## depttechnical          -0.10663    0.06394  -1.668  0.09538 .  
-## promotion_last_5years1  0.66069    0.08732   7.566 4.12e-14 ***
-## number_project3         0.44959    0.04950   9.083  < 2e-16 ***
-## number_project4         0.57525    0.04861  11.833  < 2e-16 ***
-## number_project5         0.81733    0.05003  16.337  < 2e-16 ***
-## number_project6         0.90317    0.06061  14.900  < 2e-16 ***
-## number_project7         0.43963    0.10828   4.060 4.93e-05 ***
-## last_evaluation         0.58316    0.08245   7.073 1.60e-12 ***
-## salarylow              -0.25741    0.04942  -5.208 1.94e-07 ***
-## salarymedium           -0.15532    0.04939  -3.145  0.00166 ** 
-## Work_accident1          0.10552    0.03646   2.894  0.00381 ** 
-## satisfaction_level     -0.33098    0.06315  -5.242 1.62e-07 ***
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## Residual standard error: 1.389 on 11978 degrees of freedom
-## Multiple R-squared:  0.09614,	Adjusted R-squared:  0.09456 
-## F-statistic: 60.67 on 21 and 11978 DF,  p-value: < 2.2e-16
-```
-
-
-```r
-lm_time_spend_mthly_hrs <- lm(time_spend_company~left+ dept+ promotion_last_5years + number_project+last_evaluation+average_montly_hours+salary+Work_accident+satisfaction_level, data = hrTrain)
-lm_time_spend_mthly_hrs_summary <- summary(lm_time_spend_mthly_hrs)
-lm_time_spend_mthly_hrs_summary
-```
-
-```
-## 
-## Call:
-## lm(formula = time_spend_company ~ left + dept + promotion_last_5years + 
-##     number_project + last_evaluation + average_montly_hours + 
-##     salary + Work_accident + satisfaction_level, data = hrTrain)
-## 
-## Residuals:
-##     Min      1Q  Median      3Q     Max 
-## -3.0786 -0.7528 -0.2949  0.5295  7.4144 
+## -3.2747 -0.1113 -0.0360  0.0444  2.1762 
 ## 
 ## Coefficients:
 ##                          Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)             2.6867716  0.1002150  26.810  < 2e-16 ***
-## left1                   0.6249161  0.0390866  15.988  < 2e-16 ***
-## depthr                 -0.1293365  0.0807707  -1.601  0.10934    
-## deptIT                 -0.0212317  0.0718190  -0.296  0.76752    
-## deptmanagement          0.7671733  0.0858984   8.931  < 2e-16 ***
-## deptmarketing           0.0613582  0.0774212   0.793  0.42807    
-## deptproduct_mng        -0.0135680  0.0767115  -0.177  0.85961    
-## deptRandD              -0.0982576  0.0793240  -1.239  0.21549    
-## deptsales               0.0559841  0.0615346   0.910  0.36295    
-## deptsupport            -0.1046692  0.0653385  -1.602  0.10919    
-## depttechnical          -0.1066023  0.0639189  -1.668  0.09539 .  
-## promotion_last_5years1  0.6591716  0.0872989   7.551 4.64e-14 ***
-## number_project3         0.4194255  0.0507082   8.271  < 2e-16 ***
-## number_project4         0.5411451  0.0501890  10.782  < 2e-16 ***
-## number_project5         0.7804544  0.0518179  15.061  < 2e-16 ***
-## number_project6         0.8480698  0.0638870  13.275  < 2e-16 ***
-## number_project7         0.3636052  0.1117920   3.253  0.00115 ** 
-## last_evaluation         0.5414941  0.0838334   6.459 1.09e-10 ***
-## average_montly_hours    0.0007928  0.0002911   2.723  0.00647 ** 
-## salarylow              -0.2558201  0.0494136  -5.177 2.29e-07 ***
-## salarymedium           -0.1540695  0.0493761  -3.120  0.00181 ** 
-## Work_accident1          0.1047198  0.0364529   2.873  0.00408 ** 
-## satisfaction_level     -0.3380187  0.0631810  -5.350 8.96e-08 ***
+## (Intercept)             1.8990244  0.0713618  26.611  < 2e-16 ***
+## satisfaction_level      1.5310239  0.0726754  21.067  < 2e-16 ***
+## number_project3         0.4713017  0.0704442   6.690 2.67e-11 ***
+## number_project4         1.0179815  0.0527699  19.291  < 2e-16 ***
+## number_project5         1.1575926  0.0499497  23.175  < 2e-16 ***
+## number_project6         1.0900318  0.0526000  20.723  < 2e-16 ***
+## number_project7         1.1077086  0.0607383  18.237  < 2e-16 ***
+## average_montly_hours    0.0032762  0.0003426   9.562  < 2e-16 ***
+## promotion_last_5years1 -0.3212174  0.1195740  -2.686  0.00727 ** 
+## depthr                  0.0110486  0.0541106   0.204  0.83822    
+## deptIT                 -0.0118981  0.0515752  -0.231  0.81757    
+## deptmanagement         -0.1528225  0.0708817  -2.156  0.03117 *  
+## deptmarketing           0.0911904  0.0555007   1.643  0.10048    
+## deptproduct_mng         0.0454856  0.0547072   0.831  0.40580    
+## deptRandD               0.0836447  0.0635208   1.317  0.18801    
+## deptsales              -0.0074133  0.0426336  -0.174  0.86197    
+## deptsupport             0.0558396  0.0456262   1.224  0.22111    
+## depttechnical           0.0397286  0.0440389   0.902  0.36707    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 1.389 on 11977 degrees of freedom
-## Multiple R-squared:  0.0967,	Adjusted R-squared:  0.09504 
-## F-statistic: 58.28 on 22 and 11977 DF,  p-value: < 2.2e-16
+## Residual standard error: 0.4886 on 2841 degrees of freedom
+## Multiple R-squared:  0.752,	Adjusted R-squared:  0.7505 
+## F-statistic: 506.6 on 17 and 2841 DF,  p-value: < 2.2e-16
 ```
 
-###Lets compare the two models
+
+
+_lm_time_spend_ has an R Squared of 0.7519533 and adjusted R-Squared of 0.750469
+
+#####R-Squared is good for the model.
+
+###Lets predict using the model _lm_time_spend_
 
 ```r
-lm_model_anova <- anova(lm_time_spend,lm_time_spend_mthly_hrs)
-lm_model_anova
-```
-
-```
-## Analysis of Variance Table
-## 
-## Model 1: time_spend_company ~ left + dept + promotion_last_5years + number_project + 
-##     last_evaluation + salary + Work_accident + satisfaction_level
-## Model 2: time_spend_company ~ left + dept + promotion_last_5years + number_project + 
-##     last_evaluation + average_montly_hours + salary + Work_accident + 
-##     satisfaction_level
-##   Res.Df   RSS Df Sum of Sq      F   Pr(>F)   
-## 1  11978 23117                                
-## 2  11977 23103  1    14.306 7.4165 0.006472 **
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-```
-
-_lm_time_spend_ has an R Squared of 0.0961402 and adjusted R-Squared of 0.0945555
-
-_lm_time_spend_mthly_hrs_ has an R Squared of 0.0966995 and adjusted R-Squared of 0.0950403
-
-
-#####Based on anova and both R Squared and Adjusted R Squared model _lm_time_spend_mthly_hrs_ seems to be a better fit. However R-Squared is very low and close to 0, model is a poor fit.
-
-
-###Predict using the model _lm_time_spend_mthly_hrs_
-
-```r
-predict_lm_emp_leaving <- predict(lm_time_spend_mthly_hrs, newdata = hrTest)
+predict_time_spend <- predict(lm_time_spend, newdata = hrTest)
 #summary of prediction
-summary(predict_lm_emp_leaving)
+summary(predict_time_spend)
 ```
 
 ```
 ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##   2.412   3.227   3.390   3.515   3.703   5.460
+##   2.722   3.036   3.997   3.867   4.755   5.358
 ```
 
 ```r
@@ -430,55 +439,36 @@ summary(hrTest$time_spend_company)
 
 ```
 ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##   2.000   3.000   3.000   3.491   4.000  10.000
+##   2.000   3.000   4.000   3.874   5.000   6.000
 ```
+The summary shows closeness in prediction to actuals.
 
-
-```r
-#Create data frame actual vs predicted
-p <- data.frame(predict_lm_emp_leaving)
-p$ID <- as.numeric(rownames(p))
-p$Type <- 'Predicted'
-names(p)[1] <- 'time_spend_company'
-
-a <- data.frame(hrTest$time_spend_company)
-a$ID <- as.numeric(rownames(hrTest))
-a$Type <- 'Actual'
-names(a)[1] <- 'time_spend_company'
-
-m <- data.frame(rbind(a,p))
-```
-
-
-```r
-#plot predict and actual
-m %>% ggplot(aes(x = ID, y = time_spend_company, col = Type)) + 
-  geom_line() + 
-  geom_smooth() +
-  labs(x = "Observation", y = "Number of years spent in the company", title = "Plot Predicted & Actual Time spend vs Observation") +
-  scale_colour_brewer(palette = brewer.pal(11,"Spectral")) +
-  myTheme
-```
-
-![](HR_Analysis_files/figure-html/plot_predict_vs_actual_df-1.png)<!-- -->
+###Lets measure the correlation
 
 
 ```r
 #correlation data
-plot_data <- data.frame(predict_lm_emp_leaving, hrTest$time_spend_company)
+plot_data <- data.frame(predict_time_spend, hrTest$time_spend_company)
 names(plot_data)[1] <- "predicted"
 names(plot_data)[2] <- "actual"
 
-plot_data$predicted <- round(plot_data$predicted)
+#plot_data$predicted <- round(plot_data$predicted)
 
+# plot predicted time spend vs actual time spend in conpany
+plot_data %>% ggplot(aes(x = actual, y = predicted)) + geom_point() + geom_smooth(method = "lm")
+```
+
+![](HR_Analysis_files/figure-html/compute_correlation_coef-1.png)<!-- -->
+
+```r
 correlation <- cor(plot_data)
 correlation
 ```
 
 ```
 ##           predicted    actual
-## predicted 1.0000000 0.2653889
-## actual    0.2653889 1.0000000
+## predicted 1.0000000 0.8818467
+## actual    0.8818467 1.0000000
 ```
 
 ```r
@@ -487,22 +477,22 @@ correlation[1,2]
 ```
 
 ```
-## [1] 0.2653889
+## [1] 0.8818467
 ```
 
-The correlation coefficient is low __0.2653889__
+The correlation coefficient is excellent __0.8818467__
 
 
 ```r
 #lets see how good the model prediction was
 
 #Sum of squared errors(SSE)
-sse = sum((hrTest$time_spend_company - predict_lm_emp_leaving ) ^ 2)
+sse = sum((hrTest$time_spend_company - predict_time_spend ) ^ 2)
 round(sse, digits = 2)
 ```
 
 ```
-## [1] 5886.96
+## [1] 151.2
 ```
 
 ```r
@@ -512,9 +502,9 @@ round(rmse, digits = 2)
 ```
 
 ```
-## [1] 1.4
+## [1] 0.46
 ```
-####_lm_time_spend_mthly_hrs_ prediction has an 'Root mean squared errors' 1.4 and correlation coefficient of 0.27
+####Linear model _lm_time_spend_ prediction has an 'Root mean squared errors' of 0.46 years and correlation coefficient of 0.88
 
 ###Logistic Regression
 Lets build a model to predict if the employee will leave

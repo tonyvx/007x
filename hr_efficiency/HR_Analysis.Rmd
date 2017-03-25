@@ -91,7 +91,7 @@ Lets look are structure
 
 Lets look at correaltion between these various columns
 
-```{r corr_plot}
+```{r ggpairs_continous_attibutes}
 hr %>%  dplyr::select(
   satisfaction_level,
   last_evaluation,
@@ -99,17 +99,57 @@ hr %>%  dplyr::select(
   number_project,
   left
   ) %>% ggpairs()
+```
 
+###__number_project__ 
+* employees involved in 3-5 projects have high satisfaction level, less than 3 projects or more than 5 projects satisfaction is low
+* last_evaluation increases with number_project
+* average_monthly_hours also increases with number_project
+* number of employees leaving (left=1) is high at 2 or less improves for 3 projects and then slowly creeps up until 5 projects and goes down
+* Overall Looks like 3-5 projects would mean less employees quiting and good employee satisfaction.
+
+###__average_monthly_hours__
+* relation to satisfaction or last_evaluation is not very obvious
+* average_monthly_hours seems to increase with number_project
+* employees leaving (left=1)
+  + 150 hours +/- 25 shows high number of employees leaving
+	+ Again 225 hours and more employees leaving creaps to peak at around 250 hours and dips gradually to 300 hours
+	+ 175 hours - 225 hours for average_monthly_hours seems to have low rate of employees leaving
+
+###__last_evaluation__
+* Between 0.4 to 0.6 evaluation rating, employees leaving (left=1) is high.
+* It goes down at mid level and then picks up at around 0.75 and peaks around 0.85
+* So low and higher end of evaluation rating employees leaving is high.
+* Though one's leaving at lower rating is good for the company but the employees leaving having high rating is a concern for the company. 	
+	
+###__satisfaction_level__
+* number projects between 3-5 show high satisfaction, less projects or too many projects tend to lower satisfaction
+* employees leaving have lower satisfaction than employees not leaving the company
+
+###__overall__
+Looks like employees involved in 3 -5 projects and putting in 175 hours - 225 hours average monthly hours have lower rate of leaving company and have high satisfaction level.
+
+```{r ggpairs_discrete_attributes}
 hr %>%  dplyr::select(Work_accident, promotion_last_5years, salary, left) %>% ggpairs()
 
 ```
 
-* There is strong correlation between _last_evaluation_, _number_project_, _average_monthly_hours_.
-* There is also strong correlation between _satisfaction_level_ & _left_.
+###__Work_accident__
+* A small percent of employees involved in Work_accident are actually leaving company. Either Work_accident is not a very significant accident.
+* Work_accident is higher at medium and low salary level than in higher salary level
+
+###__promotion_last_5years__
+* Very few employees are getting promoted
+* number of employees getting promoted are even at different salary level.
+
+###__salary__
+* Higher number of employees leaving are in the medium & low salary level
+
+###__overall__
+Work_accident, promotion_last_5years & salary dont seem to have significant impact on employees leaving company.
 
 
-
-Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _average_monthly_hours_, _work_accident_, _salary_ and _number_project_
+Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _average_monthly_hours_ and _number_project_
 
 
 ```{r plot_data_exp_analysis}
@@ -118,44 +158,33 @@ satis_l <- hr %>% ggplot(aes(satisfaction_level)) +
   geom_histogram( binwidth = 0.05, aes(fill = left)) +
   labs(x = "satisfaction_level", y = "employees", title = "satisfaction level") + myTheme
 
+nmbr_prj <- hr %>% ggplot(aes(as.numeric(number_project))) +
+  geom_histogram( binwidth = 1, aes(fill = left)) +
+  labs(x = "number_project", y = "employees", title = "Number of projects") + myTheme
+
 lst_eval <- hr %>% ggplot(aes(last_evaluation)) +
   geom_histogram( binwidth = 0.05, aes(fill = left)) +
   labs(x = "last_evaluation", y = "employees", title = "Last evaluation") + myTheme
+
+mnthly_hrs <- hr %>% ggplot(aes(average_montly_hours)) +
+  geom_histogram( binwidth = 1, aes(fill = left)) +
+  labs(x = "average_montly_hours", y = "employees", title = "Average montly hours") + myTheme
 
 tm_spnd <- hr %>% ggplot(aes(time_spend_company)) +
   geom_histogram( binwidth = 1, aes(fill = left)) +
   labs(x = "time_spend_company", y = "employees", title = "Time Spend in Company") + myTheme
 
 
-mnthly_hrs <- hr %>% ggplot(aes(average_montly_hours)) +
-  geom_histogram( binwidth = 1, aes(fill = left)) +
-  labs(x = "average_montly_hours", y = "employees", title = "Average montly hours") + myTheme
-
-wrk_accdnt <- hr %>% ggplot(aes(Work_accident)) +
-  geom_histogram( binwidth = 0.05, aes(fill = left), stat = "count") +
-  labs(x = "Work_accident", y = "employees", title = "Work accident") + myTheme
-
-sal <- hr %>% ggplot(aes(salary)) +
-  geom_histogram( binwidth = 0.05, aes(fill = left), stat = "count") +
-  labs(x = "salary", y = "employees", title = "Salary") + myTheme
-
-nmbr_prj <- hr %>% ggplot(aes(as.numeric(number_project))) +
-  geom_histogram( binwidth = 1, aes(fill = left)) +
-  labs(x = "number_project", y = "employees", title = "Number of projects") + myTheme
-
-grid.arrange(satis_l, lst_eval, sal, tm_spnd, mnthly_hrs,nmbr_prj, wrk_accdnt, nrow = 4)
+grid.arrange(satis_l, nmbr_prj, lst_eval, mnthly_hrs,tm_spnd,  nrow = 3)
 ```
 
-* Using plots for __avaerage_monthly_hours__, __last_evaluation__ & __number_projects__,
+* Using plots for __satisfaction_level__, __avaerage_monthly_hours__, __last_evaluation__ & __number_projects__:
   + Overall lower performing employees are leaving more. This warrants improvement in hiring process to avoid low performers
   + Aside from low performers, we can notice number of employees leaving creeeping up among mid to high performing. This is an area that needs to be also looked into for reduction in rate of attrition.  
-
-* Most employees seem to have had 2- 4 projects. It looks like employees that remain having more than 4 are very low.
-* Average monthly hours of 160 to 215 hrs or less, seems to show very low attrition.
-* Most employees have been with company 5 or less.
+  + Looks like employees involved in 3 -5 projects and putting in 175 hours - 225 hours average monthly hours have lower rate of leaving company and have high satisfaction level.
 
 
-###Cluster Analysis
+###Cluster Analysis 
 ```{r cluster1}
 #lets identify optimum number of clusters
 wssplot <- function(data, nc = 15, seed = 1234) {
@@ -171,47 +200,102 @@ wssplot <- function(data, nc = 15, seed = 1234) {
        ylab = "Within groups sum of squares")   
 }
 
+#lets consider employees who left the company
+hr_clust <- hr %>% filter(left == 1)
+
+#remove attribute left
+hr_clust <- hr_clust[-7]
+
 #lets make all fields numeric
-hr_clust <- hr
 hr_clust$dept <- as.numeric( as.factor(hr_clust$dept))
 hr_clust$salary <- as.numeric( as.factor(hr_clust$salary))
 hr_clust$number_project <- as.numeric( hr_clust$number_project)
 hr_clust$Work_accident <- as.numeric( hr_clust$Work_accident)
-hr_clust$left <- as.numeric(hr_clust$left)
 hr_clust$promotion_last_5years <- as.numeric(hr_clust$promotion_last_5years)
 
+#lets identify optimum number of clusters
 wssplot(scale(hr_clust))
 ```
 
 ```{r clustering}
-# lets consider 9 clusters 
+# lets consider 3 clusters 
 
-fit.km <- kmeans(scale(hr_clust), 11)
-clusplot(hr_clust,fit.km$cluster)
+fit.km <- kmeans(scale(hr_clust), 3)
+clusplot(hr_clust,fit.km$cluster, color = TRUE)
 ```
 
+```{r clustering_analysis_signifanct}
+cluster_analysis <- cbind(hr_clust,fit.km$cluster)
+names(cluster_analysis)[10] <- 'cluster'
+
+satis_2 <- cluster_analysis %>% ggplot(aes(satisfaction_level)) + geom_histogram() + facet_grid(.~cluster)
+
+num_prj2 <- cluster_analysis %>% ggplot(aes(number_project)) + geom_histogram() + facet_grid(.~cluster)
+
+last_eval2 <- cluster_analysis %>% ggplot(aes(last_evaluation)) + geom_histogram() + facet_grid(.~cluster)
+
+avg_hrs2 <- cluster_analysis %>% ggplot(aes(average_montly_hours)) + geom_histogram() + facet_grid(.~cluster)
+
+grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2, nrow = 4)
+```
+
+###__cluster 1__
+* Employees having overall higher satisfaction level, 
+* involved 3-5 projects, 
+* higher evaluation rating (0.8 -1) and 
+* average monthly hours of 225  - 275 hours.
+
+###__cluster 2__
+* Employees having overall medium satisfaction level, 
+* involved in less than 2 projects, 
+* low to medium evaluation rating (<0.6) and 
+* low average monthly hours of less than 175 hours.
+
+###__cluster 3__
+* Employees having overall low satisfaction level, 
+* involved in more than 4 projects, 
+* high evaluation rating (0.8-1) and 
+* high average monthly hours of 225 - 350 hours.
+
+###__overall__
+* cluster 1 are employees that comapany need to find ways to retain.
+* cluster 3 are over worked employees, company need to find ways to optimise work load and improve satisfaction level
+* cluster 2 are under performing employees and company need to focus to minimize hiring employees of this category.
+
+```{r cluster_analysis_not_imp}
+promotion2 <- cluster_analysis %>% ggplot(aes(promotion_last_5years)) + geom_histogram() + facet_grid(.~cluster)
+dept2 <- cluster_analysis %>% ggplot(aes(dept)) + geom_histogram() + facet_grid(.~cluster)
+wrk_accdnt2 <- cluster_analysis %>% ggplot(aes(Work_accident)) + geom_histogram() + facet_grid(.~cluster)
+sal2 <- cluster_analysis %>% ggplot(aes(salary)) + geom_histogram() + facet_grid(.~cluster)
+
+grid.arrange(promotion2,dept2, wrk_accdnt2, sal2, nrow = 4)
+```
+
+###__overall__
+All clusters have even distribution for promotion, department, work accident and salary. Not much significant observation that can be made.
 
 ##Regression Model
 
 ###Linear Regression
-Lets build a model to determine how long an employee will stay
+Lets build a model to determine how long an employee will stay using data from employees who already left
 
 
 ####Train Data
 ```{r}
 
 set.seed(3456)
-trainIndex <- createDataPartition(hr$time_spend_company, p = .8, 
+hr_left <- hr %>% filter(left==1)
+trainIndex <- createDataPartition(hr_left$time_spend_company, p = .8, 
                                   list = FALSE, 
                                   times = 1)
 head(trainIndex)
 
-hrTrain <- hr[ trainIndex,]
+hrTrain <- hr_left[ trainIndex,]
 
 ```
 ###Test Data
 ```{r}
-hrTest  <- hr[-trainIndex,]
+hrTest  <- hr_left[-trainIndex,]
 ```
 
 ###Models
@@ -219,75 +303,43 @@ hrTest  <- hr[-trainIndex,]
 ```{r fields_lm}
 plot(varImp(train(time_spend_company ~ ., data = hrTrain, method = "lm")))
 ```
-
+Attributes satisfaction_level,number_project, avaerage_monthly_hours,promotion_last_5years, dept seems to be significant for linear regression
 ```{r}
-lm_time_spend <- lm(time_spend_company~left+ dept+ promotion_last_5years + number_project+last_evaluation+salary+Work_accident+satisfaction_level, data = hrTrain)
+lm_time_spend <- lm(time_spend_company~ satisfaction_level+number_project+ average_montly_hours+promotion_last_5years+ dept, data = hrTrain)
 lm_time_spend_summary <- summary(lm_time_spend)
 lm_time_spend_summary
 ```
 
-```{r}
-lm_time_spend_mthly_hrs <- lm(time_spend_company~left+ dept+ promotion_last_5years + number_project+last_evaluation+average_montly_hours+salary+Work_accident+satisfaction_level, data = hrTrain)
-lm_time_spend_mthly_hrs_summary <- summary(lm_time_spend_mthly_hrs)
-lm_time_spend_mthly_hrs_summary
-```
 
-###Lets compare the two models
-```{r}
-lm_model_anova <- anova(lm_time_spend,lm_time_spend_mthly_hrs)
-lm_model_anova
-```
 
 _lm_time_spend_ has an R Squared of `r lm_time_spend_summary$r.squared` and adjusted R-Squared of `r lm_time_spend_summary$adj.r.squared`
 
-_lm_time_spend_mthly_hrs_ has an R Squared of `r lm_time_spend_mthly_hrs_summary$r.squared` and adjusted R-Squared of `r lm_time_spend_mthly_hrs_summary$adj.r.squared`
+#####R-Squared is good for the model.
 
-
-#####Based on anova and both R Squared and Adjusted R Squared model _lm_time_spend_mthly_hrs_ seems to be a better fit. However R-Squared is very low and close to 0, model is a poor fit.
-
-
-###Predict using the model _lm_time_spend_mthly_hrs_
+###Lets predict using the model _lm_time_spend_
 ```{r}
-predict_lm_emp_leaving <- predict(lm_time_spend_mthly_hrs, newdata = hrTest)
+predict_time_spend <- predict(lm_time_spend, newdata = hrTest)
 #summary of prediction
-summary(predict_lm_emp_leaving)
+summary(predict_time_spend)
 
 #summary of actuals
 summary(hrTest$time_spend_company)
+
 ```
+The summary shows closeness in prediction to actuals.
 
-```{r predict_vs_actual_df}
-#Create data frame actual vs predicted
-p <- data.frame(predict_lm_emp_leaving)
-p$ID <- as.numeric(rownames(p))
-p$Type <- 'Predicted'
-names(p)[1] <- 'time_spend_company'
-
-a <- data.frame(hrTest$time_spend_company)
-a$ID <- as.numeric(rownames(hrTest))
-a$Type <- 'Actual'
-names(a)[1] <- 'time_spend_company'
-
-m <- data.frame(rbind(a,p))
-```
-
-```{r plot_predict_vs_actual_df}
-#plot predict and actual
-m %>% ggplot(aes(x = ID, y = time_spend_company, col = Type)) + 
-  geom_line() + 
-  geom_smooth() +
-  labs(x = "Observation", y = "Number of years spent in the company", title = "Plot Predicted & Actual Time spend vs Observation") +
-  scale_colour_brewer(palette = brewer.pal(11,"Spectral")) +
-  myTheme
-```
+###Lets measure the correlation
 
 ```{r compute_correlation_coef}
 #correlation data
-plot_data <- data.frame(predict_lm_emp_leaving, hrTest$time_spend_company)
+plot_data <- data.frame(predict_time_spend, hrTest$time_spend_company)
 names(plot_data)[1] <- "predicted"
 names(plot_data)[2] <- "actual"
 
-plot_data$predicted <- round(plot_data$predicted)
+#plot_data$predicted <- round(plot_data$predicted)
+
+# plot predicted time spend vs actual time spend in conpany
+plot_data %>% ggplot(aes(x = actual, y = predicted)) + geom_point() + geom_smooth(method = "lm")
 
 correlation <- cor(plot_data)
 correlation
@@ -296,13 +348,13 @@ correlation
 correlation[1,2]
 ```
 
-The correlation coefficient is low __`r correlation[1,2]`__
+The correlation coefficient is excellent __`r correlation[1,2]`__
 
 ```{r compute_rmse}
 #lets see how good the model prediction was
 
 #Sum of squared errors(SSE)
-sse = sum((hrTest$time_spend_company - predict_lm_emp_leaving ) ^ 2)
+sse = sum((hrTest$time_spend_company - predict_time_spend ) ^ 2)
 round(sse, digits = 2)
 
 #Root mean squared errors (RMSE)
@@ -310,7 +362,7 @@ rmse = sqrt(sse / nrow(hrTest))
 round(rmse, digits = 2)
 
 ```
-####_lm_time_spend_mthly_hrs_ prediction has an 'Root mean squared errors' `r round(rmse, digits = 2)` and correlation coefficient of `r round(correlation[1,2], digits =2)`
+####Linear model _lm_time_spend_ prediction has an 'Root mean squared errors' of `r round(rmse, digits = 2)` years and correlation coefficient of `r round(correlation[1,2], digits =2)`
 
 ###Logistic Regression
 Lets build a model to predict if the employee will leave
