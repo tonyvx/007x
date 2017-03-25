@@ -272,13 +272,25 @@ clusplot(hr_clust,fit.km$cluster, color = TRUE)
 cluster_analysis <- cbind(hr_clust,fit.km$cluster)
 names(cluster_analysis)[10] <- 'cluster'
 
-satis_2 <- cluster_analysis %>% ggplot(aes(satisfaction_level)) + geom_histogram() + facet_grid(.~cluster)
+satis_2 <- cluster_analysis %>% 
+  ggplot(aes(satisfaction_level)) + 
+  geom_histogram(fill = "red") + 
+  facet_grid(.~cluster)
 
-num_prj2 <- cluster_analysis %>% ggplot(aes(number_project)) + geom_histogram() + facet_grid(.~cluster)
+num_prj2 <- cluster_analysis %>% 
+  ggplot(aes(number_project)) + 
+  geom_histogram(fill = "red") + 
+  facet_grid(.~cluster)
 
-last_eval2 <- cluster_analysis %>% ggplot(aes(last_evaluation)) + geom_histogram() + facet_grid(.~cluster)
+last_eval2 <- cluster_analysis %>% 
+  ggplot(aes(last_evaluation)) + 
+  geom_histogram(fill = "red") + 
+  facet_grid(.~cluster)
 
-avg_hrs2 <- cluster_analysis %>% ggplot(aes(average_montly_hours)) + geom_histogram() + facet_grid(.~cluster)
+avg_hrs2 <- cluster_analysis %>% 
+  ggplot(aes(average_montly_hours)) + 
+  geom_histogram(fill = "red") + 
+  facet_grid(.~cluster)
 
 grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2, nrow = 4)
 ```
@@ -310,10 +322,25 @@ grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2, nrow = 4)
 
 
 ```r
-promotion2 <- cluster_analysis %>% ggplot(aes(promotion_last_5years)) + geom_histogram() + facet_grid(.~cluster)
-dept2 <- cluster_analysis %>% ggplot(aes(dept)) + geom_histogram() + facet_grid(.~cluster)
-wrk_accdnt2 <- cluster_analysis %>% ggplot(aes(Work_accident)) + geom_histogram() + facet_grid(.~cluster)
-sal2 <- cluster_analysis %>% ggplot(aes(salary)) + geom_histogram() + facet_grid(.~cluster)
+promotion2 <- cluster_analysis %>% 
+  ggplot(aes(promotion_last_5years)) + 
+  geom_histogram(fill = "red") + 
+  facet_grid(.~cluster)
+
+dept2 <- cluster_analysis %>% 
+  ggplot(aes(dept)) + 
+  geom_histogram(fill = "red") + 
+  facet_grid(.~cluster)
+
+wrk_accdnt2 <- cluster_analysis %>% 
+  ggplot(aes(Work_accident)) + 
+  geom_histogram(fill = "red") + 
+  facet_grid(.~cluster)
+
+sal2 <- cluster_analysis %>% 
+  ggplot(aes(salary)) + 
+  geom_histogram(fill = "red") + 
+  facet_grid(.~cluster)
 
 grid.arrange(promotion2,dept2, wrk_accdnt2, sal2, nrow = 4)
 ```
