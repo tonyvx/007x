@@ -136,14 +136,14 @@ hr %>%  dplyr::select(
 
 ![](HR_Analysis_files/figure-html/ggpairs_continous_attibutes-1.png)<!-- -->
 
-###__number_project__ 
+###number_project (Number of projects)
 * employees involved in 3-5 projects have high satisfaction level, less than 3 projects or more than 5 projects satisfaction is low
 * last_evaluation increases with number_project
 * average_monthly_hours also increases with number_project
 * number of employees leaving (left=1) is high at 2 or less improves for 3 projects and then slowly creeps up until 5 projects and goes down
 * Overall Looks like 3-5 projects would mean less employees quiting and good employee satisfaction.
 
-###__average_monthly_hours__
+###average_monthly_hours (Average monthly hours)
 * relation to satisfaction or last_evaluation is not very obvious
 * average_monthly_hours seems to increase with number_project
 * employees leaving (left=1)
@@ -151,17 +151,17 @@ hr %>%  dplyr::select(
 	+ Again 225 hours and more employees leaving creaps to peak at around 250 hours and dips gradually to 300 hours
 	+ 175 hours - 225 hours for average_monthly_hours seems to have low rate of employees leaving
 
-###__last_evaluation__
+###last_evaluation (Latest evaluation rating for the employee, ranges 0=low to 1=high)
 * Between 0.4 to 0.6 evaluation rating, employees leaving (left=1) is high.
 * It goes down at mid level and then picks up at around 0.75 and peaks around 0.85
 * So low and higher end of evaluation rating employees leaving is high.
 * Though one's leaving at lower rating is good for the company but the employees leaving having high rating is a concern for the company. 	
 	
-###__satisfaction_level__
+###satisfaction_level (Measure of employee statisfaction level, ranges 0=low to 1=high)
 * number projects between 3-5 show high satisfaction, less projects or too many projects tend to lower satisfaction
 * employees leaving have lower satisfaction than employees not leaving the company
 
-###__overall__
+###overall
 Looks like employees involved in 3 -5 projects and putting in 175 hours - 225 hours average monthly hours have lower rate of leaving company and have high satisfaction level.
 
 
@@ -171,22 +171,22 @@ hr %>%  dplyr::select(Work_accident, promotion_last_5years, salary, left) %>% gg
 
 ![](HR_Analysis_files/figure-html/ggpairs_discrete_attributes-1.png)<!-- -->
 
-###__Work_accident__
+###Work_accident ( Accidents during work - 1 indicates accident )
 * A small percent of employees involved in Work_accident are actually leaving company. Either Work_accident is not a very significant accident.
 * Work_accident is higher at medium and low salary level than in higher salary level
 
-###__promotion_last_5years__
+###promotion_last_5years (Promotion in last 5 years - 1 indicates promotion)
 * Very few employees are getting promoted
 * number of employees getting promoted are even at different salary level.
 
-###__salary__
+###salary ( Salary category for employees as high, medium and low)
 * Higher number of employees leaving are in the medium & low salary level
 
-###__overall__
-Work_accident, promotion_last_5years & salary dont seem to have significant impact on employees leaving company.
+###overall
+Work_accident, promotion_last_5years & salary seems to have lower impact on employees leaving company.
 
 
-Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _average_monthly_hours_ and _number_project_
+####Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _average_monthly_hours_ and _number_project_
 
 
 
@@ -220,7 +220,7 @@ grid.arrange(satis_l, nmbr_prj, lst_eval, mnthly_hrs,tm_spnd,  nrow = 3)
 * Using plots for __satisfaction_level__, __avaerage_monthly_hours__, __last_evaluation__ & __number_projects__:
   + Overall lower performing employees are leaving more. This warrants improvement in hiring process to avoid low performers
   + Aside from low performers, we can notice number of employees leaving creeeping up among mid to high performing. This is an area that needs to be also looked into for reduction in rate of attrition.  
-  + Looks like employees involved in 3 -5 projects and putting in 175 hours - 225 hours average monthly hours have lower rate of leaving company and have high satisfaction level.
+  + Overall employees involved in 3 -5 projects and putting in 175 hours - 225 hours average monthly hours have lower rate of leaving company and have high satisfaction level.
 
 
 ###Cluster Analysis 
@@ -299,25 +299,25 @@ grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2, nrow = 4)
 
 ![](HR_Analysis_files/figure-html/clustering_analysis_signifanct-1.png)<!-- -->
 
-###__cluster 1__
+###cluster 1
 * Employees having overall higher satisfaction level, 
 * involved 3-5 projects, 
 * higher evaluation rating (0.8 -1) and 
 * average monthly hours of 225  - 275 hours.
 
-###__cluster 2__
+###cluster 2
 * Employees having overall medium satisfaction level, 
 * involved in less than 2 projects, 
 * low to medium evaluation rating (<0.6) and 
 * low average monthly hours of less than 175 hours.
 
-###__cluster 3__
+###cluster 3
 * Employees having overall low satisfaction level, 
 * involved in more than 4 projects, 
 * high evaluation rating (0.8-1) and 
 * high average monthly hours of 225 - 350 hours.
 
-###__overall__
+###overall
 * cluster 1 are employees that comapany need to find ways to retain.
 * cluster 3 are over worked employees, company need to find ways to optimise work load and improve satisfaction level
 * cluster 2 are under performing employees and company need to focus to minimize hiring employees of this category.
@@ -349,46 +349,31 @@ grid.arrange(promotion2,dept2, wrk_accdnt2, sal2, nrow = 4)
 
 ![](HR_Analysis_files/figure-html/cluster_analysis_not_imp-1.png)<!-- -->
 
-###__overall__
+###overall
 All clusters have even distribution for promotion, department, work accident and salary. Not much significant observation that can be made.
 
-##Regression Model
+##Regression Analysis
 
-###Linear Regression
-Lets build a model to determine how long an employee will stay using data from employees who already left
+###Linear Regression Analysis
+Lets build a model to determine how long an employee will stay using data from __employees who already left__
 
 
-####Train Data
+####Data
 
 ```r
 set.seed(3456)
-hr_left <- hr %>% filter(left==1)
+hr_left <- hr %>% filter(left == 1)
 trainIndex <- createDataPartition(hr_left$time_spend_company, p = .8, 
                                   list = FALSE, 
                                   times = 1)
-head(trainIndex)
-```
 
-```
-##      Resample1
-## [1,]         1
-## [2,]         2
-## [3,]         3
-## [4,]         4
-## [5,]         5
-## [6,]         6
-```
-
-```r
+#Training data
 hrTrain <- hr_left[ trainIndex,]
-```
-###Test Data
 
-```r
+#Test data
 hrTest  <- hr_left[-trainIndex,]
 ```
 
-###Models
 ####Lets use caret package to anlyze significant fields for linear model
 
 ```r
@@ -398,8 +383,13 @@ plot(varImp(train(time_spend_company ~ ., data = hrTrain, method = "lm")))
 ![](HR_Analysis_files/figure-html/fields_lm-1.png)<!-- -->
 Attributes satisfaction_level,number_project, avaerage_monthly_hours,promotion_last_5years, dept seems to be significant for linear regression
 
+####Linear Regression Model
+
 ```r
+#Model
 lm_time_spend <- lm(time_spend_company~ satisfaction_level+number_project+ average_montly_hours+promotion_last_5years+ dept, data = hrTrain)
+
+#Summary of the model
 lm_time_spend_summary <- summary(lm_time_spend)
 lm_time_spend_summary
 ```
@@ -443,15 +433,13 @@ lm_time_spend_summary
 ```
 
 
+Model _lm_time_spend_ has an R Squared of 0.7519533 and adjusted R-Squared of 0.750469
 
-_lm_time_spend_ has an R Squared of 0.7519533 and adjusted R-Squared of 0.750469
-
-#####R-Squared is good for the model.
-
-###Lets predict using the model _lm_time_spend_
+####Lets predict using the model _lm_time_spend_
 
 ```r
 predict_time_spend <- predict(lm_time_spend, newdata = hrTest)
+
 #summary of prediction
 summary(predict_time_spend)
 ```
@@ -470,10 +458,9 @@ summary(hrTest$time_spend_company)
 ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 ##   2.000   3.000   4.000   3.874   5.000   6.000
 ```
-The summary shows closeness in prediction to actuals.
+####The summary shows closeness in prediction to actuals.
 
-###Lets measure the correlation
-
+####Lets measure the correlation
 
 ```r
 #correlation data
@@ -481,10 +468,10 @@ plot_data <- data.frame(predict_time_spend, hrTest$time_spend_company)
 names(plot_data)[1] <- "predicted"
 names(plot_data)[2] <- "actual"
 
-#plot_data$predicted <- round(plot_data$predicted)
-
 # plot predicted time spend vs actual time spend in conpany
-plot_data %>% ggplot(aes(x = actual, y = predicted)) + geom_point() + geom_smooth(method = "lm")
+plot_data %>% ggplot(aes(x = actual, y = predicted)) + 
+  geom_point() + 
+  geom_smooth(method = "lm")
 ```
 
 ![](HR_Analysis_files/figure-html/compute_correlation_coef-1.png)<!-- -->
@@ -511,6 +498,7 @@ correlation[1,2]
 
 The correlation coefficient is excellent __0.8818467__
 
+####Lets compute Root Mean Square Error for the model
 
 ```r
 #lets see how good the model prediction was
@@ -533,72 +521,53 @@ round(rmse, digits = 2)
 ```
 ## [1] 0.46
 ```
-####Linear model _lm_time_spend_ prediction has an 'Root mean squared errors' of 0.46 years and correlation coefficient of 0.88
+####Linear model _lm_time_spend_ prediction with a correlation coefficent of 0.88 is providing a good prediction of time spent in company by employees with an RMSE of 0.46 years.
 
-###Logistic Regression
-Lets build a model to predict if the employee will leave
+###Logistic Regression Analysis
 
-####Train Data
+Lets build a model to __predict if the employee will leave__
+
+#### Data
 
 ```r
 set.seed(3456)
 trainIndex <- createDataPartition(hr$left, p = .8, 
                                   list = FALSE, 
                                   times = 1)
-head(trainIndex)
-```
-
-```
-##      Resample1
-## [1,]         1
-## [2,]         2
-## [3,]         3
-## [4,]         4
-## [5,]         5
-## [6,]         6
-```
-
-```r
+#Training data 
 hrTrain <- hr[ trainIndex,]
-```
-###Test Data
 
-```r
+#Test data
 hrTest  <- hr[-trainIndex,]
 ```
 
-###Models
-
-#####Significant fields
+####Lets identify significant attributes for logistics regression
 
 
 ```r
-plot(varImp(train(left ~ ., data = hrTrain, method = "bayesglm")))
+plot(varImp(train(left ~ ., data = hrTrain, method = "glm")))
 ```
 
 ![](HR_Analysis_files/figure-html/log_reg_model_signi_fields-1.png)<!-- -->
+* Attributes - _number_project_, _time_spend_company_, _satisfaction_level_, _Work_accident_, _salary_, _last_evaluation, _average_montly_hours_, _promotion_last_5years_ & _dept_ are significant for the logistics regression model to predict left (employees leaving left=1)
 
-#####Significant fields
-* _satisfaction_level_, _Work_accident_, _salary_, _time_spend_company_, _number_project_, _average_montly_hours_, _promotion_last_5years_, _dept_
-
+####Logistics Regression Model
 
 ```r
-log_model <- train( left ~ satisfaction_level + 
+#Logistics regression model
+log_model <- train( left ~ number_project +
+                      time_spend_company +
+                      satisfaction_level + 
                       Work_accident  + 
                       salary + 
-                      time_spend_company + 
-                      number_project + 
+                      last_evaluation +
                       average_montly_hours + 
                       promotion_last_5years + 
                       dept, 
                     data = hrTrain, 
                     method = "glm",
                     trControl = trainControl(method = "cv",number = 5))
-                           
-glm_prediction_train <- predict(log_model, newdata = hrTrain)
-glm_confustion_matrix_train <- confusionMatrix(glm_prediction_train,
-                                               hrTrain$left,
-                                               dnn = c("Predicted", "actual"))
+#Summary of the model
 summary(log_model)
 ```
 
@@ -609,45 +578,54 @@ summary(log_model)
 ## 
 ## Deviance Residuals: 
 ##     Min       1Q   Median       3Q      Max  
-## -2.9545  -0.4487  -0.1973  -0.0479   3.3801  
+## -3.1739  -0.4310  -0.1906  -0.0432   3.3129  
 ## 
 ## Coefficients:
 ##                          Estimate Std. Error z value Pr(>|z|)    
-## (Intercept)            -2.698e+00  2.426e-01 -11.120  < 2e-16 ***
-## satisfaction_level     -1.754e+00  1.358e-01 -12.914  < 2e-16 ***
-## Work_accident1         -1.544e+00  1.119e-01 -13.795  < 2e-16 ***
-## salarylow               2.023e+00  1.578e-01  12.815  < 2e-16 ***
-## salarymedium            1.421e+00  1.589e-01   8.944  < 2e-16 ***
-## time_spend_company      3.878e-01  2.093e-02  18.528  < 2e-16 ***
-## number_project3        -5.145e+00  1.549e-01 -33.213  < 2e-16 ***
-## number_project4        -3.474e+00  9.803e-02 -35.441  < 2e-16 ***
-## number_project5        -2.502e+00  9.528e-02 -26.253  < 2e-16 ***
-## number_project6        -1.984e+00  1.179e-01 -16.832  < 2e-16 ***
-## number_project7         1.373e+01  1.597e+02   0.086 0.931496    
-## average_montly_hours    1.053e-02  7.031e-04  14.981  < 2e-16 ***
-## promotion_last_5years1 -1.555e+00  3.196e-01  -4.865 1.14e-06 ***
-## depthr                  2.135e-01  1.776e-01   1.202 0.229217    
-## deptIT                 -3.714e-01  1.612e-01  -2.304 0.021196 *  
-## deptmanagement         -7.142e-01  2.146e-01  -3.328 0.000874 ***
-## deptmarketing          -1.080e-01  1.762e-01  -0.613 0.539990    
-## deptproduct_mng        -4.016e-01  1.726e-01  -2.326 0.019994 *  
-## deptRandD              -7.509e-01  1.939e-01  -3.872 0.000108 ***
-## deptsales              -2.716e-01  1.362e-01  -1.993 0.046214 *  
-## deptsupport            -7.137e-02  1.452e-01  -0.491 0.623150    
-## depttechnical          -8.169e-02  1.414e-01  -0.578 0.563342    
+## (Intercept)             -3.649080   0.258983 -14.090  < 2e-16 ***
+## number_project3         -5.453854   0.158282 -34.457  < 2e-16 ***
+## number_project4         -3.848991   0.105629 -36.439  < 2e-16 ***
+## number_project5         -2.898666   0.103443 -28.022  < 2e-16 ***
+## number_project6         -2.448469   0.127970 -19.133  < 2e-16 ***
+## number_project7         13.335048 157.247419   0.085 0.932418    
+## time_spend_company       0.364027   0.021406  17.006  < 2e-16 ***
+## satisfaction_level      -2.044057   0.140947 -14.502  < 2e-16 ***
+## Work_accident1          -1.572504   0.114021 -13.791  < 2e-16 ***
+## salarylow                2.035239   0.161792  12.579  < 2e-16 ***
+## salarymedium             1.458090   0.162921   8.950  < 2e-16 ***
+## last_evaluation          2.672006   0.216404  12.347  < 2e-16 ***
+## average_montly_hours     0.008254   0.000731  11.292  < 2e-16 ***
+## promotion_last_5years1  -1.413826   0.313303  -4.513  6.4e-06 ***
+## depthr                   0.237174   0.178023   1.332 0.182774    
+## deptIT                  -0.383480   0.162387  -2.362 0.018200 *  
+## deptmanagement          -0.716068   0.215724  -3.319 0.000902 ***
+## deptmarketing           -0.131592   0.176514  -0.746 0.455965    
+## deptproduct_mng         -0.419695   0.173559  -2.418 0.015599 *  
+## deptRandD               -0.735963   0.195562  -3.763 0.000168 ***
+## deptsales               -0.248476   0.136269  -1.823 0.068240 .  
+## deptsupport             -0.083597   0.145559  -0.574 0.565752    
+## depttechnical           -0.086417   0.141564  -0.610 0.541565    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
 ##     Null deviance: 13172.7  on 11999  degrees of freedom
-## Residual deviance:  7489.8  on 11978  degrees of freedom
-## AIC: 7533.8
+## Residual deviance:  7327.6  on 11977  degrees of freedom
+## AIC: 7373.6
 ## 
 ## Number of Fisher Scoring iterations: 15
 ```
 
 ```r
+#predict against the training data                           
+glm_prediction_train <- predict(log_model, newdata = hrTrain)
+
+#Confusion matrix for prediction against training data
+glm_confustion_matrix_train <- confusionMatrix(glm_prediction_train,
+                                               hrTrain$left,
+                                               dnn = c("Predicted", "actual"))
+
 glm_confustion_matrix_train
 ```
 
@@ -656,31 +634,31 @@ glm_confustion_matrix_train
 ## 
 ##          actual
 ## Predicted    0    1
-##         0 8432  953
-##         1  711 1904
-##                                          
-##                Accuracy : 0.8613         
-##                  95% CI : (0.855, 0.8675)
-##     No Information Rate : 0.7619         
-##     P-Value [Acc > NIR] : < 2.2e-16      
-##                                          
-##                   Kappa : 0.6063         
-##  Mcnemar's Test P-Value : 3.463e-09      
-##                                          
-##             Sensitivity : 0.9222         
-##             Specificity : 0.6664         
-##          Pos Pred Value : 0.8985         
-##          Neg Pred Value : 0.7281         
-##              Prevalence : 0.7619         
-##          Detection Rate : 0.7027         
-##    Detection Prevalence : 0.7821         
-##       Balanced Accuracy : 0.7943         
-##                                          
-##        'Positive' Class : 0              
+##         0 8442  887
+##         1  701 1970
+##                                           
+##                Accuracy : 0.8677          
+##                  95% CI : (0.8615, 0.8737)
+##     No Information Rate : 0.7619          
+##     P-Value [Acc > NIR] : < 2.2e-16       
+##                                           
+##                   Kappa : 0.6269          
+##  Mcnemar's Test P-Value : 3.443e-06       
+##                                           
+##             Sensitivity : 0.9233          
+##             Specificity : 0.6895          
+##          Pos Pred Value : 0.9049          
+##          Neg Pred Value : 0.7376          
+##              Prevalence : 0.7619          
+##          Detection Rate : 0.7035          
+##    Detection Prevalence : 0.7774          
+##       Balanced Accuracy : 0.8064          
+##                                           
+##        'Positive' Class : 0               
 ## 
 ```
 
-
+####Prediction
 
 ```r
 #Lets test prediction using test data 
@@ -695,58 +673,60 @@ glm_confustion_matrix_test
 ## 
 ##          actual
 ## Predicted    0    1
-##         0 2098  227
-##         1  187  487
-##                                           
-##                Accuracy : 0.862           
-##                  95% CI : (0.8491, 0.8741)
-##     No Information Rate : 0.7619          
-##     P-Value [Acc > NIR] : < 2e-16         
-##                                           
-##                   Kappa : 0.612           
-##  Mcnemar's Test P-Value : 0.05527         
-##                                           
-##             Sensitivity : 0.9182          
-##             Specificity : 0.6821          
-##          Pos Pred Value : 0.9024          
-##          Neg Pred Value : 0.7226          
-##              Prevalence : 0.7619          
-##          Detection Rate : 0.6996          
-##    Detection Prevalence : 0.7753          
-##       Balanced Accuracy : 0.8001          
-##                                           
-##        'Positive' Class : 0               
+##         0 2102  208
+##         1  183  506
+##                                          
+##                Accuracy : 0.8696         
+##                  95% CI : (0.857, 0.8815)
+##     No Information Rate : 0.7619         
+##     P-Value [Acc > NIR] : <2e-16         
+##                                          
+##                   Kappa : 0.6363         
+##  Mcnemar's Test P-Value : 0.2249         
+##                                          
+##             Sensitivity : 0.9199         
+##             Specificity : 0.7087         
+##          Pos Pred Value : 0.9100         
+##          Neg Pred Value : 0.7344         
+##              Prevalence : 0.7619         
+##          Detection Rate : 0.7009         
+##    Detection Prevalence : 0.7703         
+##       Balanced Accuracy : 0.8143         
+##                                          
+##        'Positive' Class : 0              
 ## 
 ```
 
+####Logistics regression model to predict employees leaving the company is predicting with an 
+  * overall Accuracy of 0.8696232,
+  * predicting employees leaving company with 0.7086835 accuracy and
+  * predicting employess staying with the company with 0.9199125 accuracy.
+
+###Random Forest Analysis
 
 ```r
 library(doMC)
 registerDoMC(5)
+```
 
+####Data
 
-####Train Data
+```r
 set.seed(3456)
 trainIndex <- createDataPartition(hr$left, p = .8, 
                                   list = FALSE, 
                                   times = 1)
-head(trainIndex)
+
+#Training Data
+hrTrain <- hr[ trainIndex,]
+
+#Test Data
+hrTest  <- hr[-trainIndex,]
 ```
 
-```
-##      Resample1
-## [1,]         1
-## [2,]         2
-## [3,]         3
-## [4,]         4
-## [5,]         5
-## [6,]         6
-```
+####Random Forest Model
 
 ```r
-hrTrain <- hr[ trainIndex,]
-hrTest  <- hr[-trainIndex,]
-
 #Create smaller Train data for Random forest
 hrTrain_1 <- hrTrain[createDataPartition(y = hrTrain$left,p = 0.3,list = FALSE),]
 
@@ -819,6 +799,9 @@ rf_conf_matrix_train
 ## 
 ```
 
+####Prediction
+
+
 ```r
 #prediction on test data
 rf_prediction = predict(rf_model, newdata = hrTest)
@@ -855,9 +838,12 @@ rf_conf_matrix
 ##        'Positive' Class : 0               
 ## 
 ```
+####Random forest regression model to predict employees leaving the company is predicting with an 
+  * overall Accuracy of 0.9799933,
+  * predicting employees leaving company with 0.9243697 accuracy and 
+  * predicting employess staying with the company with 0.9973742 accuracy.
 
-
-###Summarize Logistics and Randon Forest Regression results
+###Summarize Logistics and Random Forest Regression results
 
 ```r
 overall <- cbind(
@@ -894,24 +880,24 @@ all_conf_matrix
 
 ```
 ##                        glm_train glm_test rf_train rf_test
-## Accuracy                  0.8613   0.8620   0.9868  0.9800
-## Kappa                     0.6063   0.6120   0.9629  0.9435
-## 95% CI (Upper)            0.8550   0.8491   0.9845  0.9743
-## 95% CI (Lower)            0.8675   0.8741   0.9887  0.9847
+## Accuracy                  0.8677   0.8696   0.9868  0.9800
+## Kappa                     0.6269   0.6363   0.9629  0.9435
+## 95% CI (Upper)            0.8615   0.8570   0.9845  0.9743
+## 95% CI (Lower)            0.8737   0.8815   0.9887  0.9847
 ## No Information Rate       0.7619   0.7619   0.7619  0.7619
 ## P-Value [Acc > NIR]       0.0000   0.0000   0.0000  0.0000
-## Mcnemar's Test P-Value    0.0000   0.0553   0.0000  0.0000
-## Sensitivity               0.9222   0.9182   0.9985  0.9974
-## Specificity               0.6664   0.6821   0.9492  0.9244
-## Pos Pred Value            0.8985   0.9024   0.9844  0.9769
-## Neg Pred Value            0.7281   0.7226   0.9949  0.9910
-## Precision                 0.8985   0.9024   0.9844  0.9769
-## Recall                    0.9222   0.9182   0.9985  0.9974
-## F1                        0.9102   0.9102   0.9914  0.9870
+## Mcnemar's Test P-Value    0.0000   0.2249   0.0000  0.0000
+## Sensitivity               0.9233   0.9199   0.9985  0.9974
+## Specificity               0.6895   0.7087   0.9492  0.9244
+## Pos Pred Value            0.9049   0.9100   0.9844  0.9769
+## Neg Pred Value            0.7376   0.7344   0.9949  0.9910
+## Precision                 0.9049   0.9100   0.9844  0.9769
+## Recall                    0.9233   0.9199   0.9985  0.9974
+## F1                        0.9140   0.9149   0.9914  0.9870
 ## Prevalence                0.7619   0.7619   0.7619  0.7619
-## Detection Rate            0.7027   0.6996   0.7608  0.7599
-## Detection Prevalence      0.7821   0.7753   0.7728  0.7779
-## Balanced Accuracy         0.7943   0.8001   0.9739  0.9609
+## Detection Rate            0.7035   0.7009   0.7608  0.7599
+## Detection Prevalence      0.7774   0.7703   0.7728  0.7779
+## Balanced Accuracy         0.8064   0.8143   0.9739  0.9609
 ```
 
 

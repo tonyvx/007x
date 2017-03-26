@@ -103,14 +103,14 @@ hr %>%  dplyr::select(
   ) %>% ggpairs()
 ```
 
-###__number_project__ 
+###number_project (Number of projects)
 * employees involved in 3-5 projects have high satisfaction level, less than 3 projects or more than 5 projects satisfaction is low
 * last_evaluation increases with number_project
 * average_monthly_hours also increases with number_project
 * number of employees leaving (left=1) is high at 2 or less improves for 3 projects and then slowly creeps up until 5 projects and goes down
 * Overall Looks like 3-5 projects would mean less employees quiting and good employee satisfaction.
 
-###__average_monthly_hours__
+###average_monthly_hours (Average monthly hours)
 * relation to satisfaction or last_evaluation is not very obvious
 * average_monthly_hours seems to increase with number_project
 * employees leaving (left=1)
@@ -118,17 +118,17 @@ hr %>%  dplyr::select(
 	+ Again 225 hours and more employees leaving creaps to peak at around 250 hours and dips gradually to 300 hours
 	+ 175 hours - 225 hours for average_monthly_hours seems to have low rate of employees leaving
 
-###__last_evaluation__
+###last_evaluation (Latest evaluation rating for the employee, ranges 0=low to 1=high)
 * Between 0.4 to 0.6 evaluation rating, employees leaving (left=1) is high.
 * It goes down at mid level and then picks up at around 0.75 and peaks around 0.85
 * So low and higher end of evaluation rating employees leaving is high.
 * Though one's leaving at lower rating is good for the company but the employees leaving having high rating is a concern for the company. 	
 	
-###__satisfaction_level__
+###satisfaction_level (Measure of employee statisfaction level, ranges 0=low to 1=high)
 * number projects between 3-5 show high satisfaction, less projects or too many projects tend to lower satisfaction
 * employees leaving have lower satisfaction than employees not leaving the company
 
-###__overall__
+###overall
 Looks like employees involved in 3 -5 projects and putting in 175 hours - 225 hours average monthly hours have lower rate of leaving company and have high satisfaction level.
 
 ```{r ggpairs_discrete_attributes}
@@ -136,22 +136,22 @@ hr %>%  dplyr::select(Work_accident, promotion_last_5years, salary, left) %>% gg
 
 ```
 
-###__Work_accident__
+###Work_accident ( Accidents during work - 1 indicates accident )
 * A small percent of employees involved in Work_accident are actually leaving company. Either Work_accident is not a very significant accident.
 * Work_accident is higher at medium and low salary level than in higher salary level
 
-###__promotion_last_5years__
+###promotion_last_5years (Promotion in last 5 years - 1 indicates promotion)
 * Very few employees are getting promoted
 * number of employees getting promoted are even at different salary level.
 
-###__salary__
+###salary ( Salary category for employees as high, medium and low)
 * Higher number of employees leaving are in the medium & low salary level
 
-###__overall__
-Work_accident, promotion_last_5years & salary dont seem to have significant impact on employees leaving company.
+###overall
+Work_accident, promotion_last_5years & salary seems to have lower impact on employees leaving company.
 
 
-Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _average_monthly_hours_ and _number_project_
+####Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _average_monthly_hours_ and _number_project_
 
 
 ```{r plot_data_exp_analysis}
@@ -183,7 +183,7 @@ grid.arrange(satis_l, nmbr_prj, lst_eval, mnthly_hrs,tm_spnd,  nrow = 3)
 * Using plots for __satisfaction_level__, __avaerage_monthly_hours__, __last_evaluation__ & __number_projects__:
   + Overall lower performing employees are leaving more. This warrants improvement in hiring process to avoid low performers
   + Aside from low performers, we can notice number of employees leaving creeeping up among mid to high performing. This is an area that needs to be also looked into for reduction in rate of attrition.  
-  + Looks like employees involved in 3 -5 projects and putting in 175 hours - 225 hours average monthly hours have lower rate of leaving company and have high satisfaction level.
+  + Overall employees involved in 3 -5 projects and putting in 175 hours - 225 hours average monthly hours have lower rate of leaving company and have high satisfaction level.
 
 
 ###Cluster Analysis 
@@ -253,25 +253,25 @@ avg_hrs2 <- cluster_analysis %>%
 grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2, nrow = 4)
 ```
 
-###__cluster 1__
+###cluster 1
 * Employees having overall higher satisfaction level, 
 * involved 3-5 projects, 
 * higher evaluation rating (0.8 -1) and 
 * average monthly hours of 225  - 275 hours.
 
-###__cluster 2__
+###cluster 2
 * Employees having overall medium satisfaction level, 
 * involved in less than 2 projects, 
 * low to medium evaluation rating (<0.6) and 
 * low average monthly hours of less than 175 hours.
 
-###__cluster 3__
+###cluster 3
 * Employees having overall low satisfaction level, 
 * involved in more than 4 projects, 
 * high evaluation rating (0.8-1) and 
 * high average monthly hours of 225 - 350 hours.
 
-###__overall__
+###overall
 * cluster 1 are employees that comapany need to find ways to retain.
 * cluster 3 are over worked employees, company need to find ways to optimise work load and improve satisfaction level
 * cluster 2 are under performing employees and company need to focus to minimize hiring employees of this category.
@@ -300,54 +300,54 @@ sal2 <- cluster_analysis %>%
 grid.arrange(promotion2,dept2, wrk_accdnt2, sal2, nrow = 4)
 ```
 
-###__overall__
+###overall
 All clusters have even distribution for promotion, department, work accident and salary. Not much significant observation that can be made.
 
-##Regression Model
+##Regression Analysis
 
-###Linear Regression
-Lets build a model to determine how long an employee will stay using data from employees who already left
+###Linear Regression Analysis
+Lets build a model to determine how long an employee will stay using data from __employees who already left__
 
 
-####Train Data
+####Data
 ```{r}
-
 set.seed(3456)
-hr_left <- hr %>% filter(left==1)
+hr_left <- hr %>% filter(left == 1)
 trainIndex <- createDataPartition(hr_left$time_spend_company, p = .8, 
                                   list = FALSE, 
                                   times = 1)
-head(trainIndex)
 
+#Training data
 hrTrain <- hr_left[ trainIndex,]
 
-```
-###Test Data
-```{r}
+#Test data
 hrTest  <- hr_left[-trainIndex,]
 ```
 
-###Models
 ####Lets use caret package to anlyze significant fields for linear model
 ```{r fields_lm}
 plot(varImp(train(time_spend_company ~ ., data = hrTrain, method = "lm")))
 ```
 Attributes satisfaction_level,number_project, avaerage_monthly_hours,promotion_last_5years, dept seems to be significant for linear regression
+
+####Linear Regression Model
 ```{r}
+
+#Model
 lm_time_spend <- lm(time_spend_company~ satisfaction_level+number_project+ average_montly_hours+promotion_last_5years+ dept, data = hrTrain)
+
+#Summary of the model
 lm_time_spend_summary <- summary(lm_time_spend)
 lm_time_spend_summary
 ```
 
 
+Model _lm_time_spend_ has an R Squared of `r lm_time_spend_summary$r.squared` and adjusted R-Squared of `r lm_time_spend_summary$adj.r.squared`
 
-_lm_time_spend_ has an R Squared of `r lm_time_spend_summary$r.squared` and adjusted R-Squared of `r lm_time_spend_summary$adj.r.squared`
-
-#####R-Squared is good for the model.
-
-###Lets predict using the model _lm_time_spend_
+####Lets predict using the model _lm_time_spend_
 ```{r}
 predict_time_spend <- predict(lm_time_spend, newdata = hrTest)
+
 #summary of prediction
 summary(predict_time_spend)
 
@@ -355,20 +355,19 @@ summary(predict_time_spend)
 summary(hrTest$time_spend_company)
 
 ```
-The summary shows closeness in prediction to actuals.
+####The summary shows closeness in prediction to actuals.
 
-###Lets measure the correlation
-
+####Lets measure the correlation
 ```{r compute_correlation_coef}
 #correlation data
 plot_data <- data.frame(predict_time_spend, hrTest$time_spend_company)
 names(plot_data)[1] <- "predicted"
 names(plot_data)[2] <- "actual"
 
-#plot_data$predicted <- round(plot_data$predicted)
-
 # plot predicted time spend vs actual time spend in conpany
-plot_data %>% ggplot(aes(x = actual, y = predicted)) + geom_point() + geom_smooth(method = "lm")
+plot_data %>% ggplot(aes(x = actual, y = predicted)) + 
+  geom_point() + 
+  geom_smooth(method = "lm")
 
 correlation <- cor(plot_data)
 correlation
@@ -379,6 +378,7 @@ correlation[1,2]
 
 The correlation coefficient is excellent __`r correlation[1,2]`__
 
+####Lets compute Root Mean Square Error for the model
 ```{r compute_rmse}
 #lets see how good the model prediction was
 
@@ -391,63 +391,63 @@ rmse = sqrt(sse / nrow(hrTest))
 round(rmse, digits = 2)
 
 ```
-####Linear model _lm_time_spend_ prediction has an 'Root mean squared errors' of `r round(rmse, digits = 2)` years and correlation coefficient of `r round(correlation[1,2], digits =2)`
+####Linear model _lm_time_spend_ prediction with a correlation coefficent of `r round(correlation[1,2], digits =2)` is providing a good prediction of time spent in company by employees with an RMSE of `r round(rmse, digits = 2)` years.
 
-###Logistic Regression
-Lets build a model to predict if the employee will leave
+###Logistic Regression Analysis
 
-####Train Data
+Lets build a model to __predict if the employee will leave__
+
+#### Data
 ```{r}
 
 set.seed(3456)
 trainIndex <- createDataPartition(hr$left, p = .8, 
                                   list = FALSE, 
                                   times = 1)
-head(trainIndex)
-
+#Training data 
 hrTrain <- hr[ trainIndex,]
 
-```
-###Test Data
-```{r}
+#Test data
 hrTest  <- hr[-trainIndex,]
 ```
 
-###Models
-
-#####Significant fields
+####Lets identify significant attributes for logistics regression
 
 ```{r log_reg_model_signi_fields}
-plot(varImp(train(left ~ ., data = hrTrain, method = "bayesglm")))
+plot(varImp(train(left ~ ., data = hrTrain, method = "glm")))
 ```
+* Attributes - _number_project_, _time_spend_company_, _satisfaction_level_, _Work_accident_, _salary_, _last_evaluation, _average_montly_hours_, _promotion_last_5years_ & _dept_ are significant for the logistics regression model to predict left (employees leaving left=1)
 
-#####Significant fields
-* _satisfaction_level_, _Work_accident_, _salary_, _time_spend_company_, _number_project_, _average_montly_hours_, _promotion_last_5years_, _dept_
-
+####Logistics Regression Model
 ```{r log_model}
-
-log_model <- train( left ~ satisfaction_level + 
+#Logistics regression model
+log_model <- train( left ~ number_project +
+                      time_spend_company +
+                      satisfaction_level + 
                       Work_accident  + 
                       salary + 
-                      time_spend_company + 
-                      number_project + 
+                      last_evaluation +
                       average_montly_hours + 
                       promotion_last_5years + 
                       dept, 
                     data = hrTrain, 
                     method = "glm",
                     trControl = trainControl(method = "cv",number = 5))
-                           
+#Summary of the model
+summary(log_model)
+
+#predict against the training data                           
 glm_prediction_train <- predict(log_model, newdata = hrTrain)
+
+#Confusion matrix for prediction against training data
 glm_confustion_matrix_train <- confusionMatrix(glm_prediction_train,
                                                hrTrain$left,
                                                dnn = c("Predicted", "actual"))
-summary(log_model)
 
 glm_confustion_matrix_train
 ```
 
-
+####Prediction
 ```{r}
 #Lets test prediction using test data 
 testPredication <- predict(log_model,hrTest)
@@ -456,21 +456,33 @@ glm_confustion_matrix_test <- confusionMatrix(testPredication,hrTest$left, dnn =
 glm_confustion_matrix_test
 ```
 
+####Logistics regression model to predict employees leaving the company is predicting with an 
+  * overall Accuracy of `r glm_confustion_matrix_test$overall["Accuracy"]`,
+  * predicting employees leaving company with `r glm_confustion_matrix_test$byClass["Specificity"]` accuracy and
+  * predicting employess staying with the company with `r glm_confustion_matrix_test$byClass["Sensitivity"]` accuracy.
+
+###Random Forest Analysis
 ```{r rf}
 library(doMC)
 registerDoMC(5)
+```
 
-
-####Train Data
+####Data
+```{r rf_data}
 set.seed(3456)
 trainIndex <- createDataPartition(hr$left, p = .8, 
                                   list = FALSE, 
                                   times = 1)
-head(trainIndex)
 
+#Training Data
 hrTrain <- hr[ trainIndex,]
-hrTest  <- hr[-trainIndex,]
 
+#Test Data
+hrTest  <- hr[-trainIndex,]
+```
+
+####Random Forest Model
+```{r rf_model}
 #Create smaller Train data for Random forest
 hrTrain_1 <- hrTrain[createDataPartition(y = hrTrain$left,p = 0.3,list = FALSE),]
 
@@ -490,6 +502,11 @@ rf_conf_matrix_train <- confusionMatrix(rf_prediction_train, hrTrain$left)
 
 rf_conf_matrix_train
 
+```
+
+####Prediction
+
+```{r rf_prediction}
 #prediction on test data
 rf_prediction = predict(rf_model, newdata = hrTest)
 
@@ -497,9 +514,12 @@ rf_conf_matrix <- confusionMatrix(rf_prediction, hrTest$left)
 rf_conf_matrix
 
 ```
+####Random forest regression model to predict employees leaving the company is predicting with an 
+  * overall Accuracy of `r rf_conf_matrix$overall["Accuracy"]`,
+  * predicting employees leaving company with `r rf_conf_matrix$byClass["Specificity"]` accuracy and 
+  * predicting employess staying with the company with `r rf_conf_matrix$byClass["Sensitivity"]` accuracy.
 
-
-###Summarize Logistics and Randon Forest Regression results
+###Summarize Logistics and Random Forest Regression results
 ```{r reg_summary}
 overall <- cbind(
   glm_confustion_matrix_train$overall,
