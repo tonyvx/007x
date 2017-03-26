@@ -16,8 +16,10 @@ https://www.kaggle.com/ludobenistant/hr-analytics/downloads/human-resources-anal
 #####Lets load the dataset
 
 ```r
-hr <- read.csv("./HR_comma_sep.csv", header = TRUE, stringsAsFactors = FALSE)
-#hr_corrplot = hr
+hr <- read.csv("./HR_comma_sep.csv", 
+               header = TRUE, 
+               stringsAsFactors = FALSE)
+
 summary(hr)
 ```
 
@@ -581,11 +583,22 @@ plot(varImp(train(left ~ ., data = hrTrain, method = "bayesglm")))
 
 
 ```r
-fitControl <- trainControl(method = "bayesglm",
-                           number = 10,repeats = 10)
-log_model <- train(left ~ satisfaction_level + Work_accident  + salary + time_spend_company + number_project + average_montly_hours + promotion_last_5years + dept, data = hrTrain, method = "bayesglm" )
+log_model <- train( left ~ satisfaction_level + 
+                      Work_accident  + 
+                      salary + 
+                      time_spend_company + 
+                      number_project + 
+                      average_montly_hours + 
+                      promotion_last_5years + 
+                      dept, 
+                    data = hrTrain, 
+                    method = "glm",
+                    trControl = trainControl(method = "cv",number = 5))
+                           
 glm_prediction_train <- predict(log_model, newdata = hrTrain)
-glm_confustion_matrix_train <- confusionMatrix(glm_prediction_train, hrTrain$left, dnn = c("Predicted","actual"))
+glm_confustion_matrix_train <- confusionMatrix(glm_prediction_train,
+                                               hrTrain$left,
+                                               dnn = c("Predicted", "actual"))
 summary(log_model)
 ```
 
@@ -596,42 +609,42 @@ summary(log_model)
 ## 
 ## Deviance Residuals: 
 ##     Min       1Q   Median       3Q      Max  
-## -2.9440  -0.4501  -0.1985  -0.0488   3.3761  
+## -2.9545  -0.4487  -0.1973  -0.0479   3.3801  
 ## 
 ## Coefficients:
 ##                          Estimate Std. Error z value Pr(>|z|)    
-## (Intercept)            -2.6828342  0.2401230 -11.173  < 2e-16 ***
-## satisfaction_level     -1.7539349  0.1355339 -12.941  < 2e-16 ***
-## Work_accident1         -1.5383925  0.1115533 -13.791  < 2e-16 ***
-## salarylow               2.0035527  0.1562474  12.823  < 2e-16 ***
-## salarymedium            1.4026695  0.1572798   8.918  < 2e-16 ***
-## time_spend_company      0.3862053  0.0208829  18.494  < 2e-16 ***
-## number_project3        -5.1284886  0.1542371 -33.251  < 2e-16 ***
-## number_project4        -3.4627180  0.0976779 -35.450  < 2e-16 ***
-## number_project5        -2.4907441  0.0949466 -26.233  < 2e-16 ***
-## number_project6        -1.9716310  0.1173970 -16.795  < 2e-16 ***
-## number_project7         3.6884820  1.5495571   2.380 0.017296 *  
-## average_montly_hours    0.0104773  0.0007006  14.956  < 2e-16 ***
-## promotion_last_5years1 -1.5184458  0.3130866  -4.850 1.24e-06 ***
-## depthr                  0.2233547  0.1750196   1.276 0.201896    
-## deptIT                 -0.3576959  0.1586627  -2.254 0.024168 *  
-## deptmanagement         -0.6965299  0.2113314  -3.296 0.000981 ***
-## deptmarketing          -0.0962021  0.1736328  -0.554 0.579541    
-## deptproduct_mng        -0.3870671  0.1700673  -2.276 0.022848 *  
-## deptRandD              -0.7334726  0.1911180  -3.838 0.000124 ***
-## deptsales              -0.2587630  0.1336867  -1.936 0.052918 .  
-## deptsupport            -0.0595977  0.1427255  -0.418 0.676262    
-## depttechnical          -0.0698578  0.1388474  -0.503 0.614875    
+## (Intercept)            -2.698e+00  2.426e-01 -11.120  < 2e-16 ***
+## satisfaction_level     -1.754e+00  1.358e-01 -12.914  < 2e-16 ***
+## Work_accident1         -1.544e+00  1.119e-01 -13.795  < 2e-16 ***
+## salarylow               2.023e+00  1.578e-01  12.815  < 2e-16 ***
+## salarymedium            1.421e+00  1.589e-01   8.944  < 2e-16 ***
+## time_spend_company      3.878e-01  2.093e-02  18.528  < 2e-16 ***
+## number_project3        -5.145e+00  1.549e-01 -33.213  < 2e-16 ***
+## number_project4        -3.474e+00  9.803e-02 -35.441  < 2e-16 ***
+## number_project5        -2.502e+00  9.528e-02 -26.253  < 2e-16 ***
+## number_project6        -1.984e+00  1.179e-01 -16.832  < 2e-16 ***
+## number_project7         1.373e+01  1.597e+02   0.086 0.931496    
+## average_montly_hours    1.053e-02  7.031e-04  14.981  < 2e-16 ***
+## promotion_last_5years1 -1.555e+00  3.196e-01  -4.865 1.14e-06 ***
+## depthr                  2.135e-01  1.776e-01   1.202 0.229217    
+## deptIT                 -3.714e-01  1.612e-01  -2.304 0.021196 *  
+## deptmanagement         -7.142e-01  2.146e-01  -3.328 0.000874 ***
+## deptmarketing          -1.080e-01  1.762e-01  -0.613 0.539990    
+## deptproduct_mng        -4.016e-01  1.726e-01  -2.326 0.019994 *  
+## deptRandD              -7.509e-01  1.939e-01  -3.872 0.000108 ***
+## deptsales              -2.716e-01  1.362e-01  -1.993 0.046214 *  
+## deptsupport            -7.137e-02  1.452e-01  -0.491 0.623150    
+## depttechnical          -8.169e-02  1.414e-01  -0.578 0.563342    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
 ##     Null deviance: 13172.7  on 11999  degrees of freedom
-## Residual deviance:  7490.5  on 11978  degrees of freedom
-## AIC: 7534.5
+## Residual deviance:  7489.8  on 11978  degrees of freedom
+## AIC: 7533.8
 ## 
-## Number of Fisher Scoring iterations: 16
+## Number of Fisher Scoring iterations: 15
 ```
 
 ```r
@@ -643,27 +656,27 @@ glm_confustion_matrix_train
 ## 
 ##          actual
 ## Predicted    0    1
-##         0 8431  953
-##         1  712 1904
-##                                           
-##                Accuracy : 0.8612          
-##                  95% CI : (0.8549, 0.8674)
-##     No Information Rate : 0.7619          
-##     P-Value [Acc > NIR] : < 2.2e-16       
-##                                           
-##                   Kappa : 0.6061          
-##  Mcnemar's Test P-Value : 4.06e-09        
-##                                           
-##             Sensitivity : 0.9221          
-##             Specificity : 0.6664          
-##          Pos Pred Value : 0.8984          
-##          Neg Pred Value : 0.7278          
-##              Prevalence : 0.7619          
-##          Detection Rate : 0.7026          
-##    Detection Prevalence : 0.7820          
-##       Balanced Accuracy : 0.7943          
-##                                           
-##        'Positive' Class : 0               
+##         0 8432  953
+##         1  711 1904
+##                                          
+##                Accuracy : 0.8613         
+##                  95% CI : (0.855, 0.8675)
+##     No Information Rate : 0.7619         
+##     P-Value [Acc > NIR] : < 2.2e-16      
+##                                          
+##                   Kappa : 0.6063         
+##  Mcnemar's Test P-Value : 3.463e-09      
+##                                          
+##             Sensitivity : 0.9222         
+##             Specificity : 0.6664         
+##          Pos Pred Value : 0.8985         
+##          Neg Pred Value : 0.7281         
+##              Prevalence : 0.7619         
+##          Detection Rate : 0.7027         
+##    Detection Prevalence : 0.7821         
+##       Balanced Accuracy : 0.7943         
+##                                          
+##        'Positive' Class : 0              
 ## 
 ```
 
@@ -710,10 +723,40 @@ glm_confustion_matrix_test
 ```r
 library(doMC)
 registerDoMC(5)
+
+
+####Train Data
+set.seed(3456)
+trainIndex <- createDataPartition(hr$left, p = .8, 
+                                  list = FALSE, 
+                                  times = 1)
+head(trainIndex)
+```
+
+```
+##      Resample1
+## [1,]         1
+## [2,]         2
+## [3,]         3
+## [4,]         4
+## [5,]         5
+## [6,]         6
+```
+
+```r
+hrTrain <- hr[ trainIndex,]
+hrTest  <- hr[-trainIndex,]
+
+#Create smaller Train data for Random forest
 hrTrain_1 <- hrTrain[createDataPartition(y = hrTrain$left,p = 0.3,list = FALSE),]
-rf_model <- train(left~.,data = hrTrain_1,method = "rf",
+
+#Random Forest Model
+rf_model <- train(left~.,
+                  data = hrTrain_1,
+                  method = "rf",
                 trControl = trainControl(method = "cv",number = 5),
                 pallowParallel = TRUE)
+
 print(rf_model)
 ```
 
@@ -726,22 +769,24 @@ print(rf_model)
 ## 
 ## No pre-processing
 ## Resampling: Cross-Validated (5 fold) 
-## Summary of sample sizes: 2880, 2881, 2880, 2881, 2882 
+## Summary of sample sizes: 2880, 2881, 2882, 2881, 2880 
 ## Resampling results across tuning parameters:
 ## 
 ##   mtry  Accuracy   Kappa    
-##    2    0.9461315  0.8400073
-##   12    0.9805644  0.9452727
-##   22    0.9791759  0.9416091
+##    2    0.9519602  0.8585893
+##   12    0.9827816  0.9516026
+##   22    0.9788947  0.9408412
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
 ## The final value used for the model was mtry = 12.
 ```
 
 ```r
+#prediction on train data
 rf_prediction_train = predict(rf_model, newdata = hrTrain)
 
 rf_conf_matrix_train <- confusionMatrix(rf_prediction_train, hrTrain$left)
+
 rf_conf_matrix_train
 ```
 
@@ -750,31 +795,32 @@ rf_conf_matrix_train
 ## 
 ##           Reference
 ## Prediction    0    1
-##          0 9120  130
-##          1   23 2727
+##          0 9129  145
+##          1   14 2712
 ##                                           
-##                Accuracy : 0.9872          
-##                  95% CI : (0.9851, 0.9892)
+##                Accuracy : 0.9868          
+##                  95% CI : (0.9845, 0.9887)
 ##     No Information Rate : 0.7619          
 ##     P-Value [Acc > NIR] : < 2.2e-16       
 ##                                           
-##                   Kappa : 0.9644          
+##                   Kappa : 0.9629          
 ##  Mcnemar's Test P-Value : < 2.2e-16       
 ##                                           
-##             Sensitivity : 0.9975          
-##             Specificity : 0.9545          
-##          Pos Pred Value : 0.9859          
-##          Neg Pred Value : 0.9916          
+##             Sensitivity : 0.9985          
+##             Specificity : 0.9492          
+##          Pos Pred Value : 0.9844          
+##          Neg Pred Value : 0.9949          
 ##              Prevalence : 0.7619          
-##          Detection Rate : 0.7600          
-##    Detection Prevalence : 0.7708          
-##       Balanced Accuracy : 0.9760          
+##          Detection Rate : 0.7608          
+##    Detection Prevalence : 0.7728          
+##       Balanced Accuracy : 0.9739          
 ##                                           
 ##        'Positive' Class : 0               
 ## 
 ```
 
 ```r
+#prediction on test data
 rf_prediction = predict(rf_model, newdata = hrTest)
 
 rf_conf_matrix <- confusionMatrix(rf_prediction, hrTest$left)
@@ -786,36 +832,32 @@ rf_conf_matrix
 ## 
 ##           Reference
 ## Prediction    0    1
-##          0 2276   53
-##          1    9  661
+##          0 2279   54
+##          1    6  660
 ##                                           
-##                Accuracy : 0.9793          
-##                  95% CI : (0.9736, 0.9841)
+##                Accuracy : 0.98            
+##                  95% CI : (0.9743, 0.9847)
 ##     No Information Rate : 0.7619          
 ##     P-Value [Acc > NIR] : < 2.2e-16       
 ##                                           
-##                   Kappa : 0.9418          
-##  Mcnemar's Test P-Value : 4.734e-08       
+##                   Kappa : 0.9435          
+##  Mcnemar's Test P-Value : 1.298e-09       
 ##                                           
-##             Sensitivity : 0.9961          
-##             Specificity : 0.9258          
-##          Pos Pred Value : 0.9772          
-##          Neg Pred Value : 0.9866          
+##             Sensitivity : 0.9974          
+##             Specificity : 0.9244          
+##          Pos Pred Value : 0.9769          
+##          Neg Pred Value : 0.9910          
 ##              Prevalence : 0.7619          
-##          Detection Rate : 0.7589          
-##    Detection Prevalence : 0.7766          
+##          Detection Rate : 0.7599          
+##    Detection Prevalence : 0.7779          
 ##       Balanced Accuracy : 0.9609          
 ##                                           
 ##        'Positive' Class : 0               
 ## 
 ```
 
-#####Random Forest analysis has provided a very good model. 
-* __Sensitivity__ : 0.9960613
-* __Specificity__ : 0.9257703
-* __Accuracy__    : 0.9793264
-* __Kappa__       : 0.9417826
 
+###Summarize Logistics and Randon Forest Regression results
 
 ```r
 overall <- cbind(
@@ -841,29 +883,35 @@ all_conf_matrix$glm_test <- round(all_conf_matrix$glm_test, digits = 4)
 all_conf_matrix$rf_train <- round(all_conf_matrix$rf_train, digits = 4)
 all_conf_matrix$rf_test <- round(all_conf_matrix$rf_test, digits = 4)
 
+rownames(all_conf_matrix)[3] <- "95% CI (Upper)"
+rownames(all_conf_matrix)[4] <- "95% CI (Lower)"
+rownames(all_conf_matrix)[5] <- "No Information Rate"
+rownames(all_conf_matrix)[6] <- "P-Value [Acc > NIR]"
+rownames(all_conf_matrix)[7] <- "Mcnemar's Test P-Value"
+
 all_conf_matrix
 ```
 
 ```
-##                      glm_train glm_test rf_train rf_test
-## Accuracy                0.8612   0.8620   0.9872  0.9793
-## Kappa                   0.6061   0.6120   0.9644  0.9418
-## AccuracyLower           0.8549   0.8491   0.9851  0.9736
-## AccuracyUpper           0.8674   0.8741   0.9892  0.9841
-## AccuracyNull            0.7619   0.7619   0.7619  0.7619
-## AccuracyPValue          0.0000   0.0000   0.0000  0.0000
-## McnemarPValue           0.0000   0.0553   0.0000  0.0000
-## Sensitivity             0.9221   0.9182   0.9975  0.9961
-## Specificity             0.6664   0.6821   0.9545  0.9258
-## Pos Pred Value          0.8984   0.9024   0.9859  0.9772
-## Neg Pred Value          0.7278   0.7226   0.9916  0.9866
-## Precision               0.8984   0.9024   0.9859  0.9772
-## Recall                  0.9221   0.9182   0.9975  0.9961
-## F1                      0.9101   0.9102   0.9917  0.9866
-## Prevalence              0.7619   0.7619   0.7619  0.7619
-## Detection Rate          0.7026   0.6996   0.7600  0.7589
-## Detection Prevalence    0.7820   0.7753   0.7708  0.7766
-## Balanced Accuracy       0.7943   0.8001   0.9760  0.9609
+##                        glm_train glm_test rf_train rf_test
+## Accuracy                  0.8613   0.8620   0.9868  0.9800
+## Kappa                     0.6063   0.6120   0.9629  0.9435
+## 95% CI (Upper)            0.8550   0.8491   0.9845  0.9743
+## 95% CI (Lower)            0.8675   0.8741   0.9887  0.9847
+## No Information Rate       0.7619   0.7619   0.7619  0.7619
+## P-Value [Acc > NIR]       0.0000   0.0000   0.0000  0.0000
+## Mcnemar's Test P-Value    0.0000   0.0553   0.0000  0.0000
+## Sensitivity               0.9222   0.9182   0.9985  0.9974
+## Specificity               0.6664   0.6821   0.9492  0.9244
+## Pos Pred Value            0.8985   0.9024   0.9844  0.9769
+## Neg Pred Value            0.7281   0.7226   0.9949  0.9910
+## Precision                 0.8985   0.9024   0.9844  0.9769
+## Recall                    0.9222   0.9182   0.9985  0.9974
+## F1                        0.9102   0.9102   0.9914  0.9870
+## Prevalence                0.7619   0.7619   0.7619  0.7619
+## Detection Rate            0.7027   0.6996   0.7608  0.7599
+## Detection Prevalence      0.7821   0.7753   0.7728  0.7779
+## Balanced Accuracy         0.7943   0.8001   0.9739  0.9609
 ```
 
 

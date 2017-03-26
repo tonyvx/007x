@@ -38,8 +38,10 @@ https://www.kaggle.com/ludobenistant/hr-analytics/downloads/human-resources-anal
 
 #####Lets load the dataset
 ```{r Loading Data }
-hr <- read.csv("./HR_comma_sep.csv", header = TRUE, stringsAsFactors = FALSE)
-#hr_corrplot = hr
+hr <- read.csv("./HR_comma_sep.csv", 
+               header = TRUE, 
+               stringsAsFactors = FALSE)
+
 summary(hr)
 ```
 
@@ -423,12 +425,25 @@ plot(varImp(train(left ~ ., data = hrTrain, method = "bayesglm")))
 * _satisfaction_level_, _Work_accident_, _salary_, _time_spend_company_, _number_project_, _average_montly_hours_, _promotion_last_5years_, _dept_
 
 ```{r log_model}
-fitControl <- trainControl(method = "bayesglm",
-                           number = 10,repeats = 10)
-log_model <- train(left ~ satisfaction_level + Work_accident  + salary + time_spend_company + number_project + average_montly_hours + promotion_last_5years + dept, data = hrTrain, method = "bayesglm" )
+
+log_model <- train( left ~ satisfaction_level + 
+                      Work_accident  + 
+                      salary + 
+                      time_spend_company + 
+                      number_project + 
+                      average_montly_hours + 
+                      promotion_last_5years + 
+                      dept, 
+                    data = hrTrain, 
+                    method = "glm",
+                    trControl = trainControl(method = "cv",number = 5))
+                           
 glm_prediction_train <- predict(log_model, newdata = hrTrain)
-glm_confustion_matrix_train <- confusionMatrix(glm_prediction_train, hrTrain$left, dnn = c("Predicted","actual"))
+glm_confustion_matrix_train <- confusionMatrix(glm_prediction_train,
+                                               hrTrain$left,
+                                               dnn = c("Predicted", "actual"))
 summary(log_model)
+
 glm_confustion_matrix_train
 ```
 
@@ -444,16 +459,38 @@ glm_confustion_matrix_test
 ```{r rf}
 library(doMC)
 registerDoMC(5)
+
+
+####Train Data
+set.seed(3456)
+trainIndex <- createDataPartition(hr$left, p = .8, 
+                                  list = FALSE, 
+                                  times = 1)
+head(trainIndex)
+
+hrTrain <- hr[ trainIndex,]
+hrTest  <- hr[-trainIndex,]
+
+#Create smaller Train data for Random forest
 hrTrain_1 <- hrTrain[createDataPartition(y = hrTrain$left,p = 0.3,list = FALSE),]
-rf_model <- train(left~.,data = hrTrain_1,method = "rf",
+
+#Random Forest Model
+rf_model <- train(left~.,
+                  data = hrTrain_1,
+                  method = "rf",
                 trControl = trainControl(method = "cv",number = 5),
                 pallowParallel = TRUE)
+
 print(rf_model)
+
+#prediction on train data
 rf_prediction_train = predict(rf_model, newdata = hrTrain)
 
 rf_conf_matrix_train <- confusionMatrix(rf_prediction_train, hrTrain$left)
+
 rf_conf_matrix_train
 
+#prediction on test data
 rf_prediction = predict(rf_model, newdata = hrTest)
 
 rf_conf_matrix <- confusionMatrix(rf_prediction, hrTest$left)
@@ -461,12 +498,8 @@ rf_conf_matrix
 
 ```
 
-#####Random Forest analysis has provided a very good model. 
-* __Sensitivity__ : `r rf_conf_matrix$byClass["Sensitivity"]`
-* __Specificity__ : `r rf_conf_matrix$byClass["Specificity"]`
-* __Accuracy__    : `r rf_conf_matrix$overall["Accuracy"]`
-* __Kappa__       : `r rf_conf_matrix$overall["Kappa"]`
 
+###Summarize Logistics and Randon Forest Regression results
 ```{r reg_summary}
 overall <- cbind(
   glm_confustion_matrix_train$overall,
@@ -490,6 +523,12 @@ all_conf_matrix$glm_train <- round(all_conf_matrix$glm_train, digits = 4)
 all_conf_matrix$glm_test <- round(all_conf_matrix$glm_test, digits = 4)
 all_conf_matrix$rf_train <- round(all_conf_matrix$rf_train, digits = 4)
 all_conf_matrix$rf_test <- round(all_conf_matrix$rf_test, digits = 4)
+
+rownames(all_conf_matrix)[3] <- "95% CI (Upper)"
+rownames(all_conf_matrix)[4] <- "95% CI (Lower)"
+rownames(all_conf_matrix)[5] <- "No Information Rate"
+rownames(all_conf_matrix)[6] <- "P-Value [Acc > NIR]"
+rownames(all_conf_matrix)[7] <- "Mcnemar's Test P-Value"
 
 all_conf_matrix
 
