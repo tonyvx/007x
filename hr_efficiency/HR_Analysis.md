@@ -163,6 +163,7 @@ hr %>%  dplyr::select(
 
 ###overall
 Looks like employees involved in 3 -5 projects and putting in 175 hours - 225 hours average monthly hours have lower rate of leaving company and have high satisfaction level.
+Assuming 22 working days a month, 175 hours - 225 hours average monthly hours translates to 8 - 10 hrs per day.
 
 
 ```r
@@ -303,7 +304,7 @@ grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2, nrow = 4)
 * Employees having overall higher satisfaction level, 
 * involved 3-5 projects, 
 * higher evaluation rating (0.8 -1) and 
-* average monthly hours of 225  - 275 hours.
+* average monthly hours of 225  - 275 hours. Assuming 22 working days a month, this translates to 10 - 13 hrs per day.
 
 ###cluster 2
 * Employees having overall medium satisfaction level, 
@@ -315,7 +316,7 @@ grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2, nrow = 4)
 * Employees having overall low satisfaction level, 
 * involved in more than 4 projects, 
 * high evaluation rating (0.8-1) and 
-* high average monthly hours of 225 - 350 hours.
+* high average monthly hours of 225 - 350 hours. Assuming 22 working days a month, this translates to 10 - 16 hrs per day.
 
 ###overall
 * cluster 1 are employees that comapany need to find ways to retain.
@@ -522,6 +523,57 @@ round(rmse, digits = 2)
 ## [1] 0.46
 ```
 ####Linear model _lm_time_spend_ prediction with a correlation coefficent of 0.88 is providing a good prediction of time spent in company by employees with an RMSE of 0.46 years.
+
+####Analysis on employees remaining (left =0 ) using linear regression model lm_time_spend
+
+```r
+# Employees remaining
+hr_remain <- hr %>% filter(left == 0)
+
+# predict time spend before quitting using lm_time_spend
+predict_time_spend_emp_remain <- predict(lm_time_spend, newdata = hr_remain)
+
+#Build a data frame of time_spend_before_leaving(predicted) and time_spend_so_far
+plot_data <- data.frame(predict_time_spend_emp_remain,hr_remain$time_spend_company)
+names(plot_data)[1] <- "time_spend_before_leaving"
+names(plot_data)[2] <- "time_spend_so_far"
+plot_data$time_spend_before_leaving <- round(plot_data$time_spend_before_leaving)
+
+#Add time_left for employee along with time_spend_before_leaving & time_spend_so_far
+plot_data$time_left <- plot_data$time_spend_before_leaving - plot_data$time_spend_so_far
+
+str(plot_data)
+```
+
+```
+## 'data.frame':	11428 obs. of  3 variables:
+##  $ time_spend_before_leaving: num  5 4 4 5 4 4 3 5 4 5 ...
+##  $ time_spend_so_far        : int  3 3 3 3 2 4 2 4 3 3 ...
+##  $ time_left                : num  2 1 1 2 2 0 1 1 1 2 ...
+```
+
+```r
+#summarize the data by time_left
+cum_plot <- plot_data %>% group_by(time_left) %>% summarise(count = n())
+
+#compute cummulative frequency by time left
+cum_plot$cum_freq <- cumsum(cum_plot$count)
+
+#plot
+cum_plot %>% ggplot(aes(x = time_left, y = cum_freq, fill = "red")) + geom_area()
+```
+
+![](HR_Analysis_files/figure-html/lm_emp_remain-1.png)<!-- -->
+
+```r
+total_emp_remaining <- (cum_plot %>% tail(1))$cum_freq
+total_emp_stayed_beyond_pred_tm_spent <- (cum_plot %>% filter(time_left < 0) %>% tail(1))$cum_freq
+```
+
+#### Of 11428 employees that remain 
+* 1677 have stayed beyond prediction
+* 9751 have not reached predicted time_spend_before_leaving 
+
 
 ###Logistic Regression Analysis
 
