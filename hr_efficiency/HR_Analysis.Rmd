@@ -73,7 +73,7 @@ summary(as.factor(hr$salary))
 Rename the _sales_ column to _dept_ and make columns _number_project_, _promotion_last_5years_, _left_, _Work_accident_, _sales_,_salary_ as factor
 ```{r}
 
-hr$number_project <- as.factor(hr$number_project)
+#hr$number_project <- as.factor(hr$number_project)
 hr$promotion_last_5years <- as.factor(hr$promotion_last_5years)
 hr$left <- as.factor(hr$left)
 hr$Work_accident <- as.factor(hr$Work_accident)
@@ -251,7 +251,12 @@ avg_hrs2 <- cluster_analysis %>%
   geom_histogram(fill = "red") + 
   facet_grid(.~cluster)
 
-grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2, nrow = 4)
+time_spend <- cluster_analysis %>% 
+  ggplot(aes(time_spend_company)) + 
+  geom_histogram(fill = "red") + 
+  facet_grid(.~cluster)
+
+grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2,time_spend, nrow = 5)
 ```
 
 ###cluster 1
@@ -329,13 +334,13 @@ hrTest  <- hr_left[-trainIndex,]
 ```{r fields_lm}
 plot(varImp(train(time_spend_company ~ ., data = hrTrain, method = "lm")))
 ```
-Attributes satisfaction_level,number_project, avaerage_monthly_hours,promotion_last_5years, dept seems to be significant for linear regression
+Attributes satisfaction_level,number_project, avaerage_monthly_hours, dept seems to be significant for linear regression
 
 ####Linear Regression Model
 ```{r}
 
 #Model
-lm_time_spend <- lm(time_spend_company~ satisfaction_level+number_project+ average_montly_hours+promotion_last_5years+ dept, data = hrTrain)
+lm_time_spend <- lm(time_spend_company~satisfaction_level+number_project+ average_montly_hours+promotion_last_5years+ dept, data = hrTrain)
 
 #Summary of the model
 lm_time_spend_summary <- summary(lm_time_spend)
@@ -348,15 +353,7 @@ Model _lm_time_spend_ has an R Squared of `r lm_time_spend_summary$r.squared` an
 ####Lets predict using the model _lm_time_spend_
 ```{r}
 predict_time_spend <- predict(lm_time_spend, newdata = hrTest)
-
-#summary of prediction
-summary(predict_time_spend)
-
-#summary of actuals
-summary(hrTest$time_spend_company)
-
 ```
-####The summary shows closeness in prediction to actuals.
 
 ####Lets measure the correlation
 ```{r compute_correlation_coef}
@@ -393,43 +390,6 @@ round(rmse, digits = 2)
 
 ```
 ####Linear model _lm_time_spend_ prediction with a correlation coefficent of `r round(correlation[1,2], digits =2)` is providing a good prediction of time spent in company by employees with an RMSE of `r round(rmse, digits = 2)` years.
-
-####Analysis on employees remaining (left =0 ) using linear regression model lm_time_spend
-```{r lm_emp_remain}
-# Employees remaining
-hr_remain <- hr %>% filter(left == 0)
-
-# predict time spend before quitting using lm_time_spend
-predict_time_spend_emp_remain <- predict(lm_time_spend, newdata = hr_remain)
-
-#Build a data frame of time_spend_before_leaving(predicted) and time_spend_so_far
-plot_data <- data.frame(predict_time_spend_emp_remain,hr_remain$time_spend_company)
-names(plot_data)[1] <- "time_spend_before_leaving"
-names(plot_data)[2] <- "time_spend_so_far"
-plot_data$time_spend_before_leaving <- round(plot_data$time_spend_before_leaving)
-
-#Add time_left for employee along with time_spend_before_leaving & time_spend_so_far
-plot_data$time_left <- plot_data$time_spend_before_leaving - plot_data$time_spend_so_far
-
-str(plot_data)
-
-#summarize the data by time_left
-cum_plot <- plot_data %>% group_by(time_left) %>% summarise(count = n())
-
-#compute cummulative frequency by time left
-cum_plot$cum_freq <- cumsum(cum_plot$count)
-
-#plot
-cum_plot %>% ggplot(aes(x = time_left, y = cum_freq, fill = "red")) + geom_area()
-
-total_emp_remaining <- (cum_plot %>% tail(1))$cum_freq
-total_emp_stayed_beyond_pred_tm_spent <- (cum_plot %>% filter(time_left < 0) %>% tail(1))$cum_freq
-
-```
-
-#### Of `r total_emp_remaining` employees that remain 
-* `r total_emp_stayed_beyond_pred_tm_spent` have stayed beyond prediction
-* `r (total_emp_remaining-total_emp_stayed_beyond_pred_tm_spent)` have not reached predicted time_spend_before_leaving 
 
 
 ###Logistic Regression Analysis

@@ -89,7 +89,7 @@ summary(as.factor(hr$salary))
 Rename the _sales_ column to _dept_ and make columns _number_project_, _promotion_last_5years_, _left_, _Work_accident_, _sales_,_salary_ as factor
 
 ```r
-hr$number_project <- as.factor(hr$number_project)
+#hr$number_project <- as.factor(hr$number_project)
 hr$promotion_last_5years <- as.factor(hr$promotion_last_5years)
 hr$left <- as.factor(hr$left)
 hr$Work_accident <- as.factor(hr$Work_accident)
@@ -109,7 +109,7 @@ Lets look are structure
 ## 'data.frame':	14999 obs. of  10 variables:
 ##  $ satisfaction_level   : num  0.38 0.8 0.11 0.72 0.37 0.41 0.1 0.92 0.89 0.42 ...
 ##  $ last_evaluation      : num  0.53 0.86 0.88 0.87 0.52 0.5 0.77 0.85 1 0.53 ...
-##  $ number_project       : Factor w/ 6 levels "2","3","4","5",..: 1 4 6 4 1 1 5 4 4 1 ...
+##  $ number_project       : int  2 5 7 5 2 2 6 5 5 2 ...
 ##  $ average_montly_hours : int  157 262 272 223 159 153 247 259 224 142 ...
 ##  $ time_spend_company   : int  3 6 4 5 3 3 4 5 5 3 ...
 ##  $ Work_accident        : Factor w/ 2 levels "0","1": 1 1 1 1 1 1 1 1 1 1 ...
@@ -295,7 +295,12 @@ avg_hrs2 <- cluster_analysis %>%
   geom_histogram(fill = "red") + 
   facet_grid(.~cluster)
 
-grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2, nrow = 4)
+time_spend <- cluster_analysis %>% 
+  ggplot(aes(time_spend_company)) + 
+  geom_histogram(fill = "red") + 
+  facet_grid(.~cluster)
+
+grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2,time_spend, nrow = 5)
 ```
 
 ![](HR_Analysis_files/figure-html/clustering_analysis_signifanct-1.png)<!-- -->
@@ -382,13 +387,13 @@ plot(varImp(train(time_spend_company ~ ., data = hrTrain, method = "lm")))
 ```
 
 ![](HR_Analysis_files/figure-html/fields_lm-1.png)<!-- -->
-Attributes satisfaction_level,number_project, avaerage_monthly_hours,promotion_last_5years, dept seems to be significant for linear regression
+Attributes satisfaction_level,number_project, avaerage_monthly_hours, dept seems to be significant for linear regression
 
 ####Linear Regression Model
 
 ```r
 #Model
-lm_time_spend <- lm(time_spend_company~ satisfaction_level+number_project+ average_montly_hours+promotion_last_5years+ dept, data = hrTrain)
+lm_time_spend <- lm(time_spend_company~satisfaction_level+number_project+ average_montly_hours+promotion_last_5years+ dept, data = hrTrain)
 
 #Summary of the model
 lm_time_spend_summary <- summary(lm_time_spend)
@@ -403,63 +408,40 @@ lm_time_spend_summary
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -3.2747 -0.1113 -0.0360  0.0444  2.1762 
+## -3.3409 -0.1412 -0.0354  0.0768  2.6006 
 ## 
 ## Coefficients:
 ##                          Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)             1.8990244  0.0713618  26.611  < 2e-16 ***
-## satisfaction_level      1.5310239  0.0726754  21.067  < 2e-16 ***
-## number_project3         0.4713017  0.0704442   6.690 2.67e-11 ***
-## number_project4         1.0179815  0.0527699  19.291  < 2e-16 ***
-## number_project5         1.1575926  0.0499497  23.175  < 2e-16 ***
-## number_project6         1.0900318  0.0526000  20.723  < 2e-16 ***
-## number_project7         1.1077086  0.0607383  18.237  < 2e-16 ***
-## average_montly_hours    0.0032762  0.0003426   9.562  < 2e-16 ***
-## promotion_last_5years1 -0.3212174  0.1195740  -2.686  0.00727 ** 
-## depthr                  0.0110486  0.0541106   0.204  0.83822    
-## deptIT                 -0.0118981  0.0515752  -0.231  0.81757    
-## deptmanagement         -0.1528225  0.0708817  -2.156  0.03117 *  
-## deptmarketing           0.0911904  0.0555007   1.643  0.10048    
-## deptproduct_mng         0.0454856  0.0547072   0.831  0.40580    
-## deptRandD               0.0836447  0.0635208   1.317  0.18801    
-## deptsales              -0.0074133  0.0426336  -0.174  0.86197    
-## deptsupport             0.0558396  0.0456262   1.224  0.22111    
-## depttechnical           0.0397286  0.0440389   0.902  0.36707    
+## (Intercept)             0.9747470  0.0544620  17.898   <2e-16 ***
+## satisfaction_level      2.1215638  0.0374686  56.622   <2e-16 ***
+## number_project          0.2539249  0.0109960  23.092   <2e-16 ***
+## average_montly_hours    0.0047166  0.0003178  14.843   <2e-16 ***
+## promotion_last_5years1 -0.2933485  0.1224198  -2.396   0.0166 *  
+## depthr                  0.0104099  0.0554611   0.188   0.8511    
+## deptIT                 -0.0227746  0.0527948  -0.431   0.6662    
+## deptmanagement         -0.1637822  0.0726322  -2.255   0.0242 *  
+## deptmarketing           0.0678844  0.0568452   1.194   0.2325    
+## deptproduct_mng         0.0234342  0.0559649   0.419   0.6754    
+## deptRandD               0.0939470  0.0649179   1.447   0.1480    
+## deptsales              -0.0211977  0.0436452  -0.486   0.6272    
+## deptsupport             0.0462420  0.0466821   0.991   0.3220    
+## depttechnical           0.0315632  0.0451115   0.700   0.4842    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 0.4886 on 2841 degrees of freedom
-## Multiple R-squared:  0.752,	Adjusted R-squared:  0.7505 
-## F-statistic: 506.6 on 17 and 2841 DF,  p-value: < 2.2e-16
+## Residual standard error: 0.5008 on 2845 degrees of freedom
+## Multiple R-squared:  0.739,	Adjusted R-squared:  0.7378 
+## F-statistic: 619.6 on 13 and 2845 DF,  p-value: < 2.2e-16
 ```
 
 
-Model _lm_time_spend_ has an R Squared of 0.7519533 and adjusted R-Squared of 0.750469
+Model _lm_time_spend_ has an R Squared of 0.7389789 and adjusted R-Squared of 0.7377862
 
 ####Lets predict using the model _lm_time_spend_
 
 ```r
 predict_time_spend <- predict(lm_time_spend, newdata = hrTest)
-
-#summary of prediction
-summary(predict_time_spend)
 ```
-
-```
-##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##   2.722   3.036   3.997   3.867   4.755   5.358
-```
-
-```r
-#summary of actuals
-summary(hrTest$time_spend_company)
-```
-
-```
-##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##   2.000   3.000   4.000   3.874   5.000   6.000
-```
-####The summary shows closeness in prediction to actuals.
 
 ####Lets measure the correlation
 
@@ -484,8 +466,8 @@ correlation
 
 ```
 ##           predicted    actual
-## predicted 1.0000000 0.8818467
-## actual    0.8818467 1.0000000
+## predicted 1.0000000 0.8726757
+## actual    0.8726757 1.0000000
 ```
 
 ```r
@@ -494,10 +476,10 @@ correlation[1,2]
 ```
 
 ```
-## [1] 0.8818467
+## [1] 0.8726757
 ```
 
-The correlation coefficient is excellent __0.8818467__
+The correlation coefficient is excellent __0.8726757__
 
 ####Lets compute Root Mean Square Error for the model
 
@@ -510,7 +492,7 @@ round(sse, digits = 2)
 ```
 
 ```
-## [1] 151.2
+## [1] 162.26
 ```
 
 ```r
@@ -520,59 +502,9 @@ round(rmse, digits = 2)
 ```
 
 ```
-## [1] 0.46
+## [1] 0.48
 ```
-####Linear model _lm_time_spend_ prediction with a correlation coefficent of 0.88 is providing a good prediction of time spent in company by employees with an RMSE of 0.46 years.
-
-####Analysis on employees remaining (left =0 ) using linear regression model lm_time_spend
-
-```r
-# Employees remaining
-hr_remain <- hr %>% filter(left == 0)
-
-# predict time spend before quitting using lm_time_spend
-predict_time_spend_emp_remain <- predict(lm_time_spend, newdata = hr_remain)
-
-#Build a data frame of time_spend_before_leaving(predicted) and time_spend_so_far
-plot_data <- data.frame(predict_time_spend_emp_remain,hr_remain$time_spend_company)
-names(plot_data)[1] <- "time_spend_before_leaving"
-names(plot_data)[2] <- "time_spend_so_far"
-plot_data$time_spend_before_leaving <- round(plot_data$time_spend_before_leaving)
-
-#Add time_left for employee along with time_spend_before_leaving & time_spend_so_far
-plot_data$time_left <- plot_data$time_spend_before_leaving - plot_data$time_spend_so_far
-
-str(plot_data)
-```
-
-```
-## 'data.frame':	11428 obs. of  3 variables:
-##  $ time_spend_before_leaving: num  5 4 4 5 4 4 3 5 4 5 ...
-##  $ time_spend_so_far        : int  3 3 3 3 2 4 2 4 3 3 ...
-##  $ time_left                : num  2 1 1 2 2 0 1 1 1 2 ...
-```
-
-```r
-#summarize the data by time_left
-cum_plot <- plot_data %>% group_by(time_left) %>% summarise(count = n())
-
-#compute cummulative frequency by time left
-cum_plot$cum_freq <- cumsum(cum_plot$count)
-
-#plot
-cum_plot %>% ggplot(aes(x = time_left, y = cum_freq, fill = "red")) + geom_area()
-```
-
-![](HR_Analysis_files/figure-html/lm_emp_remain-1.png)<!-- -->
-
-```r
-total_emp_remaining <- (cum_plot %>% tail(1))$cum_freq
-total_emp_stayed_beyond_pred_tm_spent <- (cum_plot %>% filter(time_left < 0) %>% tail(1))$cum_freq
-```
-
-#### Of 11428 employees that remain 
-* 1677 have stayed beyond prediction
-* 9751 have not reached predicted time_spend_before_leaving 
+####Linear model _lm_time_spend_ prediction with a correlation coefficent of 0.87 is providing a good prediction of time spent in company by employees with an RMSE of 0.48 years.
 
 
 ###Logistic Regression Analysis
@@ -630,43 +562,39 @@ summary(log_model)
 ## 
 ## Deviance Residuals: 
 ##     Min       1Q   Median       3Q      Max  
-## -3.1739  -0.4310  -0.1906  -0.0432   3.3129  
+## -2.2210  -0.6618  -0.4023  -0.1161   3.1007  
 ## 
 ## Coefficients:
 ##                          Estimate Std. Error z value Pr(>|z|)    
-## (Intercept)             -3.649080   0.258983 -14.090  < 2e-16 ***
-## number_project3         -5.453854   0.158282 -34.457  < 2e-16 ***
-## number_project4         -3.848991   0.105629 -36.439  < 2e-16 ***
-## number_project5         -2.898666   0.103443 -28.022  < 2e-16 ***
-## number_project6         -2.448469   0.127970 -19.133  < 2e-16 ***
-## number_project7         13.335048 157.247419   0.085 0.932418    
-## time_spend_company       0.364027   0.021406  17.006  < 2e-16 ***
-## satisfaction_level      -2.044057   0.140947 -14.502  < 2e-16 ***
-## Work_accident1          -1.572504   0.114021 -13.791  < 2e-16 ***
-## salarylow                2.035239   0.161792  12.579  < 2e-16 ***
-## salarymedium             1.458090   0.162921   8.950  < 2e-16 ***
-## last_evaluation          2.672006   0.216404  12.347  < 2e-16 ***
-## average_montly_hours     0.008254   0.000731  11.292  < 2e-16 ***
-## promotion_last_5years1  -1.413826   0.313303  -4.513  6.4e-06 ***
-## depthr                   0.237174   0.178023   1.332 0.182774    
-## deptIT                  -0.383480   0.162387  -2.362 0.018200 *  
-## deptmanagement          -0.716068   0.215724  -3.319 0.000902 ***
-## deptmarketing           -0.131592   0.176514  -0.746 0.455965    
-## deptproduct_mng         -0.419695   0.173559  -2.418 0.015599 *  
-## deptRandD               -0.735963   0.195562  -3.763 0.000168 ***
-## deptsales               -0.248476   0.136269  -1.823 0.068240 .  
-## deptsupport             -0.083597   0.145559  -0.574 0.565752    
-## depttechnical           -0.086417   0.141564  -0.610 0.541565    
+## (Intercept)            -1.5806691  0.2167848  -7.291 3.07e-13 ***
+## number_project         -0.2838322  0.0237312 -11.960  < 2e-16 ***
+## time_spend_company      0.2764675  0.0175657  15.739  < 2e-16 ***
+## satisfaction_level     -4.0599102  0.1083025 -37.487  < 2e-16 ***
+## Work_accident1         -1.5580559  0.1007587 -15.463  < 2e-16 ***
+## salarylow               1.9415668  0.1437268  13.509  < 2e-16 ***
+## salarymedium            1.3674717  0.1446463   9.454  < 2e-16 ***
+## last_evaluation         0.6959076  0.1669902   4.167 3.08e-05 ***
+## average_montly_hours    0.0042288  0.0005779   7.318 2.52e-13 ***
+## promotion_last_5years1 -1.4928861  0.2892355  -5.161 2.45e-07 ***
+## depthr                  0.2039076  0.1469159   1.388  0.16516    
+## deptIT                 -0.1511318  0.1358256  -1.113  0.26584    
+## deptmanagement         -0.4162104  0.1787214  -2.329  0.01987 *  
+## deptmarketing           0.0775765  0.1473291   0.527  0.59850    
+## deptproduct_mng        -0.1369528  0.1450960  -0.944  0.34523    
+## deptRandD              -0.6194329  0.1647265  -3.760  0.00017 ***
+## deptsales              -0.0365569  0.1139221  -0.321  0.74829    
+## deptsupport             0.0600922  0.1216738   0.494  0.62139    
+## depttechnical           0.0829601  0.1185713   0.700  0.48414    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
-##     Null deviance: 13172.7  on 11999  degrees of freedom
-## Residual deviance:  7327.6  on 11977  degrees of freedom
-## AIC: 7373.6
+##     Null deviance: 13173  on 11999  degrees of freedom
+## Residual deviance: 10267  on 11981  degrees of freedom
+## AIC: 10305
 ## 
-## Number of Fisher Scoring iterations: 15
+## Number of Fisher Scoring iterations: 5
 ```
 
 ```r
@@ -686,25 +614,25 @@ glm_confustion_matrix_train
 ## 
 ##          actual
 ## Predicted    0    1
-##         0 8442  887
-##         1  701 1970
+##         0 8490 1871
+##         1  653  986
 ##                                           
-##                Accuracy : 0.8677          
-##                  95% CI : (0.8615, 0.8737)
+##                Accuracy : 0.7897          
+##                  95% CI : (0.7823, 0.7969)
 ##     No Information Rate : 0.7619          
-##     P-Value [Acc > NIR] : < 2.2e-16       
+##     P-Value [Acc > NIR] : 2.492e-13       
 ##                                           
-##                   Kappa : 0.6269          
-##  Mcnemar's Test P-Value : 3.443e-06       
+##                   Kappa : 0.3207          
+##  Mcnemar's Test P-Value : < 2.2e-16       
 ##                                           
-##             Sensitivity : 0.9233          
-##             Specificity : 0.6895          
-##          Pos Pred Value : 0.9049          
-##          Neg Pred Value : 0.7376          
+##             Sensitivity : 0.9286          
+##             Specificity : 0.3451          
+##          Pos Pred Value : 0.8194          
+##          Neg Pred Value : 0.6016          
 ##              Prevalence : 0.7619          
-##          Detection Rate : 0.7035          
-##    Detection Prevalence : 0.7774          
-##       Balanced Accuracy : 0.8064          
+##          Detection Rate : 0.7075          
+##    Detection Prevalence : 0.8634          
+##       Balanced Accuracy : 0.6368          
 ##                                           
 ##        'Positive' Class : 0               
 ## 
@@ -725,34 +653,34 @@ glm_confustion_matrix_test
 ## 
 ##          actual
 ## Predicted    0    1
-##         0 2102  208
-##         1  183  506
-##                                          
-##                Accuracy : 0.8696         
-##                  95% CI : (0.857, 0.8815)
-##     No Information Rate : 0.7619         
-##     P-Value [Acc > NIR] : <2e-16         
-##                                          
-##                   Kappa : 0.6363         
-##  Mcnemar's Test P-Value : 0.2249         
-##                                          
-##             Sensitivity : 0.9199         
-##             Specificity : 0.7087         
-##          Pos Pred Value : 0.9100         
-##          Neg Pred Value : 0.7344         
-##              Prevalence : 0.7619         
-##          Detection Rate : 0.7009         
-##    Detection Prevalence : 0.7703         
-##       Balanced Accuracy : 0.8143         
-##                                          
-##        'Positive' Class : 0              
+##         0 2129  476
+##         1  156  238
+##                                           
+##                Accuracy : 0.7893          
+##                  95% CI : (0.7742, 0.8037)
+##     No Information Rate : 0.7619          
+##     P-Value [Acc > NIR] : 0.0002009       
+##                                           
+##                   Kappa : 0.3133          
+##  Mcnemar's Test P-Value : < 2.2e-16       
+##                                           
+##             Sensitivity : 0.9317          
+##             Specificity : 0.3333          
+##          Pos Pred Value : 0.8173          
+##          Neg Pred Value : 0.6041          
+##              Prevalence : 0.7619          
+##          Detection Rate : 0.7099          
+##    Detection Prevalence : 0.8686          
+##       Balanced Accuracy : 0.6325          
+##                                           
+##        'Positive' Class : 0               
 ## 
 ```
 
 ####Logistics regression model to predict employees leaving the company is predicting with an 
-  * overall Accuracy of 0.8696232,
-  * predicting employees leaving company with 0.7086835 accuracy and
-  * predicting employess staying with the company with 0.9199125 accuracy.
+  * overall Accuracy of 0.7892631,
+  * predicting employees leaving company with 0.3333333 accuracy and
+  * predicting employess staying with the company with 0.9317287 accuracy.
 
 ###Random Forest Analysis
 
@@ -805,12 +733,12 @@ print(rf_model)
 ## Resampling results across tuning parameters:
 ## 
 ##   mtry  Accuracy   Kappa    
-##    2    0.9519602  0.8585893
-##   12    0.9827816  0.9516026
-##   22    0.9788947  0.9408412
+##    2    0.9641740  0.8969179
+##   10    0.9819491  0.9493236
+##   18    0.9802835  0.9448190
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
-## The final value used for the model was mtry = 12.
+## The final value used for the model was mtry = 10.
 ```
 
 ```r
@@ -827,25 +755,25 @@ rf_conf_matrix_train
 ## 
 ##           Reference
 ## Prediction    0    1
-##          0 9129  145
-##          1   14 2712
+##          0 9120  129
+##          1   23 2728
 ##                                           
-##                Accuracy : 0.9868          
-##                  95% CI : (0.9845, 0.9887)
+##                Accuracy : 0.9873          
+##                  95% CI : (0.9852, 0.9893)
 ##     No Information Rate : 0.7619          
 ##     P-Value [Acc > NIR] : < 2.2e-16       
 ##                                           
-##                   Kappa : 0.9629          
+##                   Kappa : 0.9646          
 ##  Mcnemar's Test P-Value : < 2.2e-16       
 ##                                           
-##             Sensitivity : 0.9985          
-##             Specificity : 0.9492          
-##          Pos Pred Value : 0.9844          
-##          Neg Pred Value : 0.9949          
+##             Sensitivity : 0.9975          
+##             Specificity : 0.9548          
+##          Pos Pred Value : 0.9861          
+##          Neg Pred Value : 0.9916          
 ##              Prevalence : 0.7619          
-##          Detection Rate : 0.7608          
-##    Detection Prevalence : 0.7728          
-##       Balanced Accuracy : 0.9739          
+##          Detection Rate : 0.7600          
+##    Detection Prevalence : 0.7708          
+##       Balanced Accuracy : 0.9762          
 ##                                           
 ##        'Positive' Class : 0               
 ## 
@@ -867,33 +795,33 @@ rf_conf_matrix
 ## 
 ##           Reference
 ## Prediction    0    1
-##          0 2279   54
-##          1    6  660
+##          0 2278   50
+##          1    7  664
 ##                                           
-##                Accuracy : 0.98            
-##                  95% CI : (0.9743, 0.9847)
+##                Accuracy : 0.981           
+##                  95% CI : (0.9754, 0.9856)
 ##     No Information Rate : 0.7619          
 ##     P-Value [Acc > NIR] : < 2.2e-16       
 ##                                           
-##                   Kappa : 0.9435          
-##  Mcnemar's Test P-Value : 1.298e-09       
+##                   Kappa : 0.9465          
+##  Mcnemar's Test P-Value : 2.651e-08       
 ##                                           
-##             Sensitivity : 0.9974          
-##             Specificity : 0.9244          
-##          Pos Pred Value : 0.9769          
-##          Neg Pred Value : 0.9910          
+##             Sensitivity : 0.9969          
+##             Specificity : 0.9300          
+##          Pos Pred Value : 0.9785          
+##          Neg Pred Value : 0.9896          
 ##              Prevalence : 0.7619          
-##          Detection Rate : 0.7599          
-##    Detection Prevalence : 0.7779          
-##       Balanced Accuracy : 0.9609          
+##          Detection Rate : 0.7596          
+##    Detection Prevalence : 0.7763          
+##       Balanced Accuracy : 0.9635          
 ##                                           
 ##        'Positive' Class : 0               
 ## 
 ```
 ####Random forest regression model to predict employees leaving the company is predicting with an 
-  * overall Accuracy of 0.9799933,
-  * predicting employees leaving company with 0.9243697 accuracy and 
-  * predicting employess staying with the company with 0.9973742 accuracy.
+  * overall Accuracy of 0.9809937,
+  * predicting employees leaving company with 0.929972 accuracy and 
+  * predicting employess staying with the company with 0.9969365 accuracy.
 
 ###Summarize Logistics and Random Forest Regression results
 
@@ -932,24 +860,24 @@ all_conf_matrix
 
 ```
 ##                        glm_train glm_test rf_train rf_test
-## Accuracy                  0.8677   0.8696   0.9868  0.9800
-## Kappa                     0.6269   0.6363   0.9629  0.9435
-## 95% CI (Upper)            0.8615   0.8570   0.9845  0.9743
-## 95% CI (Lower)            0.8737   0.8815   0.9887  0.9847
+## Accuracy                  0.7897   0.7893   0.9873  0.9810
+## Kappa                     0.3207   0.3133   0.9646  0.9465
+## 95% CI (Upper)            0.7823   0.7742   0.9852  0.9754
+## 95% CI (Lower)            0.7969   0.8037   0.9893  0.9856
 ## No Information Rate       0.7619   0.7619   0.7619  0.7619
-## P-Value [Acc > NIR]       0.0000   0.0000   0.0000  0.0000
-## Mcnemar's Test P-Value    0.0000   0.2249   0.0000  0.0000
-## Sensitivity               0.9233   0.9199   0.9985  0.9974
-## Specificity               0.6895   0.7087   0.9492  0.9244
-## Pos Pred Value            0.9049   0.9100   0.9844  0.9769
-## Neg Pred Value            0.7376   0.7344   0.9949  0.9910
-## Precision                 0.9049   0.9100   0.9844  0.9769
-## Recall                    0.9233   0.9199   0.9985  0.9974
-## F1                        0.9140   0.9149   0.9914  0.9870
+## P-Value [Acc > NIR]       0.0000   0.0002   0.0000  0.0000
+## Mcnemar's Test P-Value    0.0000   0.0000   0.0000  0.0000
+## Sensitivity               0.9286   0.9317   0.9975  0.9969
+## Specificity               0.3451   0.3333   0.9548  0.9300
+## Pos Pred Value            0.8194   0.8173   0.9861  0.9785
+## Neg Pred Value            0.6016   0.6041   0.9916  0.9896
+## Precision                 0.8194   0.8173   0.9861  0.9785
+## Recall                    0.9286   0.9317   0.9975  0.9969
+## F1                        0.8706   0.8708   0.9917  0.9876
 ## Prevalence                0.7619   0.7619   0.7619  0.7619
-## Detection Rate            0.7035   0.7009   0.7608  0.7599
-## Detection Prevalence      0.7774   0.7703   0.7728  0.7779
-## Balanced Accuracy         0.8064   0.8143   0.9739  0.9609
+## Detection Rate            0.7075   0.7099   0.7600  0.7596
+## Detection Prevalence      0.8634   0.8686   0.7708  0.7763
+## Balanced Accuracy         0.6368   0.6325   0.9762  0.9635
 ```
 
 
