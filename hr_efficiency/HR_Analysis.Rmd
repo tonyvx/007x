@@ -91,16 +91,20 @@ Lets look are structure
 
 ## Data Exploration
 
-Lets look at correaltion between these various columns
+Lets look at correlation between these various columns
 
 ```{r ggpairs_continous_attibutes}
-hr %>%  dplyr::select(
+hr_correl <- hr
+hr_correl$number_project <- as.factor(hr_correl$number_project)
+hr_correl$time_spend_company <- as.factor(hr_correl$time_spend_company)
+hr_correl %>%  dplyr::select(
   satisfaction_level,
   last_evaluation,
   average_montly_hours,
   number_project,
+  time_spend_company,
   left
-  ) %>% ggpairs()
+  ) %>% ggpairs() 
 ```
 
 ###number_project (Number of projects)
@@ -128,6 +132,12 @@ hr %>%  dplyr::select(
 * number projects between 3-5 show high satisfaction, less projects or too many projects tend to lower satisfaction
 * employees leaving have lower satisfaction than employees not leaving the company
 
+###time_spend_company
+* Employees who have been with the company 4-6 years seems to be having evaluation rating higher as well as higher average monthly hours.
+* Employees who have been with comapny for 3 years shows higher rate of leaving company
+* with respect to satisfaction level, intial years its high and its dips by 4 years and then picks up and stabilizes.
+* Between 3 - 4 years period we see satisfaction level dipping and a peak in employees leaving. This is an area to be looked into.  
+
 ###overall
 Looks like employees involved in 3 -5 projects and putting in 175 hours - 225 hours average monthly hours have lower rate of leaving company and have high satisfaction level.
 Assuming 22 working days a month, 175 hours - 225 hours average monthly hours translates to 8 - 10 hrs per day.
@@ -138,8 +148,8 @@ hr %>%  dplyr::select(Work_accident, promotion_last_5years, salary, left) %>% gg
 ```
 
 ###Work_accident ( Accidents during work - 1 indicates accident )
-* A small percent of employees involved in Work_accident are actually leaving company. Either Work_accident is not a very significant accident.
-* Work_accident is higher at medium and low salary level than in higher salary level
+* A small percent of employees involved in Work_accident are actually leaving company. Work_accident does not seem very significant.
+* Work_accident is higher at medium and lower salary level than in higher salary level
 
 ###promotion_last_5years (Promotion in last 5 years - 1 indicates promotion)
 * Very few employees are getting promoted
@@ -188,9 +198,13 @@ grid.arrange(satis_l, nmbr_prj, lst_eval, mnthly_hrs,tm_spnd,  nrow = 3)
 
 
 ###Cluster Analysis 
+Here we will be using cluster analysis on __employees who left__ to explore various correlations. We will be using k-Means clustering.
+
+To decide how many clusters for analysis we will plot total within-groups sums of squares against the number of clusters in a K-means. A bend in the graph can suggest the appropriate number of clusters. 
+
 ```{r cluster1}
 #lets identify optimum number of clusters
-wssplot <- function(data, nc = 15, seed = 1234) {
+wssplot <- function(data, nc = 9, seed = 1234) {
   wss <- (nrow(data) - 1) * sum(apply(data, 2, var))
   for (i in 2:nc) {
     set.seed(seed)
@@ -219,7 +233,7 @@ hr_clust$promotion_last_5years <- as.numeric(hr_clust$promotion_last_5years)
 #lets identify optimum number of clusters
 wssplot(scale(hr_clust))
 ```
-
+Lets consider 3 clusters for analysis.
 ```{r clustering}
 # lets consider 3 clusters 
 
@@ -259,28 +273,31 @@ time_spend <- cluster_analysis %>%
 grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2,time_spend, nrow = 5)
 ```
 
-###cluster 1
+###cluster 3
 * Employees having overall higher satisfaction level, 
 * involved 3-5 projects, 
+* spend 5 - 6 years.
 * higher evaluation rating (0.8 -1) and 
 * average monthly hours of 225  - 275 hours. Assuming 22 working days a month, this translates to 10 - 13 hrs per day.
 
-###cluster 2
+###cluster 1
 * Employees having overall medium satisfaction level, 
 * involved in less than 2 projects, 
+* spend 3 - 4 years
 * low to medium evaluation rating (<0.6) and 
 * low average monthly hours of less than 175 hours.
 
-###cluster 3
+###cluster 2
 * Employees having overall low satisfaction level, 
 * involved in more than 4 projects, 
+* spend 4 -5 years
 * high evaluation rating (0.8-1) and 
 * high average monthly hours of 225 - 350 hours. Assuming 22 working days a month, this translates to 10 - 16 hrs per day.
 
 ###overall
-* cluster 1 are employees that comapany need to find ways to retain.
-* cluster 3 are over worked employees, company need to find ways to optimise work load and improve satisfaction level
-* cluster 2 are under performing employees and company need to focus to minimize hiring employees of this category.
+* cluster 3 are employees that comapany need to find ways to retain.
+* cluster 2 are over worked employees, company need to find ways to optimise work load and improve satisfaction level
+* cluster 1 are under under utilized employees and company need to find means to have them share the work load of cluster 2.
 
 ```{r cluster_analysis_not_imp}
 promotion2 <- cluster_analysis %>% 
@@ -347,6 +364,12 @@ lm_time_spend_summary <- summary(lm_time_spend)
 lm_time_spend_summary
 ```
 
+From model summary we can see following attributes impacting time spend in company 
+* satisfaction_level      
+* number_project        - 3 - 7  
+* average_montly_hours    
+* promotion_last_5years - 1 (promoted)
+* dept                  - management           
 
 Model _lm_time_spend_ has an R Squared of `r lm_time_spend_summary$r.squared` and adjusted R-Squared of `r lm_time_spend_summary$adj.r.squared`
 
@@ -400,14 +423,21 @@ Lets build a model to __predict if the employee will leave__
 ```{r}
 
 set.seed(3456)
-trainIndex <- createDataPartition(hr$left, p = .8, 
+trainIndex <- createDataPartition(hr$left, p = .6, 
+                                  list = FALSE, 
+                                  times = 1)
+
+validationIndex <- createDataPartition(hr[-trainIndex,]$left, p = .5, 
                                   list = FALSE, 
                                   times = 1)
 #Training data 
 hrTrain <- hr[ trainIndex,]
 
+#validation data
+hrValidation <- hr[-trainIndex,][validationIndex,]
+
 #Test data
-hrTest  <- hr[-trainIndex,]
+hrTest  <- hr[-trainIndex,][-validationIndex,]
 ```
 
 ####Lets identify significant attributes for logistics regression
@@ -420,15 +450,15 @@ plot(varImp(train(left ~ ., data = hrTrain, method = "glm")))
 ####Logistics Regression Model
 ```{r log_model}
 #Logistics regression model
-log_model <- train( left ~ number_project +
-                      time_spend_company +
-                      satisfaction_level + 
-                      Work_accident  + 
-                      salary + 
-                      last_evaluation +
+log_model <- train( left ~ time_spend_company + 
                       average_montly_hours + 
-                      promotion_last_5years + 
-                      dept, 
+                      dept+
+                      last_evaluation +
+                      promotion_last_5years +
+                      number_project +
+                      salary + 
+                      Work_accident  + 
+                      satisfaction_level ,
                     data = hrTrain, 
                     method = "glm",
                     trControl = trainControl(method = "cv",number = 5))
@@ -436,7 +466,7 @@ log_model <- train( left ~ number_project +
 summary(log_model)
 
 #predict against the training data                           
-glm_prediction_train <- predict(log_model, newdata = hrTrain)
+glm_prediction_train <- predict(log_model,  hrTrain)
 
 #Confusion matrix for prediction against training data
 glm_confustion_matrix_train <- confusionMatrix(glm_prediction_train,
@@ -444,6 +474,15 @@ glm_confustion_matrix_train <- confusionMatrix(glm_prediction_train,
                                                dnn = c("Predicted", "actual"))
 
 glm_confustion_matrix_train
+```
+
+####Validation
+```{r}
+#Lets test prediction using test data 
+validationPredication <- predict(log_model,hrValidation)
+glm_confustion_matrix_validation <- confusionMatrix(validationPredication,hrValidation$left, dnn = c("Predicted","actual"))
+
+glm_confustion_matrix_validation
 ```
 
 ####Prediction
@@ -469,15 +508,21 @@ registerDoMC(5)
 ####Data
 ```{r rf_data}
 set.seed(3456)
-trainIndex <- createDataPartition(hr$left, p = .8, 
+trainIndex <- createDataPartition(hr$left, p = .6, 
                                   list = FALSE, 
                                   times = 1)
 
-#Training Data
+validationIndex <- createDataPartition(hr[-trainIndex,]$left, p = .5, 
+                                  list = FALSE, 
+                                  times = 1)
+#Training data 
 hrTrain <- hr[ trainIndex,]
 
-#Test Data
-hrTest  <- hr[-trainIndex,]
+#validation data
+hrValidation <- hr[-trainIndex,][validationIndex,]
+
+#Test data
+hrTest  <- hr[-trainIndex,][-validationIndex,]
 ```
 
 ####Random Forest Model
@@ -503,6 +548,16 @@ rf_conf_matrix_train
 
 ```
 
+
+####Validation
+```{r}
+#Lets test prediction using test data 
+rf_validationPredication <- predict(rf_model,hrValidation)
+rf_confustion_matrix_validation <- confusionMatrix(rf_validationPredication,hrValidation$left, dnn = c("Predicted","actual"))
+
+rf_confustion_matrix_validation
+```
+
 ####Prediction
 
 ```{r rf_prediction}
@@ -522,25 +577,31 @@ rf_conf_matrix
 ```{r reg_summary}
 overall <- cbind(
   glm_confustion_matrix_train$overall,
+  glm_confustion_matrix_validation$overall,
   glm_confustion_matrix_test$overall,
   rf_conf_matrix_train$overall,
+  rf_confustion_matrix_validation$overall,
   rf_conf_matrix$overall
   )
   
 byClass <- cbind(
   glm_confustion_matrix_train$byClass,
+  glm_confustion_matrix_validation$byClass,
   glm_confustion_matrix_test$byClass,
   rf_conf_matrix_train$byClass,
+  rf_confustion_matrix_validation$byClass,
   rf_conf_matrix$byClass
   )
   
 all_conf_matrix <- rbind(overall, byClass)
 all_conf_matrix <- data.frame(all_conf_matrix)
-names(all_conf_matrix) <- c("glm_train", "glm_test", "rf_train", "rf_test")
+names(all_conf_matrix) <- c("glm_train","glm_validation", "glm_test", "rf_train","rf_validation", "rf_test")
 
 all_conf_matrix$glm_train <- round(all_conf_matrix$glm_train, digits = 4)
+all_conf_matrix$glm_validation <- round(all_conf_matrix$glm_validation, digits = 4)
 all_conf_matrix$glm_test <- round(all_conf_matrix$glm_test, digits = 4)
 all_conf_matrix$rf_train <- round(all_conf_matrix$rf_train, digits = 4)
+all_conf_matrix$rf_validation <- round(all_conf_matrix$rf_validation, digits = 4)
 all_conf_matrix$rf_test <- round(all_conf_matrix$rf_test, digits = 4)
 
 rownames(all_conf_matrix)[3] <- "95% CI (Upper)"
