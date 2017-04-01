@@ -537,22 +537,23 @@ Lets build a model to __predict if the employee will leave__
 #### Data
 
 ```r
+hr_log_analysis <- hr_correl
 set.seed(3456)
-trainIndex <- createDataPartition(hr$left, p = .6, 
+trainIndex <- createDataPartition(hr_log_analysis$left, p = .6, 
                                   list = FALSE, 
                                   times = 1)
 
-validationIndex <- createDataPartition(hr[-trainIndex,]$left, p = .5, 
+validationIndex <- createDataPartition(hr_log_analysis[-trainIndex,]$left, p = .5, 
                                   list = FALSE, 
                                   times = 1)
 #Training data 
-hrTrain <- hr[ trainIndex,]
+hrTrain <- hr_log_analysis[ trainIndex,]
 
 #validation data
-hrValidation <- hr[-trainIndex,][validationIndex,]
+hrValidation <- hr_log_analysis[-trainIndex,][validationIndex,]
 
 #Test data
-hrTest  <- hr[-trainIndex,][-validationIndex,]
+hrTest  <- hr_log_analysis[-trainIndex,][-validationIndex,]
 ```
 
 ####Lets identify significant attributes for logistics regression
@@ -592,39 +593,49 @@ summary(log_model)
 ## 
 ## Deviance Residuals: 
 ##     Min       1Q   Median       3Q      Max  
-## -2.2309  -0.6563  -0.3924  -0.1117   2.9803  
+## -3.3136  -0.3221  -0.1122   0.0000   3.9660  
 ## 
 ## Coefficients:
 ##                          Estimate Std. Error z value Pr(>|z|)    
-## (Intercept)            -1.1453918  0.2464842  -4.647 3.37e-06 ***
-## time_spend_company      0.2727637  0.0204546  13.335  < 2e-16 ***
-## average_montly_hours    0.0041072  0.0006728   6.105 1.03e-09 ***
-## depthr                  0.1017119  0.1683504   0.604  0.54573    
-## deptIT                 -0.3589811  0.1582059  -2.269  0.02326 *  
-## deptmanagement         -0.4250604  0.2086675  -2.037  0.04165 *  
-## deptmarketing           0.1618021  0.1654741   0.978  0.32817    
-## deptproduct_mng        -0.1553435  0.1658179  -0.937  0.34885    
-## deptRandD              -0.5963897  0.1849382  -3.225  0.00126 ** 
-## deptsales              -0.1409267  0.1297452  -1.086  0.27740    
-## deptsupport            -0.0915149  0.1393595  -0.657  0.51139    
-## depttechnical           0.0347376  0.1348545   0.258  0.79672    
-## last_evaluation         0.4602353  0.1946712   2.364  0.01807 *  
-## promotion_last_5years1 -1.9142072  0.3862661  -4.956 7.21e-07 ***
-## number_project         -0.2882122  0.0274228 -10.510  < 2e-16 ***
-## salarylow               1.8605034  0.1630711  11.409  < 2e-16 ***
-## salarymedium            1.3038860  0.1641910   7.941 2.00e-15 ***
-## Work_accident1         -1.5884899  0.1165772 -13.626  < 2e-16 ***
-## satisfaction_level     -4.1935402  0.1269494 -33.033  < 2e-16 ***
+## (Intercept)            -4.740e+00  3.981e-01 -11.906  < 2e-16 ***
+## time_spend_company3     2.786e+00  2.251e-01  12.375  < 2e-16 ***
+## time_spend_company4     2.951e+00  2.439e-01  12.097  < 2e-16 ***
+## time_spend_company5     4.925e+00  2.402e-01  20.498  < 2e-16 ***
+## time_spend_company6     3.930e+00  2.575e-01  15.260  < 2e-16 ***
+## time_spend_company7    -1.433e+01  4.779e+02  -0.030 0.976082    
+## time_spend_company8    -1.404e+01  5.501e+02  -0.026 0.979634    
+## time_spend_company10   -1.387e+01  5.027e+02  -0.028 0.977989    
+## average_montly_hours    8.272e-03  9.504e-04   8.703  < 2e-16 ***
+## depthr                  4.797e-02  2.200e-01   0.218 0.827363    
+## deptIT                 -4.184e-01  2.081e-01  -2.011 0.044339 *  
+## deptmanagement         -2.815e-01  2.815e-01  -1.000 0.317248    
+## deptmarketing           1.983e-01  2.193e-01   0.904 0.365937    
+## deptproduct_mng        -3.266e-01  2.175e-01  -1.502 0.133149    
+## deptRandD              -7.652e-01  2.349e-01  -3.257 0.001126 ** 
+## deptsales              -2.298e-01  1.708e-01  -1.345 0.178487    
+## deptsupport            -2.027e-01  1.826e-01  -1.110 0.266905    
+## depttechnical           3.994e-02  1.768e-01   0.226 0.821232    
+## last_evaluation         2.261e+00  2.827e-01   7.995 1.29e-15 ***
+## promotion_last_5years1 -1.621e+00  4.917e-01  -3.298 0.000975 ***
+## number_project3        -5.485e+00  1.909e-01 -28.733  < 2e-16 ***
+## number_project4        -4.171e+00  1.400e-01 -29.787  < 2e-16 ***
+## number_project5        -3.383e+00  1.390e-01 -24.330  < 2e-16 ***
+## number_project6        -2.705e+00  1.661e-01 -16.285  < 2e-16 ***
+## number_project7         1.607e+01  4.325e+02   0.037 0.970357    
+## salarylow               1.917e+00  1.967e-01   9.746  < 2e-16 ***
+## salarymedium            1.434e+00  1.987e-01   7.217 5.33e-13 ***
+## Work_accident1         -1.606e+00  1.404e-01 -11.436  < 2e-16 ***
+## satisfaction_level     -2.122e+00  1.822e-01 -11.647  < 2e-16 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
 ##     Null deviance: 9880.1  on 8999  degrees of freedom
-## Residual deviance: 7629.7  on 8981  degrees of freedom
-## AIC: 7667.7
+## Residual deviance: 4607.4  on 8971  degrees of freedom
+## AIC: 4665.4
 ## 
-## Number of Fisher Scoring iterations: 6
+## Number of Fisher Scoring iterations: 17
 ```
 
 ```r
@@ -644,25 +655,25 @@ glm_confustion_matrix_train
 ## 
 ##          actual
 ## Predicted    0    1
-##         0 6344 1314
-##         1  513  829
+##         0 6371  417
+##         1  486 1726
 ##                                           
-##                Accuracy : 0.797           
-##                  95% CI : (0.7885, 0.8053)
+##                Accuracy : 0.8997          
+##                  95% CI : (0.8933, 0.9058)
 ##     No Information Rate : 0.7619          
-##     P-Value [Acc > NIR] : 9.454e-16       
+##     P-Value [Acc > NIR] : < 2e-16         
 ##                                           
-##                   Kappa : 0.358           
-##  Mcnemar's Test P-Value : < 2.2e-16       
+##                   Kappa : 0.7265          
+##  Mcnemar's Test P-Value : 0.02364         
 ##                                           
-##             Sensitivity : 0.9252          
-##             Specificity : 0.3868          
-##          Pos Pred Value : 0.8284          
-##          Neg Pred Value : 0.6177          
+##             Sensitivity : 0.9291          
+##             Specificity : 0.8054          
+##          Pos Pred Value : 0.9386          
+##          Neg Pred Value : 0.7803          
 ##              Prevalence : 0.7619          
-##          Detection Rate : 0.7049          
-##    Detection Prevalence : 0.8509          
-##       Balanced Accuracy : 0.6560          
+##          Detection Rate : 0.7079          
+##    Detection Prevalence : 0.7542          
+##       Balanced Accuracy : 0.8673          
 ##                                           
 ##        'Positive' Class : 0               
 ## 
@@ -683,27 +694,27 @@ glm_confustion_matrix_validation
 ## 
 ##          actual
 ## Predicted    0    1
-##         0 2140  459
-##         1  146  255
-##                                           
-##                Accuracy : 0.7983          
-##                  95% CI : (0.7835, 0.8126)
-##     No Information Rate : 0.762           
-##     P-Value [Acc > NIR] : 1.092e-06       
-##                                           
-##                   Kappa : 0.3453          
-##  Mcnemar's Test P-Value : < 2.2e-16       
-##                                           
-##             Sensitivity : 0.9361          
-##             Specificity : 0.3571          
-##          Pos Pred Value : 0.8234          
-##          Neg Pred Value : 0.6359          
-##              Prevalence : 0.7620          
-##          Detection Rate : 0.7133          
-##    Detection Prevalence : 0.8663          
-##       Balanced Accuracy : 0.6466          
-##                                           
-##        'Positive' Class : 0               
+##         0 2107  154
+##         1  179  560
+##                                        
+##                Accuracy : 0.889        
+##                  95% CI : (0.8772, 0.9)
+##     No Information Rate : 0.762        
+##     P-Value [Acc > NIR] : <2e-16       
+##                                        
+##                   Kappa : 0.6976       
+##  Mcnemar's Test P-Value : 0.1884       
+##                                        
+##             Sensitivity : 0.9217       
+##             Specificity : 0.7843       
+##          Pos Pred Value : 0.9319       
+##          Neg Pred Value : 0.7578       
+##              Prevalence : 0.7620       
+##          Detection Rate : 0.7023       
+##    Detection Prevalence : 0.7537       
+##       Balanced Accuracy : 0.8530       
+##                                        
+##        'Positive' Class : 0            
 ## 
 ```
 
@@ -722,34 +733,34 @@ glm_confustion_matrix_test
 ## 
 ##          actual
 ## Predicted    0    1
-##         0 2113  481
-##         1  172  233
+##         0 2122  160
+##         1  163  554
 ##                                           
-##                Accuracy : 0.7823          
-##                  95% CI : (0.7671, 0.7969)
+##                Accuracy : 0.8923          
+##                  95% CI : (0.8807, 0.9032)
 ##     No Information Rate : 0.7619          
-##     P-Value [Acc > NIR] : 0.004444        
+##     P-Value [Acc > NIR] : <2e-16          
 ##                                           
-##                   Kappa : 0.2949          
-##  Mcnemar's Test P-Value : < 2.2e-16       
+##                   Kappa : 0.7036          
+##  Mcnemar's Test P-Value : 0.9114          
 ##                                           
-##             Sensitivity : 0.9247          
-##             Specificity : 0.3263          
-##          Pos Pred Value : 0.8146          
-##          Neg Pred Value : 0.5753          
+##             Sensitivity : 0.9287          
+##             Specificity : 0.7759          
+##          Pos Pred Value : 0.9299          
+##          Neg Pred Value : 0.7727          
 ##              Prevalence : 0.7619          
-##          Detection Rate : 0.7046          
-##    Detection Prevalence : 0.8650          
-##       Balanced Accuracy : 0.6255          
+##          Detection Rate : 0.7076          
+##    Detection Prevalence : 0.7609          
+##       Balanced Accuracy : 0.8523          
 ##                                           
 ##        'Positive' Class : 0               
 ## 
 ```
 
 ####Logistics regression model to predict employees leaving the company is predicting with an 
-  * overall Accuracy of 0.7822608,
-  * predicting employees leaving company with 0.3263305 accuracy and
-  * predicting employess staying with the company with 0.9247265 accuracy.
+  * overall Accuracy of 0.8922974,
+  * predicting employees leaving company with 0.7759104 accuracy and
+  * predicting employess staying with the company with 0.9286652 accuracy.
 
 ###Random Forest Analysis
 
@@ -981,24 +992,24 @@ all_conf_matrix
 
 ```
 ##                        glm_train glm_validation glm_test rf_train
-## Accuracy                  0.7970         0.7983   0.7823   0.9872
-## Kappa                     0.3580         0.3453   0.2949   0.9643
-## 95% CI (Upper)            0.7885         0.7835   0.7671   0.9847
-## 95% CI (Lower)            0.8053         0.8126   0.7969   0.9894
+## Accuracy                  0.8997         0.8890   0.8923   0.9872
+## Kappa                     0.7265         0.6976   0.7036   0.9643
+## 95% CI (Upper)            0.8933         0.8772   0.8807   0.9847
+## 95% CI (Lower)            0.9058         0.9000   0.9032   0.9894
 ## No Information Rate       0.7619         0.7620   0.7619   0.7619
-## P-Value [Acc > NIR]       0.0000         0.0000   0.0044   0.0000
-## Mcnemar's Test P-Value    0.0000         0.0000   0.0000   0.0000
-## Sensitivity               0.9252         0.9361   0.9247   0.9982
-## Specificity               0.3868         0.3571   0.3263   0.9519
-## Pos Pred Value            0.8284         0.8234   0.8146   0.9852
-## Neg Pred Value            0.6177         0.6359   0.5753   0.9942
-## Precision                 0.8284         0.8234   0.8146   0.9852
-## Recall                    0.9252         0.9361   0.9247   0.9982
-## F1                        0.8741         0.8762   0.8662   0.9917
+## P-Value [Acc > NIR]       0.0000         0.0000   0.0000   0.0000
+## Mcnemar's Test P-Value    0.0236         0.1884   0.9114   0.0000
+## Sensitivity               0.9291         0.9217   0.9287   0.9982
+## Specificity               0.8054         0.7843   0.7759   0.9519
+## Pos Pred Value            0.9386         0.9319   0.9299   0.9852
+## Neg Pred Value            0.7803         0.7578   0.7727   0.9942
+## Precision                 0.9386         0.9319   0.9299   0.9852
+## Recall                    0.9291         0.9217   0.9287   0.9982
+## F1                        0.9338         0.9268   0.9293   0.9917
 ## Prevalence                0.7619         0.7620   0.7619   0.7619
-## Detection Rate            0.7049         0.7133   0.7046   0.7606
-## Detection Prevalence      0.8509         0.8663   0.8650   0.7720
-## Balanced Accuracy         0.6560         0.6466   0.6255   0.9751
+## Detection Rate            0.7079         0.7023   0.7076   0.7606
+## Detection Prevalence      0.7542         0.7537   0.7609   0.7720
+## Balanced Accuracy         0.8673         0.8530   0.8523   0.9751
 ##                        rf_validation rf_test
 ## Accuracy                      0.9750  0.9847
 ## Kappa                         0.9287  0.9570

@@ -421,23 +421,23 @@ Lets build a model to __predict if the employee will leave__
 
 #### Data
 ```{r}
-
+hr_log_analysis <- hr_correl
 set.seed(3456)
-trainIndex <- createDataPartition(hr$left, p = .6, 
+trainIndex <- createDataPartition(hr_log_analysis$left, p = .6, 
                                   list = FALSE, 
                                   times = 1)
 
-validationIndex <- createDataPartition(hr[-trainIndex,]$left, p = .5, 
+validationIndex <- createDataPartition(hr_log_analysis[-trainIndex,]$left, p = .5, 
                                   list = FALSE, 
                                   times = 1)
 #Training data 
-hrTrain <- hr[ trainIndex,]
+hrTrain <- hr_log_analysis[ trainIndex,]
 
 #validation data
-hrValidation <- hr[-trainIndex,][validationIndex,]
+hrValidation <- hr_log_analysis[-trainIndex,][validationIndex,]
 
 #Test data
-hrTest  <- hr[-trainIndex,][-validationIndex,]
+hrTest  <- hr_log_analysis[-trainIndex,][-validationIndex,]
 ```
 
 ####Lets identify significant attributes for logistics regression
