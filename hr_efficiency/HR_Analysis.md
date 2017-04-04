@@ -202,31 +202,106 @@ Work_accident, promotion_last_5years & salary seems to have lower impact on empl
 
 
 ```r
-satis_l <- hr %>% ggplot(aes(satisfaction_level)) +
-  geom_histogram( binwidth = 0.05, aes(fill = left)) +
-  labs(x = "satisfaction_level", y = "employees", title = "satisfaction level") + myTheme
+hr_explore <- hr
 
-nmbr_prj <- hr %>% ggplot(aes(as.numeric(number_project))) +
-  geom_histogram( binwidth = 1, aes(fill = left)) +
-  labs(x = "number_project", y = "employees", title = "Number of projects") + myTheme
-
-lst_eval <- hr %>% ggplot(aes(last_evaluation)) +
-  geom_histogram( binwidth = 0.05, aes(fill = left)) +
-  labs(x = "last_evaluation", y = "employees", title = "Last evaluation") + myTheme
-
-mnthly_hrs <- hr %>% ggplot(aes(average_montly_hours)) +
-  geom_histogram( binwidth = 1, aes(fill = left)) +
-  labs(x = "average_montly_hours", y = "employees", title = "Average montly hours") + myTheme
-
-tm_spnd <- hr %>% ggplot(aes(time_spend_company)) +
-  geom_histogram( binwidth = 1, aes(fill = left)) +
-  labs(x = "time_spend_company", y = "employees", title = "Time Spend in Company") + myTheme
-
-
-grid.arrange(satis_l, nmbr_prj, lst_eval, mnthly_hrs,tm_spnd,  nrow = 3)
+hr_explore %>% ggplot(aes(satisfaction_level)) + 
+  geom_histogram(binwidth = 0.05, aes(fill = left)) + labs(x = "satisfaction_level", y = "employees", title = "number_project") + 
+  facet_grid(. ~ number_project) + 
+  myTheme
 ```
 
 ![](HR_Analysis_files/figure-html/plot_data_exp_analysis-1.png)<!-- -->
+
+```r
+hr_explore$monthly_hrs_range <- cut(hr_explore$average_montly_hours,
+                                    breaks = c(0, 178, 225, 250, 275, 300, 325, 350),
+                                    labels = c("178", "225", "250", "275", "300", "325", "350"),
+                                    right = FALSE
+                                    )
+
+hr_explore %>% ggplot(aes(satisfaction_level)) + 
+  geom_histogram(binwidth = 0.05, aes(fill = left)) + labs(x = "satisfaction_level", y = "employees", title = "monthly_hrs_range") + 
+  facet_grid(. ~monthly_hrs_range) + 
+  myTheme
+```
+
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis-2.png)<!-- -->
+
+```r
+hr_explore %>% ggplot(aes(satisfaction_level)) + 
+  geom_histogram(binwidth = 0.05, aes(fill = left)) + labs(x = "satisfaction_level", y = "employees", title = "time_spend_company") + 
+  facet_grid(. ~ time_spend_company) + 
+  myTheme
+```
+
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis-3.png)<!-- -->
+
+```r
+hr_explore$evaluation_range <- as.factor(round(hr_explore$last_evaluation,1))
+
+hr_explore %>% ggplot(aes(satisfaction_level)) + 
+  geom_histogram(binwidth = 0.05, aes(fill = left)) + labs(x = "satisfaction_level", y = "employees", title = "evaluation_range") + 
+  facet_grid(. ~ evaluation_range) + 
+  myTheme
+```
+
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis-4.png)<!-- -->
+
+```r
+hr_explore %>% ggplot(aes(satisfaction_level)) + 
+  geom_histogram(binwidth = 0.05, aes(fill = left)) + labs(x = "satisfaction_level", y = "employees", title = "promotion_last_5years") +
+  facet_grid(. ~ promotion_last_5years) + 
+  myTheme
+```
+
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis-5.png)<!-- -->
+
+```r
+hr_explore %>% ggplot(aes(satisfaction_level)) + 
+  geom_histogram(binwidth = 0.05, aes(fill = left)) + labs(x = "satisfaction_level", y = "employees", title = "Work_accident") + 
+  facet_grid(. ~ Work_accident) + 
+  myTheme
+```
+
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis-6.png)<!-- -->
+
+```r
+hr_explore %>% ggplot(aes(satisfaction_level)) + 
+  geom_histogram(binwidth = 0.05, aes(fill = left)) + labs(x = "satisfaction_level", y = "employees", title = "salary") + 
+  facet_grid(. ~ salary) + 
+  myTheme
+```
+
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis-7.png)<!-- -->
+
+```r
+hr_explore %>% ggplot(aes(satisfaction_level)) + 
+  geom_histogram(binwidth = 0.05, aes(fill = left)) + labs(x = "satisfaction_level", y = "employees", title = "dept") + 
+  facet_grid(. ~ dept) + 
+  myTheme
+```
+
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis-8.png)<!-- -->
+
+```r
+hr_explore %>% filter(left == 1) %>% 
+  ggplot(aes( y = number_project,x = average_montly_hours, col = left)) + 
+  geom_point(alpha = 0.6, position = position_jitter(width = 0.2)) +
+  geom_smooth() +
+  myTheme
+```
+
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis-9.png)<!-- -->
+
+```r
+hr_explore %>% filter(left == 1) %>% 
+  ggplot(aes( y = last_evaluation,x = average_montly_hours, col = left)) + 
+  geom_point(alpha = 0.6, position = position_jitter(width = 0.2)) +
+  geom_smooth() +
+  myTheme
+```
+
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis-10.png)<!-- -->
 
 * Using plots for __satisfaction_level__, __avaerage_monthly_hours__, __last_evaluation__ & __number_projects__:
   + Overall lower performing employees are leaving more. This warrants improvement in hiring process to avoid low performers
