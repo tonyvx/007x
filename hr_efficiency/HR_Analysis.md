@@ -387,7 +387,7 @@ hr_explore %>% filter(left == 1) %>%
 ![](HR_Analysis_files/figure-html/plot_data_exp_analysis_number_project_average_montly_hours_last_evaluation-2.png)<!-- -->
 
 * Plot between number_project & average_montly_hours shows average_montly_hours increasing with number_projects for employees who are leaving and we can see 3 peaks:
-
+  
   + At under 3 projects and 175 monthly hours
   + Around 4 -5 projects and 225-275 monthly average hours
   + Around 5- 6 projects and 250- 325 average monthly hours.
@@ -398,13 +398,12 @@ hr_explore %>% filter(left == 1) %>%
   + Rating of 0.8 and above and around 250- 325 average monthly hours.
   
 * Looks like employees with 
-
   + less project and contibuting less average monthly hours have low rating and high attrition.
   + higher number of projects and high average monthly hours have higher rating and high attrition.
   + overall this is pointing to the need to see work load distribution needs improvement.
 
 
-####Exploratory analysis using Clustering
+###Exploratory analysis using Clustering
 Here we will be using cluster analysis on __employees who left__ to explore various correlations. We will be using k-Means clustering.
 
 To decide how many clusters for analysis we will plot total within-groups sums of squares against the number of clusters in a K-means. A bend in the graph can suggest the appropriate number of clusters. 
@@ -443,7 +442,9 @@ wssplot(scale(hr_clust))
 ```
 
 ![](HR_Analysis_files/figure-html/cluster1-1.png)<!-- -->
-Lets consider 3 clusters for analysis.
+
+Lets consider 3 clusters for analysis. Also in exploratory analysis we were able to identify 3 groups of employees who are leaving (high , medium & low satisfaction level)
+
 
 ```r
 # lets consider 3 clusters 
@@ -514,6 +515,7 @@ grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2,time_spend, nrow = 5)
 * cluster 3 are employees that comapany need to find ways to retain.
 * cluster 2 are over worked employees, company need to find ways to optimise work load and improve satisfaction level
 * cluster 1 are under under utilized employees and company need to find means to have them share the work load of cluster 2.
+
 
 
 ```r
