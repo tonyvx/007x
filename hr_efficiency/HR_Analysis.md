@@ -121,6 +121,8 @@ Lets look are structure
 
 ## Data Exploration
 
+###Exploratory analysis with ggpairs
+
 Lets look at correlation between these various columns
 
 
@@ -140,38 +142,39 @@ hr_correl %>%  dplyr::select(
 
 ![](HR_Analysis_files/figure-html/ggpairs_continous_attibutes-1.png)<!-- -->
 
-###number_project (Number of projects)
+####number_project (Number of projects)
 * employees involved in 3-5 projects have high satisfaction level, less than 3 projects or more than 5 projects satisfaction is low
 * last_evaluation increases with number_project
 * average_monthly_hours also increases with number_project
 * number of employees leaving (left=1) is high at 2 or less improves for 3 projects and then slowly creeps up until 5 projects and goes down
 * Overall Looks like 3-5 projects would mean less employees quiting and good employee satisfaction.
 
-###average_monthly_hours (Average monthly hours)
+####average_monthly_hours (Average monthly hours)
 * relation to satisfaction or last_evaluation is not very obvious
 * average_monthly_hours seems to increase with number_project
 * employees leaving (left=1)
+
   + 150 hours +/- 25 shows high number of employees leaving
 	+ Again 225 hours and more employees leaving creaps to peak at around 250 hours and dips gradually to 300 hours
 	+ 175 hours - 225 hours for average_monthly_hours seems to have low rate of employees leaving
 
-###last_evaluation (Latest evaluation rating for the employee, ranges 0=low to 1=high)
+####last_evaluation (Latest evaluation rating for the employee, ranges 0=low to 1=high)
 * Between 0.4 to 0.6 evaluation rating, employees leaving (left=1) is high.
 * It goes down at mid level and then picks up at around 0.75 and peaks around 0.85
 * So low and higher end of evaluation rating employees leaving is high.
 * Though one's leaving at lower rating is good for the company but the employees leaving having high rating is a concern for the company. 	
 	
-###satisfaction_level (Measure of employee statisfaction level, ranges 0=low to 1=high)
+####satisfaction_level (Measure of employee statisfaction level, ranges 0=low to 1=high)
 * number projects between 3-5 show high satisfaction, less projects or too many projects tend to lower satisfaction
 * employees leaving have lower satisfaction than employees not leaving the company
 
-###time_spend_company
+####time_spend_company
 * Employees who have been with the company 4-6 years seems to be having evaluation rating higher as well as higher average monthly hours.
 * Employees who have been with comapny for 3 years shows higher rate of leaving company
 * with respect to satisfaction level, intial years its high and its dips by 4 years and then picks up and stabilizes.
 * Between 3 - 4 years period we see satisfaction level dipping and a peak in employees leaving. This is an area to be looked into.  
 
-###overall
+####overall
 Looks like employees involved in 3 -5 projects and putting in 175 hours - 225 hours average monthly hours have lower rate of leaving company and have high satisfaction level.
 Assuming 22 working days a month, 175 hours - 225 hours average monthly hours translates to 8 - 10 hrs per day.
 
@@ -182,24 +185,25 @@ hr %>%  dplyr::select(Work_accident, promotion_last_5years, salary, left) %>% gg
 
 ![](HR_Analysis_files/figure-html/ggpairs_discrete_attributes-1.png)<!-- -->
 
-###Work_accident ( Accidents during work - 1 indicates accident )
+####Work_accident ( Accidents during work - 1 indicates accident )
 * A small percent of employees involved in Work_accident are actually leaving company. Work_accident does not seem very significant.
 * Work_accident is higher at medium and lower salary level than in higher salary level
 
-###promotion_last_5years (Promotion in last 5 years - 1 indicates promotion)
+####promotion_last_5years (Promotion in last 5 years - 1 indicates promotion)
 * Very few employees are getting promoted
 * number of employees getting promoted are even at different salary level.
 
-###salary ( Salary category for employees as high, medium and low)
+####salary ( Salary category for employees as high, medium and low)
 * Higher number of employees leaving are in the medium & low salary level
 
-###overall
+####overall
 Work_accident, promotion_last_5years & salary seems to have lower impact on employees leaving company.
 
 
-####Lets analyze _satisfaction_level_, _time_spend_company_, _last_evaluation_, _average_monthly_hours_ and _number_project_
+###Exploratory Analysis using ggplots and geom_histogram & facet_grids
+Lets plot satisfaction_level against facets number_project, average_montly_hours, time_spend_company, promotion_last_5years, Work_accident, salary & dept. Each plot correlates satisfaction_level(histogram), left (fill ) with one of the other atribut as facets. 
 
-
+#### number_project
 
 ```r
 hr_explore <- hr
@@ -210,31 +214,34 @@ hr_explore %>% ggplot(aes(satisfaction_level)) +
   myTheme
 ```
 
-![](HR_Analysis_files/figure-html/plot_data_exp_analysis-1.png)<!-- -->
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis_number_project-1.png)<!-- -->
+  
+  * Most of employees having 2 projects are showing a high rate of leaving most of them seem to be mid level satisfaction_level. 
+  * Most of the employees having 3 - 5 projects are having high satisfaction level. We can also see employees leaving creeping between 3 - 5 projects and most of employees leaving are having high satisfaction level too.
+  * 6 - 7 projects however we see satisfaction level being very low and a very high rate employees leaving.
+
+####average_montly_hours
 
 ```r
 hr_explore$monthly_hrs_range <- cut(hr_explore$average_montly_hours,
-                                    breaks = c(0, 178, 225, 250, 275, 300, 325, 350),
-                                    labels = c("178", "225", "250", "275", "300", "325", "350"),
+                                    breaks = c(0, 174, 225, 250, 275, 300, 325, 350),
+                                    labels = c("174", "225", "250", "275", "300", "325", "350"),
                                     right = FALSE
                                     )
-
 hr_explore %>% ggplot(aes(satisfaction_level)) + 
   geom_histogram(binwidth = 0.05, aes(fill = left)) + labs(x = "satisfaction_level", y = "employees", title = "monthly_hrs_range") + 
   facet_grid(. ~monthly_hrs_range) + 
   myTheme
 ```
 
-![](HR_Analysis_files/figure-html/plot_data_exp_analysis-2.png)<!-- -->
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis_monthly_hrs_range-1.png)<!-- -->
+  
+  * Since average_montly_hours is continous data, in order for being able to use as a facet lets make it a discrete by creating ranges / monthly_hrs_range. Starting at 174 hours as that is __normal__ average monthly hours.
+  * Employees putting in 174 and less average monthly hours show medium satisfaction and very high rate of leaving.
+  * Employees putting in 174 - 275 average monthly hours show mostly higher satisfaction level and we can see rate of leaving in high satisfaction level creeping.
+  * Employees putting in 275 hours and more average monthly hours are having a very low satisfaction level and are mostly leaving.
 
-```r
-hr_explore %>% ggplot(aes(satisfaction_level)) + 
-  geom_histogram(binwidth = 0.05, aes(fill = left)) + labs(x = "satisfaction_level", y = "employees", title = "time_spend_company") + 
-  facet_grid(. ~ time_spend_company) + 
-  myTheme
-```
-
-![](HR_Analysis_files/figure-html/plot_data_exp_analysis-3.png)<!-- -->
+#### last_evaluation
 
 ```r
 hr_explore$evaluation_range <- as.factor(round(hr_explore$last_evaluation,1))
@@ -245,7 +252,32 @@ hr_explore %>% ggplot(aes(satisfaction_level)) +
   myTheme
 ```
 
-![](HR_Analysis_files/figure-html/plot_data_exp_analysis-4.png)<!-- -->
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis_last_evaluation-1.png)<!-- -->
+
+* Since last_evaluation is continous data, first lets round the last evaluation to 1 place and then make it into a factor
+* Employees having evaluation rating 0.4 - 0.6, show satisafaction levels improving with rating and employees leaving have mostly medium satisfaction level.
+* Employees at 0.7 rating show higher satisfaction level and low rate of quitiing.
+* Employees having higher rating of 0.8 - 1 show folks leaving with low satisfaction level high and gradually reducing but then employees with satisfaction and leaving is slowly creeping up.
+
+#### time_spend_company
+
+```r
+hr_explore %>% ggplot(aes(satisfaction_level)) + 
+  geom_histogram(binwidth = 0.05, aes(fill = left)) + labs(x = "satisfaction_level", y = "employees", title = "time_spend_company") + 
+  facet_grid(. ~ time_spend_company) + 
+  myTheme
+```
+
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis_time_spend_company-1.png)<!-- -->
+
+* Employees who have spent 2 years show very low rate of leaving and seem to have high satisfaction
+* Employees who have been with the company 3 years show high satisfaction level among folks who remain but mostly there is a segment with medium satisfaction who are leaving with high rate.
+* Employees who have spent 4 years continue to have high satisfaction level among who remain, but has a segment which has low satisfaction level and are leaving at high rate.
+* Employees who have been with company 5- 6 years however show a higher rate of leaving in higher satisfaction level.
+* Employees who have been longer than 6 are very low and most of them stay.
+
+
+#### promotion_last_5years
 
 ```r
 hr_explore %>% ggplot(aes(satisfaction_level)) + 
@@ -254,7 +286,13 @@ hr_explore %>% ggplot(aes(satisfaction_level)) +
   myTheme
 ```
 
-![](HR_Analysis_files/figure-html/plot_data_exp_analysis-5.png)<!-- -->
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis_promotion_last_5years-1.png)<!-- -->
+
+* Very few employees have got promoted in last 5 years
+* Among employees who did not get promoted we can see employees quitting at low, medium and high satisfaction levels. This trend follows among folks who got promoted.
+* promotion_last_5years is not very a concern for employees leaving.
+
+#### Work_accident
 
 ```r
 hr_explore %>% ggplot(aes(satisfaction_level)) + 
@@ -263,7 +301,13 @@ hr_explore %>% ggplot(aes(satisfaction_level)) +
   myTheme
 ```
 
-![](HR_Analysis_files/figure-html/plot_data_exp_analysis-6.png)<!-- -->
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis_Work_accident-1.png)<!-- -->
+
+* Among employees who did not have work accident, we can see employees quitting at low, medium and high satisfaction levels. This trend follows among folks who had accident.
+* Also very percent of employees who had accident are actually leaving, which means accidents are not impacting there work long term.
+* Work_accident does not seem to high of a concern for employees to leave.
+
+#### salary
 
 ```r
 hr_explore %>% ggplot(aes(satisfaction_level)) + 
@@ -272,44 +316,95 @@ hr_explore %>% ggplot(aes(satisfaction_level)) +
   myTheme
 ```
 
-![](HR_Analysis_files/figure-html/plot_data_exp_analysis-7.png)<!-- -->
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis_salary-1.png)<!-- -->
+
+* More people are in medium and low salary level than high salary level.
+* At all salary level we can see similar pattern of peaks in employees leaving at low, medium and high satisfaction levels.
+* Looks like employees are paid well for their role and salary is not driving employees to leave.
+
+#### dept
 
 ```r
 hr_explore %>% ggplot(aes(satisfaction_level)) + 
   geom_histogram(binwidth = 0.05, aes(fill = left)) + labs(x = "satisfaction_level", y = "employees", title = "dept") + 
-  facet_grid(. ~ dept) + 
+  facet_grid(. ~ dept) +
   myTheme
 ```
 
-![](HR_Analysis_files/figure-html/plot_data_exp_analysis-8.png)<!-- -->
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis_dept-1.png)<!-- -->
+
+* sales department is very large, followed by technical and support departments.
+* All departments show a similar pattern of peaks in employees leaving at low, medium and high satisfaction levels.
+* dept data does not show any unusual pattern that can be correlated, all departments are showing similar pattern.
+
+##### number_project, average_montly_hours, last_evaluation & time_spend_company are of significant interest for analysing reasons for employees leaving
+
+Following are categories of employees who have high satisfaction level and show high rate of leaving.
+
+* Employees involved in 3 - 5 projects 
+* Employees putting in 174 - 275 average monthly hours
+* Employees with a evaluation rating of 0.8 - 1.
+* Employees who have been with the company 5 - 6 years
+
+Following are categories of employees who have medium satisfaction level and show high rate of leaving.
+
+* Employees involved in 2 projects
+* Employees putting in 174 and less average monthly hours
+* Employees having evaluation rating 0.4 - 0.6
+* Employees who have been with the company for around 3 years
+
+Following are categories of employees who have low satisfaction level and show high rate of leaving.
+
+* Employees involved in 6 - 7 projects
+* Employees putting in 275 hours and more average monthly hours 
+* Employees having evaluation rating 0.8 - 1 ( this group also has folks leaving at higher satisfaction level too)
+* Employees who have been with the company for around 4 years
+
+__It seems low satisfaction is driven by over work and medium satisfaction is due to less work(does less work means lower renumeration?). 
+Overall right sizing work across the workforce could improve overall satisfaction and company will be able to retain hard working and improve overall employee utilization.__
+
+####Lets analyze number_project, average_montly_hours & last_evaluation
+This analysis around employees who left
 
 ```r
 hr_explore %>% filter(left == 1) %>% 
   ggplot(aes( y = number_project,x = average_montly_hours, col = left)) + 
   geom_point(alpha = 0.6, position = position_jitter(width = 0.2)) +
-  geom_smooth() +
+  geom_smooth() + scale_colour_brewer(palette = "Set1") +
   myTheme
 ```
 
-![](HR_Analysis_files/figure-html/plot_data_exp_analysis-9.png)<!-- -->
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis_number_project_average_montly_hours_last_evaluation-1.png)<!-- -->
 
 ```r
 hr_explore %>% filter(left == 1) %>% 
   ggplot(aes( y = last_evaluation,x = average_montly_hours, col = left)) + 
   geom_point(alpha = 0.6, position = position_jitter(width = 0.2)) +
-  geom_smooth() +
+  geom_smooth() + scale_colour_brewer(palette = "Set1") +
   myTheme
 ```
 
-![](HR_Analysis_files/figure-html/plot_data_exp_analysis-10.png)<!-- -->
+![](HR_Analysis_files/figure-html/plot_data_exp_analysis_number_project_average_montly_hours_last_evaluation-2.png)<!-- -->
 
-* Using plots for __satisfaction_level__, __avaerage_monthly_hours__, __last_evaluation__ & __number_projects__:
-  + Overall lower performing employees are leaving more. This warrants improvement in hiring process to avoid low performers
-  + Aside from low performers, we can notice number of employees leaving creeeping up among mid to high performing. This is an area that needs to be also looked into for reduction in rate of attrition.  
-  + Overall employees involved in 3 -5 projects and putting in 175 hours - 225 hours average monthly hours have lower rate of leaving company and have high satisfaction level.
+* Plot between number_project & average_montly_hours shows average_montly_hours increasing with number_projects for employees who are leaving and we can see 3 peaks:
+
+  + At under 3 projects and 175 monthly hours
+  + Around 4 -5 projects and 225-275 monthly average hours
+  + Around 5- 6 projects and 250- 325 average monthly hours.
+  
+* Plot between number_project & last_evaluation shows last_evaluation increasing with average_montly_hours up until 275 average monthly hours to 0.9. Post that rating  for employees who are leaving satbilizes. We see two peaks for employee leaving
+
+  + Below rating of 0.6 and 175 monthly hours
+  + Rating of 0.8 and above and around 250- 325 average monthly hours.
+  
+* Looks like employees with 
+
+  + less project and contibuting less average monthly hours have low rating and high attrition.
+  + higher number of projects and high average monthly hours have higher rating and high attrition.
+  + overall this is pointing to the need to see work load distribution needs improvement.
 
 
-###Cluster Analysis 
+####Exploratory analysis using Clustering
 Here we will be using cluster analysis on __employees who left__ to explore various correlations. We will be using k-Means clustering.
 
 To decide how many clusters for analysis we will plot total within-groups sums of squares against the number of clusters in a K-means. A bend in the graph can suggest the appropriate number of clusters. 
