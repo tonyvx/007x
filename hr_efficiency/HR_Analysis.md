@@ -200,7 +200,7 @@ hr %>%  dplyr::select(Work_accident, promotion_last_5years, salary, left) %>% gg
 Work_accident, promotion_last_5years & salary seems to have lower impact on employees leaving company.
 
 
-###Exploratory Analysis using ggplots and geom_histogram & facet_grids
+###Exploratory Analysis using ggplots , geom_histogram & facet_grids
 Lets plot satisfaction_level against facets number_project, average_montly_hours, time_spend_company, promotion_last_5years, Work_accident, salary & dept. Each plot correlates satisfaction_level(histogram), left (fill ) with one of the other atribut as facets. 
 
 #### number_project
@@ -506,7 +506,7 @@ grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2,time_spend, nrow = 5)
 
 ###cluster 2
 * Employees having overall low satisfaction level, 
-* involved in more than 4 projects, 
+* involved in mainly 6 - 7 projects, 
 * spend 4 -5 years
 * high evaluation rating (0.8-1) and 
 * high average monthly hours of 225 - 350 hours. Assuming 22 working days a month, this translates to 10 - 16 hrs per day.
@@ -851,7 +851,7 @@ glm_confustion_matrix_train
 ## 
 ```
 
-####Validation
+####Logistics Regression model against validation data
 
 ```r
 #Lets test prediction using test data 
@@ -890,7 +890,13 @@ glm_confustion_matrix_validation
 ## 
 ```
 
-####Prediction
+
+####Logistics regression model to predict employees leaving the company is predicting with an 
+  * overall Accuracy of 0.889,
+  * predicting employees leaving company with 0.7843137 accuracy and
+  * predicting employess staying with the company with 0.9216973 accuracy.
+
+####Prediction Logistics Regression Model
 
 ```r
 #Lets test prediction using test data 
@@ -928,11 +934,6 @@ glm_confustion_matrix_test
 ##        'Positive' Class : 0               
 ## 
 ```
-
-####Logistics regression model to predict employees leaving the company is predicting with an 
-  * overall Accuracy of 0.8922974,
-  * predicting employees leaving company with 0.7759104 accuracy and
-  * predicting employess staying with the company with 0.9286652 accuracy.
 
 ###Random Forest Analysis
 
@@ -1038,7 +1039,7 @@ rf_conf_matrix_train
 ```
 
 
-####Validation
+####Random Forest Model against validation data
 
 ```r
 #Lets test prediction using test data 
@@ -1076,8 +1077,14 @@ rf_confustion_matrix_validation
 ##        'Positive' Class : 0               
 ## 
 ```
+####Random forest regression model to predict employees leaving the company is predicting with an 
+  * overall Accuracy of 0.975,
+  * predicting employees leaving company with 0.8991597 accuracy and 
+  * predicting employess staying with the company with 0.9986877 accuracy.
 
-####Prediction
+####Overall looks like Randon Forest Model is giving better prediction
+
+####Prediction using random forest model
 
 
 ```r
@@ -1116,10 +1123,7 @@ rf_conf_matrix
 ##        'Positive' Class : 0               
 ## 
 ```
-####Random forest regression model to predict employees leaving the company is predicting with an 
-  * overall Accuracy of 0.9846616,
-  * predicting employees leaving company with 0.9439776 accuracy and 
-  * predicting employess staying with the company with 0.9973742 accuracy.
+
 
 ###Summarize Logistics and Random Forest Regression results
 

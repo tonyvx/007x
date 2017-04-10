@@ -432,7 +432,7 @@ grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2,time_spend, nrow = 5)
 
 ###cluster 2
 * Employees having overall low satisfaction level, 
-* involved in more than 4 projects, 
+* involved in mainly 6 - 7 projects, 
 * spend 4 -5 years
 * high evaluation rating (0.8-1) and 
 * high average monthly hours of 225 - 350 hours. Assuming 22 working days a month, this translates to 10 - 16 hrs per day.
@@ -620,7 +620,7 @@ glm_confustion_matrix_train <- confusionMatrix(glm_prediction_train,
 glm_confustion_matrix_train
 ```
 
-####Validation
+####Logistics Regression model against validation data
 ```{r}
 #Lets test prediction using test data 
 validationPredication <- predict(log_model,hrValidation)
@@ -629,7 +629,13 @@ glm_confustion_matrix_validation <- confusionMatrix(validationPredication,hrVali
 glm_confustion_matrix_validation
 ```
 
-####Prediction
+
+####Logistics regression model to predict employees leaving the company is predicting with an 
+  * overall Accuracy of `r glm_confustion_matrix_validation$overall["Accuracy"]`,
+  * predicting employees leaving company with `r glm_confustion_matrix_validation$byClass["Specificity"]` accuracy and
+  * predicting employess staying with the company with `r glm_confustion_matrix_validation$byClass["Sensitivity"]` accuracy.
+
+####Prediction Logistics Regression Model
 ```{r}
 #Lets test prediction using test data 
 testPredication <- predict(log_model,hrTest)
@@ -637,11 +643,6 @@ glm_confustion_matrix_test <- confusionMatrix(testPredication,hrTest$left, dnn =
 
 glm_confustion_matrix_test
 ```
-
-####Logistics regression model to predict employees leaving the company is predicting with an 
-  * overall Accuracy of `r glm_confustion_matrix_test$overall["Accuracy"]`,
-  * predicting employees leaving company with `r glm_confustion_matrix_test$byClass["Specificity"]` accuracy and
-  * predicting employess staying with the company with `r glm_confustion_matrix_test$byClass["Sensitivity"]` accuracy.
 
 ###Random Forest Analysis
 ```{r rf}
@@ -693,7 +694,7 @@ rf_conf_matrix_train
 ```
 
 
-####Validation
+####Random Forest Model against validation data
 ```{r}
 #Lets test prediction using test data 
 rf_validationPredication <- predict(rf_model,hrValidation)
@@ -701,8 +702,14 @@ rf_confustion_matrix_validation <- confusionMatrix(rf_validationPredication,hrVa
 
 rf_confustion_matrix_validation
 ```
+####Random forest regression model to predict employees leaving the company is predicting with an 
+  * overall Accuracy of `r rf_confustion_matrix_validation$overall["Accuracy"]`,
+  * predicting employees leaving company with `r rf_confustion_matrix_validation$byClass["Specificity"]` accuracy and 
+  * predicting employess staying with the company with `r rf_confustion_matrix_validation$byClass["Sensitivity"]` accuracy.
 
-####Prediction
+####Overall looks like Randon Forest Model is giving better prediction
+
+####Prediction using random forest model
 
 ```{r rf_prediction}
 #prediction on test data
@@ -712,10 +719,7 @@ rf_conf_matrix <- confusionMatrix(rf_prediction, hrTest$left)
 rf_conf_matrix
 
 ```
-####Random forest regression model to predict employees leaving the company is predicting with an 
-  * overall Accuracy of `r rf_conf_matrix$overall["Accuracy"]`,
-  * predicting employees leaving company with `r rf_conf_matrix$byClass["Specificity"]` accuracy and 
-  * predicting employess staying with the company with `r rf_conf_matrix$byClass["Sensitivity"]` accuracy.
+
 
 ###Summarize Logistics and Random Forest Regression results
 ```{r reg_summary}
