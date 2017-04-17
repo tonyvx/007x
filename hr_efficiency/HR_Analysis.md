@@ -893,8 +893,8 @@ glm_confusion_matrix_validation
 ####Comparing results from the model's prediction on validation data
   * overall Accuracy of 0.889 against validation data as compared to 0.8996667 given by model data,
   * predicting employees leaving company with 0.7843137 accuracy against validation data as compared to 0.805413 given by model data and
-  * predicting employess staying with the company with 0.9216973 accuracy against validation data as compared to 0.9291235 given by model.
-  * model is maintaining its accuracy levels and hence the model is repeative and is represntative of the problem.
+  * predicting employees staying with the company with 0.9216973 accuracy against validation data as compared to 0.9291235 given by model.
+  * model is maintaining its accuracy levels and hence the model is repetitive  and is representative of the problem.
 
 
 
@@ -937,9 +937,6 @@ hrTest  <- hr[-trainIndex,][-validationIndex,]
 ####Random Forest Model
 
 ```r
-#Create smaller Train data for Random forest
-#hrTrain_1 <- hrTrain[createDataPartition(y = hrTrain$left,p = 0.3,list = FALSE),]
-
 #Random Forest Model
 rf_model <- train(left~time_spend_company + 
                       average_montly_hours + 
@@ -1060,8 +1057,8 @@ rf_confusion_matrix_validation
 ####Comparing results from the model's prediction on validation data
   * overall Accuracy of 0.988 against validation data as compared to 1 given by model data,
   * predicting employees leaving company with 0.952381 accuracy against validation data as compared to 1 given by model data and
-  * predicting employess staying with the company with 0.9991251 accuracy against validation data as compared to 1 given by model.
-  * model is maintaining its accuracy levels and hence the model is repeative and is represntative of the problem.
+  * predicting employees staying with the company with 0.9991251 accuracy against validation data as compared to 1 given by model.
+  * Though model too perfect (accuracy of 1) it is maintaining its accuracy levels close enough with unseen data and hence the model is repetitive and is representative of the problem.
 
 ####Overall looks like Random Forest Model is giving better prediction
 

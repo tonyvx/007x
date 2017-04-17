@@ -632,8 +632,8 @@ glm_confusion_matrix_validation
 ####Comparing results from the model's prediction on validation data
   * overall Accuracy of `r glm_confusion_matrix_validation$overall["Accuracy"]` against validation data as compared to `r glm_confusion_matrix_train$overall["Accuracy"]` given by model data,
   * predicting employees leaving company with `r glm_confusion_matrix_validation$byClass["Sensitivity"]` accuracy against validation data as compared to `r glm_confusion_matrix_train$byClass["Sensitivity"]` given by model data and
-  * predicting employess staying with the company with `r glm_confusion_matrix_validation$byClass["Specificity"]` accuracy against validation data as compared to `r glm_confusion_matrix_train$byClass["Specificity"]` given by model.
-  * model is maintaining its accuracy levels and hence the model is repeative and is represntative of the problem.
+  * predicting employees staying with the company with `r glm_confusion_matrix_validation$byClass["Specificity"]` accuracy against validation data as compared to `r glm_confusion_matrix_train$byClass["Specificity"]` given by model.
+  * model is maintaining its accuracy levels and hence the model is repetitive  and is representative of the problem.
 
 
 
@@ -673,8 +673,6 @@ hrTest  <- hr[-trainIndex,][-validationIndex,]
 
 ####Random Forest Model
 ```{r rf_model}
-#Create smaller Train data for Random forest
-#hrTrain_1 <- hrTrain[createDataPartition(y = hrTrain$left,p = 0.3,list = FALSE),]
 
 #Random Forest Model
 rf_model <- train(left~time_spend_company + 
@@ -715,8 +713,8 @@ rf_confusion_matrix_validation
 ####Comparing results from the model's prediction on validation data
   * overall Accuracy of `r rf_confusion_matrix_validation$overall["Accuracy"]` against validation data as compared to `r rf_conf_matrix_train$overall["Accuracy"]` given by model data,
   * predicting employees leaving company with `r rf_confusion_matrix_validation$byClass["Sensitivity"]` accuracy against validation data as compared to `r rf_conf_matrix_train$byClass["Sensitivity"]` given by model data and
-  * predicting employess staying with the company with `r rf_confusion_matrix_validation$byClass["Specificity"]` accuracy against validation data as compared to `r rf_conf_matrix_train$byClass["Specificity"]` given by model.
-  * model is maintaining its accuracy levels and hence the model is repeative and is represntative of the problem.
+  * predicting employees staying with the company with `r rf_confusion_matrix_validation$byClass["Specificity"]` accuracy against validation data as compared to `r rf_conf_matrix_train$byClass["Specificity"]` given by model.
+  * Though model too perfect (accuracy of 1) it is maintaining its accuracy levels close enough with unseen data and hence the model is repetitive and is representative of the problem.
 
 ####Overall looks like Random Forest Model is giving better prediction
 
