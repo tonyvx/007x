@@ -359,7 +359,7 @@ Following are categories of employees who have low satisfaction level and show h
 * Employees having evaluation rating 0.8 - 1 ( this group also has folks leaving at higher satisfaction level too)
 * Employees who have been with the company for around 4 years
 
-__It seems low satisfaction is driven by over work and medium satisfaction is due to less work(does less work means lower renumeration?). 
+__It seems low satisfaction is driven by over work and medium satisfaction is due to less work(does less work means lower remuneration?). 
 Overall right sizing work across the workforce could improve overall satisfaction and company will be able to retain hard working and improve overall employee utilization.__
 
 ####Lets analyze number_project, average_montly_hours & last_evaluation
@@ -511,8 +511,8 @@ grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2,time_spend, nrow = 5)
 * high average monthly hours of 225 - 350 hours. Assuming 22 working days a month, this translates to 10 - 16 hrs per day.
 
 ###overall
-* cluster 3 are employees that comapany need to find ways to retain.
-* cluster 2 are over worked employees, company need to find ways to optimise work load and improve satisfaction level
+* cluster 3 are employees that company need to find ways to retain.
+* cluster 2 are over worked employees, company need to find ways to optimize work load and improve satisfaction level
 * cluster 1 are under under utilized employees and company need to find means to have them share the work load of cluster 2.
 
 
@@ -623,11 +623,12 @@ lm_time_spend_summary
 ```
 
 From model summary we can see following attributes impacting time spend in company 
+
 * satisfaction_level      
-* number_project        - 3 - 7  
+* number_project   
 * average_montly_hours    
-* promotion_last_5years - 1 (promoted)
-* dept                  - management           
+* promotion_last_5years (1 - promoted)
+* dept - management           
 
 Model _lm_time_spend_ has an R Squared of 0.7389789 and adjusted R-Squared of 0.7377862
 
@@ -940,11 +941,18 @@ hrTest  <- hr[-trainIndex,][-validationIndex,]
 #hrTrain_1 <- hrTrain[createDataPartition(y = hrTrain$left,p = 0.3,list = FALSE),]
 
 #Random Forest Model
-rf_model <- train(left~.,
+rf_model <- train(left~time_spend_company + 
+                      average_montly_hours + 
+                      dept+
+                      last_evaluation +
+                      promotion_last_5years +
+                      number_project +
+                      salary + 
+                      Work_accident  + 
+                      satisfaction_level ,
                   data = hrTrain,
                   method = "rf",
-                trControl = trainControl(method = "cv",number = 5),
-                pallowParallel = TRUE)
+                trControl = trainControl(method = "cv",number = 5))
 
 print(rf_model)
 ```
@@ -962,9 +970,9 @@ print(rf_model)
 ## Resampling results across tuning parameters:
 ## 
 ##   mtry  Accuracy   Kappa    
-##    2    0.9692223  0.9117559
-##   10    0.9883335  0.9674154
-##   18    0.9860002  0.9610376
+##    2    0.9695555  0.9128271
+##   10    0.9883335  0.9674284
+##   18    0.9861115  0.9613303
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
 ## The final value used for the model was mtry = 10.
