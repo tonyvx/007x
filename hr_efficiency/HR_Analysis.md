@@ -153,7 +153,6 @@ hr_correl %>%  dplyr::select(
 * relation to satisfaction or last_evaluation is not very obvious
 * average_monthly_hours seems to increase with number_project
 * employees leaving (left=1)
-
   + 150 hours +/- 25 shows high number of employees leaving
 	+ Again 225 hours and more employees leaving creaps to peak at around 250 hours and dips gradually to 300 hours
 	+ 175 hours - 225 hours for average_monthly_hours seems to have low rate of employees leaving
@@ -201,7 +200,7 @@ Work_accident, promotion_last_5years & salary seems to have lower impact on empl
 
 
 ###Exploratory Analysis using ggplots , geom_histogram & facet_grids
-Lets plot satisfaction_level against facets number_project, average_montly_hours, time_spend_company, promotion_last_5years, Work_accident, salary & dept. Each plot correlates satisfaction_level(histogram), left (fill ) with one of the other atribut as facets. 
+Lets plot satisfaction_level against facets number_project, average_montly_hours, time_spend_company, promotion_last_5years, Work_accident, salary & dept. Each plot correlates satisfaction_level(histogram), left (fill ) with one of the other atribute as facets. 
 
 #### number_project
 
@@ -815,11 +814,11 @@ summary(log_model)
 glm_prediction_train <- predict(log_model,  hrTrain)
 
 #Confusion matrix for prediction against training data
-glm_confustion_matrix_train <- confusionMatrix(glm_prediction_train,
+glm_confusion_matrix_train <- confusionMatrix(glm_prediction_train,
                                                hrTrain$left,
-                                               dnn = c("Predicted", "actual"))
+                                               dnn = c("Predicted", "actual"), positive = "1")
 
-glm_confustion_matrix_train
+glm_confusion_matrix_train
 ```
 
 ```
@@ -838,27 +837,28 @@ glm_confustion_matrix_train
 ##                   Kappa : 0.7265          
 ##  Mcnemar's Test P-Value : 0.02364         
 ##                                           
-##             Sensitivity : 0.9291          
-##             Specificity : 0.8054          
-##          Pos Pred Value : 0.9386          
-##          Neg Pred Value : 0.7803          
-##              Prevalence : 0.7619          
-##          Detection Rate : 0.7079          
-##    Detection Prevalence : 0.7542          
+##             Sensitivity : 0.8054          
+##             Specificity : 0.9291          
+##          Pos Pred Value : 0.7803          
+##          Neg Pred Value : 0.9386          
+##              Prevalence : 0.2381          
+##          Detection Rate : 0.1918          
+##    Detection Prevalence : 0.2458          
 ##       Balanced Accuracy : 0.8673          
 ##                                           
-##        'Positive' Class : 0               
+##        'Positive' Class : 1               
 ## 
 ```
 
 ####Logistics Regression model against validation data
+Let us analyze the goodness of fit of the regression by applying the model's predictive performance to data that was not used in model estimation.
 
 ```r
 #Lets test prediction using test data 
-validationPredication <- predict(log_model,hrValidation)
-glm_confustion_matrix_validation <- confusionMatrix(validationPredication,hrValidation$left, dnn = c("Predicted","actual"))
+validationPrediction <- predict(log_model,hrValidation)
+glm_confusion_matrix_validation <- confusionMatrix(validationPrediction,hrValidation$left, dnn = c("Predicted","actual"), positive = "1")
 
-glm_confustion_matrix_validation
+glm_confusion_matrix_validation
 ```
 
 ```
@@ -877,67 +877,37 @@ glm_confustion_matrix_validation
 ##                   Kappa : 0.6976       
 ##  Mcnemar's Test P-Value : 0.1884       
 ##                                        
-##             Sensitivity : 0.9217       
-##             Specificity : 0.7843       
-##          Pos Pred Value : 0.9319       
-##          Neg Pred Value : 0.7578       
-##              Prevalence : 0.7620       
-##          Detection Rate : 0.7023       
-##    Detection Prevalence : 0.7537       
+##             Sensitivity : 0.7843       
+##             Specificity : 0.9217       
+##          Pos Pred Value : 0.7578       
+##          Neg Pred Value : 0.9319       
+##              Prevalence : 0.2380       
+##          Detection Rate : 0.1867       
+##    Detection Prevalence : 0.2463       
 ##       Balanced Accuracy : 0.8530       
 ##                                        
-##        'Positive' Class : 0            
+##        'Positive' Class : 1            
 ## 
 ```
+####Comparing results from the model's prediction on validation data
+  * overall Accuracy of 0.889 against validation data as compared to 0.8996667 given by model data,
+  * predicting employees leaving company with 0.7843137 accuracy against validation data as compared to 0.805413 given by model data and
+  * predicting employess staying with the company with 0.9216973 accuracy against validation data as compared to 0.9291235 given by model.
+  * model is maintaining its accuracy levels and hence the model is repeative and is represntative of the problem.
 
 
-####Logistics regression model to predict employees leaving the company is predicting with an 
-  * overall Accuracy of 0.889,
-  * predicting employees leaving company with 0.7843137 accuracy and
-  * predicting employess staying with the company with 0.9216973 accuracy.
 
-####Prediction Logistics Regression Model
 
 ```r
-#Lets test prediction using test data 
-testPredication <- predict(log_model,hrTest)
-glm_confustion_matrix_test <- confusionMatrix(testPredication,hrTest$left, dnn = c("Predicted","actual"))
-
-glm_confustion_matrix_test
-```
-
-```
-## Confusion Matrix and Statistics
-## 
-##          actual
-## Predicted    0    1
-##         0 2122  160
-##         1  163  554
-##                                           
-##                Accuracy : 0.8923          
-##                  95% CI : (0.8807, 0.9032)
-##     No Information Rate : 0.7619          
-##     P-Value [Acc > NIR] : <2e-16          
-##                                           
-##                   Kappa : 0.7036          
-##  Mcnemar's Test P-Value : 0.9114          
-##                                           
-##             Sensitivity : 0.9287          
-##             Specificity : 0.7759          
-##          Pos Pred Value : 0.9299          
-##          Neg Pred Value : 0.7727          
-##              Prevalence : 0.7619          
-##          Detection Rate : 0.7076          
-##    Detection Prevalence : 0.7609          
-##       Balanced Accuracy : 0.8523          
-##                                           
-##        'Positive' Class : 0               
-## 
+#Lets test performance of the model against test data 
+testPrediction <- predict(log_model,hrTest)
+glm_confusion_matrix_test <- confusionMatrix(testPrediction,hrTest$left, dnn = c("Predicted","actual"), positive = "1")
 ```
 
 ###Random Forest Analysis
 
 ```r
+#To improve speed of Random Forest model genration on a training set, using doMC to utilize parallel processing across 5 cores
 library(doMC)
 registerDoMC(5)
 ```
@@ -967,11 +937,11 @@ hrTest  <- hr[-trainIndex,][-validationIndex,]
 
 ```r
 #Create smaller Train data for Random forest
-hrTrain_1 <- hrTrain[createDataPartition(y = hrTrain$left,p = 0.3,list = FALSE),]
+#hrTrain_1 <- hrTrain[createDataPartition(y = hrTrain$left,p = 0.3,list = FALSE),]
 
 #Random Forest Model
 rf_model <- train(left~.,
-                  data = hrTrain_1,
+                  data = hrTrain,
                   method = "rf",
                 trControl = trainControl(method = "cv",number = 5),
                 pallowParallel = TRUE)
@@ -982,19 +952,19 @@ print(rf_model)
 ```
 ## Random Forest 
 ## 
-## 2701 samples
+## 9000 samples
 ##    9 predictor
 ##    2 classes: '0', '1' 
 ## 
 ## No pre-processing
 ## Resampling: Cross-Validated (5 fold) 
-## Summary of sample sizes: 2162, 2160, 2160, 2160, 2162 
+## Summary of sample sizes: 7200, 7199, 7200, 7200, 7201 
 ## Resampling results across tuning parameters:
 ## 
 ##   mtry  Accuracy   Kappa    
-##    2    0.9533524  0.8638864
-##   10    0.9777859  0.9373590
-##   18    0.9722352  0.9223973
+##    2    0.9692223  0.9117559
+##   10    0.9883335  0.9674154
+##   18    0.9860002  0.9610376
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
 ## The final value used for the model was mtry = 10.
@@ -1014,39 +984,40 @@ rf_conf_matrix_train
 ## 
 ##           Reference
 ## Prediction    0    1
-##          0 6845  103
-##          1   12 2040
-##                                           
-##                Accuracy : 0.9872          
-##                  95% CI : (0.9847, 0.9894)
-##     No Information Rate : 0.7619          
-##     P-Value [Acc > NIR] : < 2.2e-16       
-##                                           
-##                   Kappa : 0.9643          
-##  Mcnemar's Test P-Value : < 2.2e-16       
-##                                           
-##             Sensitivity : 0.9982          
-##             Specificity : 0.9519          
-##          Pos Pred Value : 0.9852          
-##          Neg Pred Value : 0.9942          
-##              Prevalence : 0.7619          
-##          Detection Rate : 0.7606          
-##    Detection Prevalence : 0.7720          
-##       Balanced Accuracy : 0.9751          
-##                                           
-##        'Positive' Class : 0               
+##          0 6857    0
+##          1    0 2143
+##                                      
+##                Accuracy : 1          
+##                  95% CI : (0.9996, 1)
+##     No Information Rate : 0.7619     
+##     P-Value [Acc > NIR] : < 2.2e-16  
+##                                      
+##                   Kappa : 1          
+##  Mcnemar's Test P-Value : NA         
+##                                      
+##             Sensitivity : 1.0000     
+##             Specificity : 1.0000     
+##          Pos Pred Value : 1.0000     
+##          Neg Pred Value : 1.0000     
+##              Prevalence : 0.7619     
+##          Detection Rate : 0.7619     
+##    Detection Prevalence : 0.7619     
+##       Balanced Accuracy : 1.0000     
+##                                      
+##        'Positive' Class : 0          
 ## 
 ```
 
 
 ####Random Forest Model against validation data
+Let us analyze the goodness of fit of the model by applying the model’s predictive performance to data that was not used in model estimation.
 
 ```r
 #Lets test prediction using test data 
-rf_validationPredication <- predict(rf_model,hrValidation)
-rf_confustion_matrix_validation <- confusionMatrix(rf_validationPredication,hrValidation$left, dnn = c("Predicted","actual"))
+rf_validationPrediction <- predict(rf_model,hrValidation)
+rf_confusion_matrix_validation <- confusionMatrix(rf_validationPrediction,hrValidation$left, dnn = c("Predicted","actual"), positive = "1")
 
-rf_confustion_matrix_validation
+rf_confusion_matrix_validation
 ```
 
 ```
@@ -1054,73 +1025,76 @@ rf_confustion_matrix_validation
 ## 
 ##          actual
 ## Predicted    0    1
-##         0 2283   72
-##         1    3  642
+##         0 2284   34
+##         1    2  680
 ##                                           
-##                Accuracy : 0.975           
-##                  95% CI : (0.9688, 0.9803)
+##                Accuracy : 0.988           
+##                  95% CI : (0.9834, 0.9916)
 ##     No Information Rate : 0.762           
 ##     P-Value [Acc > NIR] : < 2.2e-16       
 ##                                           
-##                   Kappa : 0.9287          
-##  Mcnemar's Test P-Value : 4.096e-15       
+##                   Kappa : 0.9664          
+##  Mcnemar's Test P-Value : 2.383e-07       
 ##                                           
-##             Sensitivity : 0.9987          
-##             Specificity : 0.8992          
-##          Pos Pred Value : 0.9694          
-##          Neg Pred Value : 0.9953          
-##              Prevalence : 0.7620          
-##          Detection Rate : 0.7610          
-##    Detection Prevalence : 0.7850          
-##       Balanced Accuracy : 0.9489          
+##             Sensitivity : 0.9524          
+##             Specificity : 0.9991          
+##          Pos Pred Value : 0.9971          
+##          Neg Pred Value : 0.9853          
+##              Prevalence : 0.2380          
+##          Detection Rate : 0.2267          
+##    Detection Prevalence : 0.2273          
+##       Balanced Accuracy : 0.9758          
 ##                                           
-##        'Positive' Class : 0               
+##        'Positive' Class : 1               
 ## 
 ```
-####Random forest regression model to predict employees leaving the company is predicting with an 
-  * overall Accuracy of 0.975,
-  * predicting employees leaving company with 0.8991597 accuracy and 
-  * predicting employess staying with the company with 0.9986877 accuracy.
 
-####Overall looks like Randon Forest Model is giving better prediction
+####Comparing results from the model's prediction on validation data
+  * overall Accuracy of 0.988 against validation data as compared to 1 given by model data,
+  * predicting employees leaving company with 0.952381 accuracy against validation data as compared to 1 given by model data and
+  * predicting employess staying with the company with 0.9991251 accuracy against validation data as compared to 1 given by model.
+  * model is maintaining its accuracy levels and hence the model is repeative and is represntative of the problem.
 
-####Prediction using random forest model
+####Overall looks like Random Forest Model is giving better prediction
+
+###Prediction using random forest model
 
 
 ```r
 #prediction on test data
 rf_prediction = predict(rf_model, newdata = hrTest)
 
-rf_conf_matrix <- confusionMatrix(rf_prediction, hrTest$left)
+rf_conf_matrix <- confusionMatrix(rf_prediction, hrTest$left, dnn = c("Predicted","actual"), positive = "1")
+
 rf_conf_matrix
 ```
 
 ```
 ## Confusion Matrix and Statistics
 ## 
-##           Reference
-## Prediction    0    1
-##          0 2279   40
-##          1    6  674
+##          actual
+## Predicted    0    1
+##         0 2280   21
+##         1    5  693
 ##                                           
-##                Accuracy : 0.9847          
-##                  95% CI : (0.9796, 0.9887)
+##                Accuracy : 0.9913          
+##                  95% CI : (0.9873, 0.9943)
 ##     No Information Rate : 0.7619          
 ##     P-Value [Acc > NIR] : < 2.2e-16       
 ##                                           
-##                   Kappa : 0.957           
-##  Mcnemar's Test P-Value : 1.141e-06       
+##                   Kappa : 0.9759          
+##  Mcnemar's Test P-Value : 0.003264        
 ##                                           
-##             Sensitivity : 0.9974          
-##             Specificity : 0.9440          
-##          Pos Pred Value : 0.9828          
-##          Neg Pred Value : 0.9912          
-##              Prevalence : 0.7619          
-##          Detection Rate : 0.7599          
-##    Detection Prevalence : 0.7733          
-##       Balanced Accuracy : 0.9707          
+##             Sensitivity : 0.9706          
+##             Specificity : 0.9978          
+##          Pos Pred Value : 0.9928          
+##          Neg Pred Value : 0.9909          
+##              Prevalence : 0.2381          
+##          Detection Rate : 0.2311          
+##    Detection Prevalence : 0.2327          
+##       Balanced Accuracy : 0.9842          
 ##                                           
-##        'Positive' Class : 0               
+##        'Positive' Class : 1               
 ## 
 ```
 
@@ -1129,20 +1103,20 @@ rf_conf_matrix
 
 ```r
 overall <- cbind(
-  glm_confustion_matrix_train$overall,
-  glm_confustion_matrix_validation$overall,
-  glm_confustion_matrix_test$overall,
+  glm_confusion_matrix_train$overall,
+  glm_confusion_matrix_validation$overall,
+  glm_confusion_matrix_test$overall,
   rf_conf_matrix_train$overall,
-  rf_confustion_matrix_validation$overall,
+  rf_confusion_matrix_validation$overall,
   rf_conf_matrix$overall
   )
   
 byClass <- cbind(
-  glm_confustion_matrix_train$byClass,
-  glm_confustion_matrix_validation$byClass,
-  glm_confustion_matrix_test$byClass,
+  glm_confusion_matrix_train$byClass,
+  glm_confusion_matrix_validation$byClass,
+  glm_confusion_matrix_test$byClass,
   rf_conf_matrix_train$byClass,
-  rf_confustion_matrix_validation$byClass,
+  rf_confusion_matrix_validation$byClass,
   rf_conf_matrix$byClass
   )
   
@@ -1168,43 +1142,43 @@ all_conf_matrix
 
 ```
 ##                        glm_train glm_validation glm_test rf_train
-## Accuracy                  0.8997         0.8890   0.8923   0.9872
-## Kappa                     0.7265         0.6976   0.7036   0.9643
-## 95% CI (Upper)            0.8933         0.8772   0.8807   0.9847
-## 95% CI (Lower)            0.9058         0.9000   0.9032   0.9894
+## Accuracy                  0.8997         0.8890   0.8923   1.0000
+## Kappa                     0.7265         0.6976   0.7036   1.0000
+## 95% CI (Upper)            0.8933         0.8772   0.8807   0.9996
+## 95% CI (Lower)            0.9058         0.9000   0.9032   1.0000
 ## No Information Rate       0.7619         0.7620   0.7619   0.7619
 ## P-Value [Acc > NIR]       0.0000         0.0000   0.0000   0.0000
-## Mcnemar's Test P-Value    0.0236         0.1884   0.9114   0.0000
-## Sensitivity               0.9291         0.9217   0.9287   0.9982
-## Specificity               0.8054         0.7843   0.7759   0.9519
-## Pos Pred Value            0.9386         0.9319   0.9299   0.9852
-## Neg Pred Value            0.7803         0.7578   0.7727   0.9942
-## Precision                 0.9386         0.9319   0.9299   0.9852
-## Recall                    0.9291         0.9217   0.9287   0.9982
-## F1                        0.9338         0.9268   0.9293   0.9917
-## Prevalence                0.7619         0.7620   0.7619   0.7619
-## Detection Rate            0.7079         0.7023   0.7076   0.7606
-## Detection Prevalence      0.7542         0.7537   0.7609   0.7720
-## Balanced Accuracy         0.8673         0.8530   0.8523   0.9751
+## Mcnemar's Test P-Value    0.0236         0.1884   0.9114      NaN
+## Sensitivity               0.8054         0.7843   0.7759   1.0000
+## Specificity               0.9291         0.9217   0.9287   1.0000
+## Pos Pred Value            0.7803         0.7578   0.7727   1.0000
+## Neg Pred Value            0.9386         0.9319   0.9299   1.0000
+## Precision                 0.7803         0.7578   0.7727   1.0000
+## Recall                    0.8054         0.7843   0.7759   1.0000
+## F1                        0.7927         0.7708   0.7743   1.0000
+## Prevalence                0.2381         0.2380   0.2381   0.7619
+## Detection Rate            0.1918         0.1867   0.1847   0.7619
+## Detection Prevalence      0.2458         0.2463   0.2391   0.7619
+## Balanced Accuracy         0.8673         0.8530   0.8523   1.0000
 ##                        rf_validation rf_test
-## Accuracy                      0.9750  0.9847
-## Kappa                         0.9287  0.9570
-## 95% CI (Upper)                0.9688  0.9796
-## 95% CI (Lower)                0.9803  0.9887
+## Accuracy                      0.9880  0.9913
+## Kappa                         0.9664  0.9759
+## 95% CI (Upper)                0.9834  0.9873
+## 95% CI (Lower)                0.9916  0.9943
 ## No Information Rate           0.7620  0.7619
 ## P-Value [Acc > NIR]           0.0000  0.0000
-## Mcnemar's Test P-Value        0.0000  0.0000
-## Sensitivity                   0.9987  0.9974
-## Specificity                   0.8992  0.9440
-## Pos Pred Value                0.9694  0.9828
-## Neg Pred Value                0.9953  0.9912
-## Precision                     0.9694  0.9828
-## Recall                        0.9987  0.9974
-## F1                            0.9838  0.9900
-## Prevalence                    0.7620  0.7619
-## Detection Rate                0.7610  0.7599
-## Detection Prevalence          0.7850  0.7733
-## Balanced Accuracy             0.9489  0.9707
+## Mcnemar's Test P-Value        0.0000  0.0033
+## Sensitivity                   0.9524  0.9706
+## Specificity                   0.9991  0.9978
+## Pos Pred Value                0.9971  0.9928
+## Neg Pred Value                0.9853  0.9909
+## Precision                     0.9971  0.9928
+## Recall                        0.9524  0.9706
+## F1                            0.9742  0.9816
+## Prevalence                    0.2380  0.2381
+## Detection Rate                0.2267  0.2311
+## Detection Prevalence          0.2273  0.2327
+## Balanced Accuracy             0.9758  0.9842
 ```
 
 

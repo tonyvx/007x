@@ -120,7 +120,6 @@ hr_correl %>%  dplyr::select(
 * relation to satisfaction or last_evaluation is not very obvious
 * average_monthly_hours seems to increase with number_project
 * employees leaving (left=1)
-
   + 150 hours +/- 25 shows high number of employees leaving
 	+ Again 225 hours and more employees leaving creaps to peak at around 250 hours and dips gradually to 300 hours
 	+ 175 hours - 225 hours for average_monthly_hours seems to have low rate of employees leaving
@@ -166,7 +165,7 @@ Work_accident, promotion_last_5years & salary seems to have lower impact on empl
 
 
 ###Exploratory Analysis using ggplots , geom_histogram & facet_grids
-Lets plot satisfaction_level against facets number_project, average_montly_hours, time_spend_company, promotion_last_5years, Work_accident, salary & dept. Each plot correlates satisfaction_level(histogram), left (fill ) with one of the other atribut as facets. 
+Lets plot satisfaction_level against facets number_project, average_montly_hours, time_spend_company, promotion_last_5years, Work_accident, salary & dept. Each plot correlates satisfaction_level(histogram), left (fill ) with one of the other atribute as facets. 
 
 #### number_project
 ```{r plot_data_exp_analysis_number_project}
@@ -613,39 +612,40 @@ summary(log_model)
 glm_prediction_train <- predict(log_model,  hrTrain)
 
 #Confusion matrix for prediction against training data
-glm_confustion_matrix_train <- confusionMatrix(glm_prediction_train,
+glm_confusion_matrix_train <- confusionMatrix(glm_prediction_train,
                                                hrTrain$left,
-                                               dnn = c("Predicted", "actual"))
+                                               dnn = c("Predicted", "actual"), positive = "1")
 
-glm_confustion_matrix_train
+glm_confusion_matrix_train
 ```
 
 ####Logistics Regression model against validation data
+Let us analyze the goodness of fit of the regression by applying the model's predictive performance to data that was not used in model estimation.
 ```{r}
 #Lets test prediction using test data 
-validationPredication <- predict(log_model,hrValidation)
-glm_confustion_matrix_validation <- confusionMatrix(validationPredication,hrValidation$left, dnn = c("Predicted","actual"))
+validationPrediction <- predict(log_model,hrValidation)
+glm_confusion_matrix_validation <- confusionMatrix(validationPrediction,hrValidation$left, dnn = c("Predicted","actual"), positive = "1")
 
-glm_confustion_matrix_validation
+glm_confusion_matrix_validation
 ```
+####Comparing results from the model's prediction on validation data
+  * overall Accuracy of `r glm_confusion_matrix_validation$overall["Accuracy"]` against validation data as compared to `r glm_confusion_matrix_train$overall["Accuracy"]` given by model data,
+  * predicting employees leaving company with `r glm_confusion_matrix_validation$byClass["Sensitivity"]` accuracy against validation data as compared to `r glm_confusion_matrix_train$byClass["Sensitivity"]` given by model data and
+  * predicting employess staying with the company with `r glm_confusion_matrix_validation$byClass["Specificity"]` accuracy against validation data as compared to `r glm_confusion_matrix_train$byClass["Specificity"]` given by model.
+  * model is maintaining its accuracy levels and hence the model is repeative and is represntative of the problem.
 
 
-####Logistics regression model to predict employees leaving the company is predicting with an 
-  * overall Accuracy of `r glm_confustion_matrix_validation$overall["Accuracy"]`,
-  * predicting employees leaving company with `r glm_confustion_matrix_validation$byClass["Specificity"]` accuracy and
-  * predicting employess staying with the company with `r glm_confustion_matrix_validation$byClass["Sensitivity"]` accuracy.
 
-####Prediction Logistics Regression Model
 ```{r}
-#Lets test prediction using test data 
-testPredication <- predict(log_model,hrTest)
-glm_confustion_matrix_test <- confusionMatrix(testPredication,hrTest$left, dnn = c("Predicted","actual"))
+#Lets test performance of the model against test data 
+testPrediction <- predict(log_model,hrTest)
+glm_confusion_matrix_test <- confusionMatrix(testPrediction,hrTest$left, dnn = c("Predicted","actual"), positive = "1")
 
-glm_confustion_matrix_test
 ```
 
 ###Random Forest Analysis
 ```{r rf}
+#To improve speed of Random Forest model genration on a training set, using doMC to utilize parallel processing across 5 cores
 library(doMC)
 registerDoMC(5)
 ```
@@ -673,11 +673,11 @@ hrTest  <- hr[-trainIndex,][-validationIndex,]
 ####Random Forest Model
 ```{r rf_model}
 #Create smaller Train data for Random forest
-hrTrain_1 <- hrTrain[createDataPartition(y = hrTrain$left,p = 0.3,list = FALSE),]
+#hrTrain_1 <- hrTrain[createDataPartition(y = hrTrain$left,p = 0.3,list = FALSE),]
 
 #Random Forest Model
 rf_model <- train(left~.,
-                  data = hrTrain_1,
+                  data = hrTrain,
                   method = "rf",
                 trControl = trainControl(method = "cv",number = 5),
                 pallowParallel = TRUE)
@@ -695,27 +695,31 @@ rf_conf_matrix_train
 
 
 ####Random Forest Model against validation data
+Let us analyze the goodness of fit of the model by applying the model’s predictive performance to data that was not used in model estimation.
 ```{r}
 #Lets test prediction using test data 
-rf_validationPredication <- predict(rf_model,hrValidation)
-rf_confustion_matrix_validation <- confusionMatrix(rf_validationPredication,hrValidation$left, dnn = c("Predicted","actual"))
+rf_validationPrediction <- predict(rf_model,hrValidation)
+rf_confusion_matrix_validation <- confusionMatrix(rf_validationPrediction,hrValidation$left, dnn = c("Predicted","actual"), positive = "1")
 
-rf_confustion_matrix_validation
+rf_confusion_matrix_validation
 ```
-####Random forest regression model to predict employees leaving the company is predicting with an 
-  * overall Accuracy of `r rf_confustion_matrix_validation$overall["Accuracy"]`,
-  * predicting employees leaving company with `r rf_confustion_matrix_validation$byClass["Specificity"]` accuracy and 
-  * predicting employess staying with the company with `r rf_confustion_matrix_validation$byClass["Sensitivity"]` accuracy.
 
-####Overall looks like Randon Forest Model is giving better prediction
+####Comparing results from the model's prediction on validation data
+  * overall Accuracy of `r rf_confusion_matrix_validation$overall["Accuracy"]` against validation data as compared to `r rf_conf_matrix_train$overall["Accuracy"]` given by model data,
+  * predicting employees leaving company with `r rf_confusion_matrix_validation$byClass["Sensitivity"]` accuracy against validation data as compared to `r rf_conf_matrix_train$byClass["Sensitivity"]` given by model data and
+  * predicting employess staying with the company with `r rf_confusion_matrix_validation$byClass["Specificity"]` accuracy against validation data as compared to `r rf_conf_matrix_train$byClass["Specificity"]` given by model.
+  * model is maintaining its accuracy levels and hence the model is repeative and is represntative of the problem.
 
-####Prediction using random forest model
+####Overall looks like Random Forest Model is giving better prediction
+
+###Prediction using random forest model
 
 ```{r rf_prediction}
 #prediction on test data
 rf_prediction = predict(rf_model, newdata = hrTest)
 
-rf_conf_matrix <- confusionMatrix(rf_prediction, hrTest$left)
+rf_conf_matrix <- confusionMatrix(rf_prediction, hrTest$left, dnn = c("Predicted","actual"), positive = "1")
+
 rf_conf_matrix
 
 ```
@@ -724,20 +728,20 @@ rf_conf_matrix
 ###Summarize Logistics and Random Forest Regression results
 ```{r reg_summary}
 overall <- cbind(
-  glm_confustion_matrix_train$overall,
-  glm_confustion_matrix_validation$overall,
-  glm_confustion_matrix_test$overall,
+  glm_confusion_matrix_train$overall,
+  glm_confusion_matrix_validation$overall,
+  glm_confusion_matrix_test$overall,
   rf_conf_matrix_train$overall,
-  rf_confustion_matrix_validation$overall,
+  rf_confusion_matrix_validation$overall,
   rf_conf_matrix$overall
   )
   
 byClass <- cbind(
-  glm_confustion_matrix_train$byClass,
-  glm_confustion_matrix_validation$byClass,
-  glm_confustion_matrix_test$byClass,
+  glm_confusion_matrix_train$byClass,
+  glm_confusion_matrix_validation$byClass,
+  glm_confusion_matrix_test$byClass,
   rf_conf_matrix_train$byClass,
-  rf_confustion_matrix_validation$byClass,
+  rf_confusion_matrix_validation$byClass,
   rf_conf_matrix$byClass
   )
   
