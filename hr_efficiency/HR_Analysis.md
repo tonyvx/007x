@@ -5,15 +5,15 @@
 
 ## Problem
 ###Factors important to retain performing employees
-* We will be analysing the data available in hand to identify avenues to improving hr efficiency.
-* We will be building a predictive model to determine how long employee would stay and their probability in leaving.
+* We will be exploring data set available for avenues for improving employee satisfaction and identify factors important to employees.
+* We will be building a predictive model to determine probability in leaving. We comapre logistic regression and random forest models.
 
 ## Data Source
 https://www.kaggle.com/ludobenistant/hr-analytics
 
 https://www.kaggle.com/ludobenistant/hr-analytics/downloads/human-resources-analytics.zip
 
-#####Lets load the dataset
+#####Lets load the dataset and analyze
 
 ```r
 hr <- read.csv("./HR_comma_sep.csv", 
@@ -99,7 +99,7 @@ hr$salary <- as.factor(hr$salary)
 names(hr)[9] <- "dept"
 ```
 
-Lets look are structure
+Lets look at the structure
 
 ```r
   str(hr)
@@ -121,9 +121,9 @@ Lets look are structure
 
 ## Data Exploration
 
-###Exploratory analysis with ggpairs
+###Quick exploratory analysis with ggpairs
 
-Lets look at correlation between these various columns
+Lets look at correlation between various attributes of the dataset
 
 
 ```r
@@ -142,40 +142,9 @@ hr_correl %>%  dplyr::select(
 
 ![](HR_Analysis_files/figure-html/ggpairs_continous_attibutes-1.png)<!-- -->
 
-####number_project (Number of projects)
-* employees involved in 3-5 projects have high satisfaction level, less than 3 projects or more than 5 projects satisfaction is low
-* last_evaluation increases with number_project
-* average_monthly_hours also increases with number_project
-* number of employees leaving (left=1) is high at 2 or less improves for 3 projects and then slowly creeps up until 5 projects and goes down
-* Overall Looks like 3-5 projects would mean less employees quiting and good employee satisfaction.
-
-####average_monthly_hours (Average monthly hours)
-* relation to satisfaction or last_evaluation is not very obvious
-* average_monthly_hours seems to increase with number_project
-* employees leaving (left=1)
-  + 150 hours +/- 25 shows high number of employees leaving
-	+ Again 225 hours and more employees leaving creaps to peak at around 250 hours and dips gradually to 300 hours
-	+ 175 hours - 225 hours for average_monthly_hours seems to have low rate of employees leaving
-
-####last_evaluation (Latest evaluation rating for the employee, ranges 0=low to 1=high)
-* Between 0.4 to 0.6 evaluation rating, employees leaving (left=1) is high.
-* It goes down at mid level and then picks up at around 0.75 and peaks around 0.85
-* So low and higher end of evaluation rating employees leaving is high.
-* Though one's leaving at lower rating is good for the company but the employees leaving having high rating is a concern for the company. 	
-	
-####satisfaction_level (Measure of employee statisfaction level, ranges 0=low to 1=high)
-* number projects between 3-5 show high satisfaction, less projects or too many projects tend to lower satisfaction
-* employees leaving have lower satisfaction than employees not leaving the company
-
-####time_spend_company
-* Employees who have been with the company 4-6 years seems to be having evaluation rating higher as well as higher average monthly hours.
-* Employees who have been with comapny for 3 years shows higher rate of leaving company
-* with respect to satisfaction level, intial years its high and its dips by 4 years and then picks up and stabilizes.
-* Between 3 - 4 years period we see satisfaction level dipping and a peak in employees leaving. This is an area to be looked into.  
-
-####overall
-Looks like employees involved in 3 -5 projects and putting in 175 hours - 225 hours average monthly hours have lower rate of leaving company and have high satisfaction level.
-Assuming 22 working days a month, 175 hours - 225 hours average monthly hours translates to 8 - 10 hrs per day.
+* We can see attributes _number_project_, _average_monthly_hours_, _last_evaluation_, _time_spend_company_ having correlation to _left_ and _satisfaction_level_.
+* Looks like employees involved in 3 -5 projects and putting in 175 hours - 225 hours average monthly hours have lower rate of leaving company and have high satisfaction level.
+* Assuming 22 working days a month, 175 hours - 225 hours average monthly hours translates to 8 - 10 hrs per day. 
 
 
 ```r
@@ -184,23 +153,12 @@ hr %>%  dplyr::select(Work_accident, promotion_last_5years, salary, left) %>% gg
 
 ![](HR_Analysis_files/figure-html/ggpairs_discrete_attributes-1.png)<!-- -->
 
-####Work_accident ( Accidents during work - 1 indicates accident )
-* A small percent of employees involved in Work_accident are actually leaving company. Work_accident does not seem very significant.
-* Work_accident is higher at medium and lower salary level than in higher salary level
 
-####promotion_last_5years (Promotion in last 5 years - 1 indicates promotion)
-* Very few employees are getting promoted
-* number of employees getting promoted are even at different salary level.
-
-####salary ( Salary category for employees as high, medium and low)
-* Higher number of employees leaving are in the medium & low salary level
-
-####overall
-Work_accident, promotion_last_5years & salary seems to have lower impact on employees leaving company.
+* Work_accident, promotion_last_5years & salary seems to have lower impact on employees leaving company.
 
 
 ###Exploratory Analysis using ggplots , geom_histogram & facet_grids
-Lets plot satisfaction_level against facets number_project, average_montly_hours, time_spend_company, promotion_last_5years, Work_accident, salary & dept. Each plot correlates satisfaction_level(histogram), left (fill ) with one of the other atribute as facets. 
+Lets plot satisfaction_level against facets number_project, average_montly_hours, time_spend_company, promotion_last_5years, Work_accident, salary & dept. Each plot correlates satisfaction_level(histogram), left (fill ) with one of the other attribute as facets. 
 
 #### number_project
 
@@ -237,7 +195,8 @@ hr_explore %>% ggplot(aes(satisfaction_level)) +
   
   * Since average_montly_hours is continous data, in order for being able to use as a facet lets make it a discrete by creating ranges / monthly_hrs_range. Starting at 174 hours as that is __normal__ average monthly hours.
   * Employees putting in 174 and less average monthly hours show medium satisfaction and very high rate of leaving.
-  * Employees putting in 174 - 275 average monthly hours show mostly higher satisfaction level and we can see rate of leaving in high satisfaction level creeping.
+  * Employees putting in 174 - 225 average monthly hours seems to have higher satisfaction level. Though we can see a small peak in employees leaving in this category. (8-10 hrs a day)
+  * Employees putting in  225 - 275 average monthly hours show mostly higher satisfaction level and we can see rate of leaving in high satisfaction level creeping. (10 - 13 hours a day)
   * Employees putting in 275 hours and more average monthly hours are having a very low satisfaction level and are mostly leaving.
 
 #### last_evaluation
@@ -336,70 +295,31 @@ hr_explore %>% ggplot(aes(satisfaction_level)) +
 * All departments show a similar pattern of peaks in employees leaving at low, medium and high satisfaction levels.
 * dept data does not show any unusual pattern that can be correlated, all departments are showing similar pattern.
 
-##### number_project, average_montly_hours, last_evaluation & time_spend_company are of significant interest for analysing reasons for employees leaving
-
-Following are categories of employees who have high satisfaction level and show high rate of leaving.
-
-* Employees involved in 3 - 5 projects 
-* Employees putting in 174 - 275 average monthly hours
-* Employees with a evaluation rating of 0.8 - 1.
-* Employees who have been with the company 5 - 6 years
-
-Following are categories of employees who have medium satisfaction level and show high rate of leaving.
-
-* Employees involved in 2 projects
-* Employees putting in 174 and less average monthly hours
-* Employees having evaluation rating 0.4 - 0.6
-* Employees who have been with the company for around 3 years
-
-Following are categories of employees who have low satisfaction level and show high rate of leaving.
-
-* Employees involved in 6 - 7 projects
-* Employees putting in 275 hours and more average monthly hours 
-* Employees having evaluation rating 0.8 - 1 ( this group also has folks leaving at higher satisfaction level too)
-* Employees who have been with the company for around 4 years
-
-__It seems low satisfaction is driven by over work and medium satisfaction is due to less work(does less work means lower remuneration?). 
-Overall right sizing work across the workforce could improve overall satisfaction and company will be able to retain hard working and improve overall employee utilization.__
-
-####Lets analyze number_project, average_montly_hours & last_evaluation
-This analysis around employees who left
-
-```r
-hr_explore %>% filter(left == 1) %>% 
-  ggplot(aes( y = number_project,x = average_montly_hours, col = left)) + 
-  geom_point(alpha = 0.6, position = position_jitter(width = 0.2)) +
-  geom_smooth() + scale_colour_brewer(palette = "Set1") +
-  myTheme
-```
-
-![](HR_Analysis_files/figure-html/plot_data_exp_analysis_number_project_average_montly_hours_last_evaluation-1.png)<!-- -->
-
-```r
-hr_explore %>% filter(left == 1) %>% 
-  ggplot(aes( y = last_evaluation,x = average_montly_hours, col = left)) + 
-  geom_point(alpha = 0.6, position = position_jitter(width = 0.2)) +
-  geom_smooth() + scale_colour_brewer(palette = "Set1") +
-  myTheme
-```
-
-![](HR_Analysis_files/figure-html/plot_data_exp_analysis_number_project_average_montly_hours_last_evaluation-2.png)<!-- -->
-
-* Plot between number_project & average_montly_hours shows average_montly_hours increasing with number_projects for employees who are leaving and we can see 3 peaks:
+#####Overall
+* number_project, average_montly_hours, last_evaluation & time_spend_company are of significant interest for analysing reasons for employees leaving
+* We can see 3 categories/patterns of employees who are leaving
   
-  + At under 3 projects and 175 monthly hours
-  + Around 4 -5 projects and 225-275 monthly average hours
-  + Around 5- 6 projects and 250- 325 average monthly hours.
-  
-* Plot between number_project & last_evaluation shows last_evaluation increasing with average_montly_hours up until 275 average monthly hours to 0.9. Post that rating  for employees who are leaving satbilizes. We see two peaks for employee leaving
+  + high satisfaction level 
+    * Employees involved in 3 - 5 projects 
+    * Employees putting in 225 - 275 average monthly hours. (10 - 13 hrs)
+    * Employees with a evaluation rating of 0.8 - 1.
+    * Employees who have been with the company 5 - 6 years
 
-  + Below rating of 0.6 and 175 monthly hours
-  + Rating of 0.8 and above and around 250- 325 average monthly hours.
-  
-* Looks like employees with 
-  + less project and contibuting less average monthly hours have low rating and high attrition.
-  + higher number of projects and high average monthly hours have higher rating and high attrition.
-  + overall this is pointing to the need to see work load distribution needs improvement.
+  + medium satisfaction level 
+    * Employees involved in 2 projects
+    * Employees putting in 174 and less average monthly hours. ( less than 8 hrs a day)
+    * Employees having evaluation rating 0.4 - 0.6
+    * Employees who have been with the company for around 3 years
+
+  + low satisfaction level
+    * Employees involved in 6 - 7 projects
+    * Employees putting in 275 hours and more average monthly hours  (More than 13 hrs a day)
+    * Employees having evaluation rating 0.8 - 1 ( this group also has folks leaving at higher satisfaction level too)
+    * Employees who have been with the company for around 4 years
+
+* It seems low satisfaction is driven by over work and medium satisfaction is due to less work (does less work means lower remuneration?). 
+* Employees putting in 8-10 hours a day seems to be having higher satisfaction level and low rate of leaving.
+* Overall right sizing work across the workforce could improve overall satisfaction and company will be able to retain employees and improve overall employee utilization.
 
 
 ###Exploratory analysis using Clustering
@@ -511,9 +431,10 @@ grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2,time_spend, nrow = 5)
 * high average monthly hours of 225 - 350 hours. Assuming 22 working days a month, this translates to 10 - 16 hrs per day.
 
 ###overall
-* cluster 3 are employees that company need to find ways to retain.
+* cluster 3 are employees that company need to find ways to retain. Based on earlier exploratory analysis we know keeping average monthly hours to 174 - 225 hrs or 8-10 hrs a day helps to maintain retention and employee satisfaction.
 * cluster 2 are over worked employees, company need to find ways to optimize work load and improve satisfaction level
 * cluster 1 are under under utilized employees and company need to find means to have them share the work load of cluster 2.
+* Overall right sizing work load and ensuring a 8 - 10 hours a day work load will go long way to have highly satisfied employee and low attrition rate.
 
 
 
@@ -1058,7 +979,7 @@ rf_confusion_matrix_validation
   * overall Accuracy of 0.988 against validation data as compared to 1 given by model data,
   * predicting employees leaving company with 0.952381 accuracy against validation data as compared to 1 given by model data and
   * predicting employees staying with the company with 0.9991251 accuracy against validation data as compared to 1 given by model.
-  * Though model too perfect (accuracy of 1) it is maintaining its accuracy levels close enough with unseen data and hence the model is repetitive and is representative of the problem.
+  * Though model is too perfect (accuracy of 1.0) it is maintaining its accuracy levels close enough with unseen data and hence the model is repetitive and is representative of the problem.
 
 ####Overall looks like Random Forest Model is giving better prediction
 
