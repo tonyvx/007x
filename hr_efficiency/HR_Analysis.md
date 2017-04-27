@@ -143,8 +143,8 @@ hr_correl %>%  dplyr::select(
 ![](HR_Analysis_files/figure-html/ggpairs_continous_attibutes-1.png)<!-- -->
 
 * We can see attributes _number_project_, _average_monthly_hours_, _last_evaluation_, _time_spend_company_ having correlation to _left_ and _satisfaction_level_.
-* Looks like employees involved in 3 -5 projects and putting in 175 hours - 225 hours average monthly hours have lower rate of leaving company and have high satisfaction level.
-* Assuming 22 working days a month, 175 hours - 225 hours average monthly hours translates to 8 - 10 hrs per day. 
+* Looks like employees involved in 3 -5 projects and putting in 175 - 225 average monthly hours have lower rate of leaving company and have high satisfaction level.
+* Assuming 22 working days a month, 175 - 225 average monthly hours translates to 8 - 10 hrs per day. 
 
 
 ```r
@@ -193,9 +193,9 @@ hr_explore %>% ggplot(aes(satisfaction_level)) +
 
 ![](HR_Analysis_files/figure-html/plot_data_exp_analysis_monthly_hrs_range-1.png)<!-- -->
   
-  * Since average_montly_hours is continous data, in order for being able to use as a facet lets make it a discrete by creating ranges / monthly_hrs_range. Starting at 174 hours as that is __normal__ average monthly hours.
+  * Since average_montly_hours is continuous data, in order for being able to use as a facet lets make it a discrete by creating ranges / monthly_hrs_range. Starting at 174 hours as that is __normal__ average monthly hours.
   * Employees putting in 174 and less average monthly hours show medium satisfaction and very high rate of leaving.
-  * Employees putting in 174 - 225 average monthly hours seems to have higher satisfaction level. Though we can see a small peak in employees leaving in this category. (8-10 hrs a day)
+  * Employees putting in 174 - 225 average monthly hours seem to have higher satisfaction level. Though we can see a small peak in employees leaving in this category. (8-10 hrs a day)
   * Employees putting in  225 - 275 average monthly hours show mostly higher satisfaction level and we can see rate of leaving in high satisfaction level creeping. (10 - 13 hours a day)
   * Employees putting in 275 hours and more average monthly hours are having a very low satisfaction level and are mostly leaving.
 
@@ -212,9 +212,9 @@ hr_explore %>% ggplot(aes(satisfaction_level)) +
 
 ![](HR_Analysis_files/figure-html/plot_data_exp_analysis_last_evaluation-1.png)<!-- -->
 
-* Since last_evaluation is continous data, first lets round the last evaluation to 1 place and then make it into a factor
-* Employees having evaluation rating 0.4 - 0.6, show satisafaction levels improving with rating and employees leaving have mostly medium satisfaction level.
-* Employees at 0.7 rating show higher satisfaction level and low rate of quitiing.
+* Since last_evaluation is continuous  data, first lets round the last evaluation to 1 place and then make it into a factor
+* Employees having evaluation rating 0.4 - 0.6, show satisfaction levels improving with rating and employees leaving have mostly medium satisfaction level.
+* Employees at 0.7 rating show higher satisfaction level and low rate of quitting.
 * Employees having higher rating of 0.8 - 1 show folks leaving with low satisfaction level high and gradually reducing but then employees with satisfaction and leaving is slowly creeping up.
 
 #### time_spend_company
@@ -262,7 +262,7 @@ hr_explore %>% ggplot(aes(satisfaction_level)) +
 ![](HR_Analysis_files/figure-html/plot_data_exp_analysis_Work_accident-1.png)<!-- -->
 
 * Among employees who did not have work accident, we can see employees quitting at low, medium and high satisfaction levels. This trend follows among folks who had accident.
-* Also very percent of employees who had accident are actually leaving, which means accidents are not impacting there work long term.
+* Also, very small percent of employees who had accident are leaving, which means accidents are not impacting there work long term.
 * Work_accident does not seem to high of a concern for employees to leave.
 
 #### salary
@@ -277,7 +277,7 @@ hr_explore %>% ggplot(aes(satisfaction_level)) +
 ![](HR_Analysis_files/figure-html/plot_data_exp_analysis_salary-1.png)<!-- -->
 
 * More people are in medium and low salary level than high salary level.
-* At all salary level we can see similar pattern of peaks in employees leaving at low, medium and high satisfaction levels.
+* At all salary level, we can see similar pattern of peaks in employees leaving at low, medium and high satisfaction levels.
 * Looks like employees are paid well for their role and salary is not driving employees to leave.
 
 #### dept
@@ -296,7 +296,7 @@ hr_explore %>% ggplot(aes(satisfaction_level)) +
 * dept data does not show any unusual pattern that can be correlated, all departments are showing similar pattern.
 
 #####Overall
-* number_project, average_montly_hours, last_evaluation & time_spend_company are of significant interest for analysing reasons for employees leaving
+* number_project, average_montly_hours, last_evaluation & time_spend_company are of significant interest for analyzing reasons for employees leaving
 * We can see 3 categories/patterns of employees who are leaving
   
   + high satisfaction level 
@@ -307,14 +307,14 @@ hr_explore %>% ggplot(aes(satisfaction_level)) +
 
   + medium satisfaction level 
     * Employees involved in 2 projects
-    * Employees putting in 174 and less average monthly hours. ( less than 8 hrs a day)
+    * Employees putting in 174 and less average monthly hours. (less than 8 hrs a day)
     * Employees having evaluation rating 0.4 - 0.6
     * Employees who have been with the company for around 3 years
 
   + low satisfaction level
     * Employees involved in 6 - 7 projects
     * Employees putting in 275 hours and more average monthly hours  (More than 13 hrs a day)
-    * Employees having evaluation rating 0.8 - 1 ( this group also has folks leaving at higher satisfaction level too)
+    * Employees having evaluation rating 0.8 - 1 (this group also has folks leaving at higher satisfaction level too)
     * Employees who have been with the company for around 4 years
 
 * It seems low satisfaction is driven by over work and medium satisfaction is due to less work (does less work means lower remuneration?). 
@@ -362,11 +362,11 @@ wssplot(scale(hr_clust))
 
 ![](HR_Analysis_files/figure-html/cluster1-1.png)<!-- -->
 
-Lets consider 3 clusters for analysis. Also in exploratory analysis we were able to identify 3 groups of employees who are leaving (high , medium & low satisfaction level)
+Let's consider 3 clusters for analysis. Also in exploratory analysis, we could identify 3 groups of employees who are leaving (high, medium & low satisfaction level)
 
 
 ```r
-# lets consider 3 clusters 
+# let's consider 3 clusters 
 
 fit.km <- kmeans(scale(hr_clust), 3)
 clusplot(hr_clust,fit.km$cluster, color = TRUE)
@@ -433,7 +433,7 @@ grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2,time_spend, nrow = 5)
 ###overall
 * cluster 3 are employees that company need to find ways to retain. Based on earlier exploratory analysis we know keeping average monthly hours to 174 - 225 hrs or 8-10 hrs a day helps to maintain retention and employee satisfaction.
 * cluster 2 are over worked employees, company need to find ways to optimize work load and improve satisfaction level
-* cluster 1 are under under utilized employees and company need to find means to have them share the work load of cluster 2.
+* cluster 1 are under-utilized employees and company need to find means to have them share the work load of cluster 2.
 * Overall right sizing work load and ensuring a 8 - 10 hours a day work load will go long way to have highly satisfied employee and low attrition rate.
 
 
@@ -470,7 +470,7 @@ All clusters have even distribution for promotion, department, work accident and
 ##Regression Analysis
 
 ###Linear Regression Analysis
-Lets build a model to determine how long an employee will stay using data from __employees who already left__
+Let's build a model to determine how long an employee will stay using data from __employees who already left__
 
 
 ####Data
@@ -489,7 +489,7 @@ hrTrain <- hr_left[ trainIndex,]
 hrTest  <- hr_left[-trainIndex,]
 ```
 
-####Lets use caret package to anlyze significant fields for linear model
+####Let's use caret package to anlyze significant fields for linear model
 
 ```r
 plot(varImp(train(time_spend_company ~ ., data = hrTrain, method = "lm")))
@@ -543,7 +543,7 @@ lm_time_spend_summary
 ## F-statistic: 619.6 on 13 and 2845 DF,  p-value: < 2.2e-16
 ```
 
-From model summary we can see following attributes impacting time spend in company 
+From model summary, we can see following attributes impacting time spend in company 
 
 * satisfaction_level      
 * number_project   
@@ -553,13 +553,13 @@ From model summary we can see following attributes impacting time spend in compa
 
 Model _lm_time_spend_ has an R Squared of 0.7389789 and adjusted R-Squared of 0.7377862
 
-####Lets predict using the model _lm_time_spend_
+####Let's predict using the model _lm_time_spend_
 
 ```r
 predict_time_spend <- predict(lm_time_spend, newdata = hrTest)
 ```
 
-####Lets measure the correlation
+####Let's measure the correlation
 
 ```r
 #correlation data
@@ -597,10 +597,10 @@ correlation[1,2]
 
 The correlation coefficient is excellent __0.8726757__
 
-####Lets compute Root Mean Square Error for the model
+####Let's compute Root Mean Square Error for the model
 
 ```r
-#lets see how good the model prediction was
+#let's see how good the model prediction was
 
 #Sum of squared errors(SSE)
 sse = sum((hrTest$time_spend_company - predict_time_spend ) ^ 2)
@@ -620,12 +620,12 @@ round(rmse, digits = 2)
 ```
 ## [1] 0.48
 ```
-####Linear model _lm_time_spend_ prediction with a correlation coefficent of 0.87 is providing a good prediction of time spent in company by employees with an RMSE of 0.48 years.
+####Linear model _lm_time_spend_ prediction with a correlation coefficient of 0.87 is providing a good prediction of time spent in company by employees with an RMSE of 0.48 years.
 
 
 ###Logistic Regression Analysis
 
-Lets build a model to __predict if the employee will leave__
+Let's build a model to __predict if the employee will leave__
 
 #### Data
 
@@ -649,7 +649,7 @@ hrValidation <- hr_log_analysis[-trainIndex,][validationIndex,]
 hrTest  <- hr_log_analysis[-trainIndex,][-validationIndex,]
 ```
 
-####Lets identify significant attributes for logistics regression
+####Let's identify significant attributes for logistics regression
 
 
 ```r
