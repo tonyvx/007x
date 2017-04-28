@@ -26,7 +26,7 @@ _Build Model to predict employees Leaving_
 __Provide Recommendations__
 
 __Links__
-
+* _Data_ - https://github.com/tonyvx/007x/blob/master/hr_efficiency/HR_comma_sep.csv
 * _Link to deck(pptx)_ - https://github.com/tonyvx/007x/blob/master/hr_efficiency/DataScience_CapstoneProject.pptx
 * _Link R Script/Report_ - 
   + https://github.com/tonyvx/007x/blob/master/hr_efficiency/HR_Analysis.Rmd
