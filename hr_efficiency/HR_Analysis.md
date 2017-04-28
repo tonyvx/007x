@@ -3,10 +3,16 @@
 
 
 
-## Problem
-###Factors important to retain performing employees
-* We will be exploring data set available for avenues for improving employee satisfaction and identify factors important to employees.
-* We will be building a predictive model to determine probability in leaving. We comapre logistic regression and random forest models.
+
+##About Client and problem
+The client is the HR department for company ABC.
+
+HR Department wants to know:
+
+* The factors that are important to the employees.
+* Why are best and most experienced employees of ABC leaving prematurely.
+* Provide recommendation to HR department to lower attrition rate and save on hiring costs.
+* Build a predictive model to determine their probability in leaving.
 
 ## Data Source
 https://www.kaggle.com/ludobenistant/hr-analytics
@@ -325,6 +331,7 @@ hr_explore %>% ggplot(aes(satisfaction_level)) +
 ###Exploratory analysis using Clustering
 Here we will be using cluster analysis on __employees who left__ to explore various correlations. We will be using k-Means clustering.
 
+####Identify number of clusters for kmeans cluster analysis
 To decide how many clusters for analysis we will plot total within-groups sums of squares against the number of clusters in a K-means. A bend in the graph can suggest the appropriate number of clusters. 
 
 
@@ -362,6 +369,8 @@ wssplot(scale(hr_clust))
 
 ![](HR_Analysis_files/figure-html/cluster1-1.png)<!-- -->
 
+
+####Cluster Plot 
 Let's consider 3 clusters for analysis. Also in exploratory analysis, we could identify 3 groups of employees who are leaving (high, medium & low satisfaction level)
 
 
@@ -374,6 +383,9 @@ clusplot(hr_clust,fit.km$cluster, color = TRUE)
 
 ![](HR_Analysis_files/figure-html/clustering-1.png)<!-- -->
 
+####Lets plot the 3 clusters with key attributes 
+We will use attributes identified earlier as showing correlation to employee satisfaction and employees leaving - 
+satisfaction_level, number_projects, last_evalaluation, average_monthly_hours,time_spend_company
 
 ```r
 cluster_analysis <- cbind(hr_clust,fit.km$cluster)
@@ -409,33 +421,37 @@ grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2,time_spend, nrow = 5)
 
 ![](HR_Analysis_files/figure-html/clustering_analysis_signifanct-1.png)<!-- -->
 
-###cluster 3
+####Observation
+#####cluster 3
 * Employees having overall higher satisfaction level, 
 * involved 3-5 projects, 
 * spend 5 - 6 years.
 * higher evaluation rating (0.8 -1) and 
 * average monthly hours of 225  - 275 hours. Assuming 22 working days a month, this translates to 10 - 13 hrs per day.
 
-###cluster 1
+#####cluster 1
 * Employees having overall medium satisfaction level, 
 * involved in less than 2 projects, 
 * spend 3 - 4 years
 * low to medium evaluation rating (<0.6) and 
 * low average monthly hours of less than 175 hours.
 
-###cluster 2
+#####cluster 2
 * Employees having overall low satisfaction level, 
 * involved in mainly 6 - 7 projects, 
 * spend 4 -5 years
 * high evaluation rating (0.8-1) and 
 * high average monthly hours of 225 - 350 hours. Assuming 22 working days a month, this translates to 10 - 16 hrs per day.
 
-###overall
+#####overall
 * cluster 3 are employees that company need to find ways to retain. Based on earlier exploratory analysis we know keeping average monthly hours to 174 - 225 hrs or 8-10 hrs a day helps to maintain retention and employee satisfaction.
 * cluster 2 are over worked employees, company need to find ways to optimize work load and improve satisfaction level
 * cluster 1 are under-utilized employees and company need to find means to have them share the work load of cluster 2.
 * Overall right sizing work load and ensuring a 8 - 10 hours a day work load will go long way to have highly satisfied employee and low attrition rate.
 
+####Lets plot the 3 clusters with other important attributes
+We will use other important attributes identified earlier as __not showing correlation or low correlation__ to employee satisfaction and employees leaving - 
+promotion_last_5years, dept, work_accident, salary
 
 
 ```r
@@ -467,11 +483,10 @@ grid.arrange(promotion2,dept2, wrk_accdnt2, sal2, nrow = 4)
 ###overall
 All clusters have even distribution for promotion, department, work accident and salary. Not much significant observation that can be made.
 
-##Regression Analysis
 
-###Linear Regression Analysis
+
+###Exploratory analysis using Linear Regression
 Let's build a model to determine how long an employee will stay using data from __employees who already left__
-
 
 ####Data
 
@@ -622,32 +637,35 @@ round(rmse, digits = 2)
 ```
 ####Linear model _lm_time_spend_ prediction with a correlation coefficient of 0.87 is providing a good prediction of time spent in company by employees with an RMSE of 0.48 years.
 
+##Build a model to predict Employees leaving
+* We will split available data set into training data (60%), validation data (10%) and Test data (10%)
+* We will build the predictive model using training data. We will be trying both Logistic regression and random forest model.
+* Validate both the models against validation data for repeatability of the model against unseen data and pick the best model of the two.
 
-###Logistic Regression Analysis
-
-Let's build a model to __predict if the employee will leave__
-
-#### Data
+###Data
 
 ```r
-hr_log_analysis <- hr_correl
 set.seed(3456)
-trainIndex <- createDataPartition(hr_log_analysis$left, p = .6, 
+trainIndex <- createDataPartition(hr$left, p = .6, 
                                   list = FALSE, 
                                   times = 1)
 
-validationIndex <- createDataPartition(hr_log_analysis[-trainIndex,]$left, p = .5, 
+validationIndex <- createDataPartition(hr[-trainIndex,]$left, p = .5, 
                                   list = FALSE, 
                                   times = 1)
 #Training data 
-hrTrain <- hr_log_analysis[ trainIndex,]
+hrTrain <- hr[ trainIndex,]
 
 #validation data
-hrValidation <- hr_log_analysis[-trainIndex,][validationIndex,]
+hrValidation <- hr[-trainIndex,][validationIndex,]
 
 #Test data
-hrTest  <- hr_log_analysis[-trainIndex,][-validationIndex,]
+hrTest  <- hr[-trainIndex,][-validationIndex,]
 ```
+
+###Logistic Regression
+
+Let's build a model to __predict if the employee will leave__ using Logistic Regression
 
 ####Let's identify significant attributes for logistics regression
 
@@ -657,18 +675,19 @@ plot(varImp(train(left ~ ., data = hrTrain, method = "glm")))
 ```
 
 ![](HR_Analysis_files/figure-html/log_reg_model_signi_fields-1.png)<!-- -->
-* Attributes - _number_project_, _time_spend_company_, _satisfaction_level_, _Work_accident_, _salary_, _last_evaluation, _average_montly_hours_, _promotion_last_5years_ & _dept_ are significant for the logistics regression model to predict left (employees leaving left=1)
+* Attributes - _number_project_, _time_spend_company_, _satisfaction_level_, _Work_accident_, _salary_, _last_evaluation, _average_monthly_hours_, _promotion_last_5years_ & _dept_ are significant for the logistics regression model to predict left (employees leaving left=1)
 
-####Logistics Regression Model
+####Logistic Regression Model
+By converting time_spend_company and number_project as factor in the model, we are getting better sensitivity for positive class 1 (employees left)
 
 ```r
 #Logistics regression model
-log_model <- train( left ~ time_spend_company + 
+log_model <- train( left ~ as.factor(time_spend_company) + 
                       average_montly_hours + 
                       dept+
                       last_evaluation +
                       promotion_last_5years +
-                      number_project +
+                      as.factor(number_project) +
                       salary + 
                       Work_accident  + 
                       satisfaction_level ,
@@ -689,36 +708,66 @@ summary(log_model)
 ## -3.3136  -0.3221  -0.1122   0.0000   3.9660  
 ## 
 ## Coefficients:
-##                          Estimate Std. Error z value Pr(>|z|)    
-## (Intercept)            -4.740e+00  3.981e-01 -11.906  < 2e-16 ***
-## time_spend_company3     2.786e+00  2.251e-01  12.375  < 2e-16 ***
-## time_spend_company4     2.951e+00  2.439e-01  12.097  < 2e-16 ***
-## time_spend_company5     4.925e+00  2.402e-01  20.498  < 2e-16 ***
-## time_spend_company6     3.930e+00  2.575e-01  15.260  < 2e-16 ***
-## time_spend_company7    -1.433e+01  4.779e+02  -0.030 0.976082    
-## time_spend_company8    -1.404e+01  5.501e+02  -0.026 0.979634    
-## time_spend_company10   -1.387e+01  5.027e+02  -0.028 0.977989    
-## average_montly_hours    8.272e-03  9.504e-04   8.703  < 2e-16 ***
-## depthr                  4.797e-02  2.200e-01   0.218 0.827363    
-## deptIT                 -4.184e-01  2.081e-01  -2.011 0.044339 *  
-## deptmanagement         -2.815e-01  2.815e-01  -1.000 0.317248    
-## deptmarketing           1.983e-01  2.193e-01   0.904 0.365937    
-## deptproduct_mng        -3.266e-01  2.175e-01  -1.502 0.133149    
-## deptRandD              -7.652e-01  2.349e-01  -3.257 0.001126 ** 
-## deptsales              -2.298e-01  1.708e-01  -1.345 0.178487    
-## deptsupport            -2.027e-01  1.826e-01  -1.110 0.266905    
-## depttechnical           3.994e-02  1.768e-01   0.226 0.821232    
-## last_evaluation         2.261e+00  2.827e-01   7.995 1.29e-15 ***
-## promotion_last_5years1 -1.621e+00  4.917e-01  -3.298 0.000975 ***
-## number_project3        -5.485e+00  1.909e-01 -28.733  < 2e-16 ***
-## number_project4        -4.171e+00  1.400e-01 -29.787  < 2e-16 ***
-## number_project5        -3.383e+00  1.390e-01 -24.330  < 2e-16 ***
-## number_project6        -2.705e+00  1.661e-01 -16.285  < 2e-16 ***
-## number_project7         1.607e+01  4.325e+02   0.037 0.970357    
-## salarylow               1.917e+00  1.967e-01   9.746  < 2e-16 ***
-## salarymedium            1.434e+00  1.987e-01   7.217 5.33e-13 ***
-## Work_accident1         -1.606e+00  1.404e-01 -11.436  < 2e-16 ***
-## satisfaction_level     -2.122e+00  1.822e-01 -11.647  < 2e-16 ***
+##                                     Estimate Std. Error z value Pr(>|z|)
+## (Intercept)                       -4.740e+00  3.981e-01 -11.906  < 2e-16
+## `as.factor(time_spend_company)3`   2.786e+00  2.251e-01  12.375  < 2e-16
+## `as.factor(time_spend_company)4`   2.951e+00  2.439e-01  12.097  < 2e-16
+## `as.factor(time_spend_company)5`   4.925e+00  2.402e-01  20.498  < 2e-16
+## `as.factor(time_spend_company)6`   3.930e+00  2.575e-01  15.260  < 2e-16
+## `as.factor(time_spend_company)7`  -1.433e+01  4.779e+02  -0.030 0.976082
+## `as.factor(time_spend_company)8`  -1.404e+01  5.501e+02  -0.026 0.979634
+## `as.factor(time_spend_company)10` -1.387e+01  5.027e+02  -0.028 0.977989
+## average_montly_hours               8.272e-03  9.504e-04   8.703  < 2e-16
+## depthr                             4.797e-02  2.200e-01   0.218 0.827363
+## deptIT                            -4.184e-01  2.081e-01  -2.011 0.044339
+## deptmanagement                    -2.815e-01  2.815e-01  -1.000 0.317248
+## deptmarketing                      1.983e-01  2.193e-01   0.904 0.365937
+## deptproduct_mng                   -3.266e-01  2.175e-01  -1.502 0.133149
+## deptRandD                         -7.652e-01  2.349e-01  -3.257 0.001126
+## deptsales                         -2.298e-01  1.708e-01  -1.345 0.178487
+## deptsupport                       -2.027e-01  1.826e-01  -1.110 0.266905
+## depttechnical                      3.994e-02  1.768e-01   0.226 0.821232
+## last_evaluation                    2.261e+00  2.827e-01   7.995 1.29e-15
+## promotion_last_5years1            -1.621e+00  4.917e-01  -3.298 0.000975
+## `as.factor(number_project)3`      -5.485e+00  1.909e-01 -28.733  < 2e-16
+## `as.factor(number_project)4`      -4.171e+00  1.400e-01 -29.787  < 2e-16
+## `as.factor(number_project)5`      -3.383e+00  1.390e-01 -24.330  < 2e-16
+## `as.factor(number_project)6`      -2.705e+00  1.661e-01 -16.285  < 2e-16
+## `as.factor(number_project)7`       1.607e+01  4.325e+02   0.037 0.970357
+## salarylow                          1.917e+00  1.967e-01   9.746  < 2e-16
+## salarymedium                       1.434e+00  1.987e-01   7.217 5.33e-13
+## Work_accident1                    -1.606e+00  1.404e-01 -11.436  < 2e-16
+## satisfaction_level                -2.122e+00  1.822e-01 -11.647  < 2e-16
+##                                      
+## (Intercept)                       ***
+## `as.factor(time_spend_company)3`  ***
+## `as.factor(time_spend_company)4`  ***
+## `as.factor(time_spend_company)5`  ***
+## `as.factor(time_spend_company)6`  ***
+## `as.factor(time_spend_company)7`     
+## `as.factor(time_spend_company)8`     
+## `as.factor(time_spend_company)10`    
+## average_montly_hours              ***
+## depthr                               
+## deptIT                            *  
+## deptmanagement                       
+## deptmarketing                        
+## deptproduct_mng                      
+## deptRandD                         ** 
+## deptsales                            
+## deptsupport                          
+## depttechnical                        
+## last_evaluation                   ***
+## promotion_last_5years1            ***
+## `as.factor(number_project)3`      ***
+## `as.factor(number_project)4`      ***
+## `as.factor(number_project)5`      ***
+## `as.factor(number_project)6`      ***
+## `as.factor(number_project)7`         
+## salarylow                         ***
+## salarymedium                      ***
+## Work_accident1                    ***
+## satisfaction_level                ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
@@ -772,7 +821,7 @@ glm_confusion_matrix_train
 ## 
 ```
 
-####Logistics Regression model against validation data
+####Logistic Regression model against validation data
 Let us analyze the goodness of fit of the regression by applying the model's predictive performance to data that was not used in model estimation.
 
 ```r
@@ -818,43 +867,14 @@ glm_confusion_matrix_validation
   * model is maintaining its accuracy levels and hence the model is repetitive  and is representative of the problem.
 
 
-
-
-```r
-#Lets test performance of the model against test data 
-testPrediction <- predict(log_model,hrTest)
-glm_confusion_matrix_test <- confusionMatrix(testPrediction,hrTest$left, dnn = c("Predicted","actual"), positive = "1")
-```
-
-###Random Forest Analysis
+###Random Forest
+Importing doMC package and setting it up to utilize parallel processing across 5 cores, to improve speed of Random Forest model generation on a training set,
 
 ```r
 #To improve speed of Random Forest model genration on a training set, using doMC to utilize parallel processing across 5 cores
 library(doMC)
 registerDoMC(5)
 ```
-
-####Data
-
-```r
-set.seed(3456)
-trainIndex <- createDataPartition(hr$left, p = .6, 
-                                  list = FALSE, 
-                                  times = 1)
-
-validationIndex <- createDataPartition(hr[-trainIndex,]$left, p = .5, 
-                                  list = FALSE, 
-                                  times = 1)
-#Training data 
-hrTrain <- hr[ trainIndex,]
-
-#validation data
-hrValidation <- hr[-trainIndex,][validationIndex,]
-
-#Test data
-hrTest  <- hr[-trainIndex,][-validationIndex,]
-```
-
 ####Random Forest Model
 
 ```r
@@ -884,13 +904,13 @@ print(rf_model)
 ## 
 ## No pre-processing
 ## Resampling: Cross-Validated (5 fold) 
-## Summary of sample sizes: 7200, 7199, 7200, 7200, 7201 
+## Summary of sample sizes: 7201, 7200, 7199, 7200, 7200 
 ## Resampling results across tuning parameters:
 ## 
 ##   mtry  Accuracy   Kappa    
-##    2    0.9695555  0.9128271
-##   10    0.9883335  0.9674284
-##   18    0.9861115  0.9613303
+##    2    0.9702220  0.9149287
+##   10    0.9880000  0.9665000
+##   18    0.9862223  0.9616521
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
 ## The final value used for the model was mtry = 10.
@@ -900,7 +920,7 @@ print(rf_model)
 #prediction on train data
 rf_prediction_train = predict(rf_model, newdata = hrTrain)
 
-rf_conf_matrix_train <- confusionMatrix(rf_prediction_train, hrTrain$left)
+rf_conf_matrix_train <- confusionMatrix(rf_prediction_train, hrTrain$left, dnn = c("Predicted","actual"), positive = "1")
 
 rf_conf_matrix_train
 ```
@@ -908,10 +928,10 @@ rf_conf_matrix_train
 ```
 ## Confusion Matrix and Statistics
 ## 
-##           Reference
-## Prediction    0    1
-##          0 6857    0
-##          1    0 2143
+##          actual
+## Predicted    0    1
+##         0 6857    0
+##         1    0 2143
 ##                                      
 ##                Accuracy : 1          
 ##                  95% CI : (0.9996, 1)
@@ -925,12 +945,12 @@ rf_conf_matrix_train
 ##             Specificity : 1.0000     
 ##          Pos Pred Value : 1.0000     
 ##          Neg Pred Value : 1.0000     
-##              Prevalence : 0.7619     
-##          Detection Rate : 0.7619     
-##    Detection Prevalence : 0.7619     
+##              Prevalence : 0.2381     
+##          Detection Rate : 0.2381     
+##    Detection Prevalence : 0.2381     
 ##       Balanced Accuracy : 1.0000     
 ##                                      
-##        'Positive' Class : 0          
+##        'Positive' Class : 1          
 ## 
 ```
 
@@ -951,8 +971,8 @@ rf_confusion_matrix_validation
 ## 
 ##          actual
 ## Predicted    0    1
-##         0 2284   34
-##         1    2  680
+##         0 2283   33
+##         1    3  681
 ##                                           
 ##                Accuracy : 0.988           
 ##                  95% CI : (0.9834, 0.9916)
@@ -960,16 +980,16 @@ rf_confusion_matrix_validation
 ##     P-Value [Acc > NIR] : < 2.2e-16       
 ##                                           
 ##                   Kappa : 0.9664          
-##  Mcnemar's Test P-Value : 2.383e-07       
+##  Mcnemar's Test P-Value : 1.343e-06       
 ##                                           
-##             Sensitivity : 0.9524          
-##             Specificity : 0.9991          
-##          Pos Pred Value : 0.9971          
-##          Neg Pred Value : 0.9853          
+##             Sensitivity : 0.9538          
+##             Specificity : 0.9987          
+##          Pos Pred Value : 0.9956          
+##          Neg Pred Value : 0.9858          
 ##              Prevalence : 0.2380          
-##          Detection Rate : 0.2267          
-##    Detection Prevalence : 0.2273          
-##       Balanced Accuracy : 0.9758          
+##          Detection Rate : 0.2270          
+##    Detection Prevalence : 0.2280          
+##       Balanced Accuracy : 0.9762          
 ##                                           
 ##        'Positive' Class : 1               
 ## 
@@ -977,13 +997,13 @@ rf_confusion_matrix_validation
 
 ####Comparing results from the model's prediction on validation data
   * overall Accuracy of 0.988 against validation data as compared to 1 given by model data,
-  * predicting employees leaving company with 0.952381 accuracy against validation data as compared to 1 given by model data and
-  * predicting employees staying with the company with 0.9991251 accuracy against validation data as compared to 1 given by model.
+  * predicting employees leaving company with 0.9537815 accuracy against validation data as compared to 1 given by model data and
+  * predicting employees staying with the company with 0.9986877 accuracy against validation data as compared to 1 given by model.
   * Though model is too perfect (accuracy of 1.0) it is maintaining its accuracy levels close enough with unseen data and hence the model is repetitive and is representative of the problem.
 
-####Overall looks like Random Forest Model is giving better prediction
+###Overall Random Forest Model is giving better prediction
 
-###Prediction using random forest model
+##Prediction using random forest model
 
 
 ```r
@@ -1024,8 +1044,14 @@ rf_conf_matrix
 ## 
 ```
 
+##Summarize Logistic Regression and Random Forest Models
 
-###Summarize Logistics and Random Forest Regression results
+```r
+#prediction on test data
+glm_testPrediction <- predict(log_model,hrTest)
+glm_confusion_matrix_test <- confusionMatrix(glm_testPrediction,hrTest$left, dnn = c("Predicted","actual"), positive = "1")
+```
+
 
 ```r
 overall <- cbind(
@@ -1048,14 +1074,14 @@ byClass <- cbind(
   
 all_conf_matrix <- rbind(overall, byClass)
 all_conf_matrix <- data.frame(all_conf_matrix)
-names(all_conf_matrix) <- c("glm_train","glm_validation", "glm_test", "rf_train","rf_validation", "rf_test")
+names(all_conf_matrix) <- c("glm_train","glm_valid", "glm_test", "rf_train","rf_valid", "rf_test")
 
-all_conf_matrix$glm_train <- round(all_conf_matrix$glm_train, digits = 4)
-all_conf_matrix$glm_validation <- round(all_conf_matrix$glm_validation, digits = 4)
-all_conf_matrix$glm_test <- round(all_conf_matrix$glm_test, digits = 4)
-all_conf_matrix$rf_train <- round(all_conf_matrix$rf_train, digits = 4)
-all_conf_matrix$rf_validation <- round(all_conf_matrix$rf_validation, digits = 4)
-all_conf_matrix$rf_test <- round(all_conf_matrix$rf_test, digits = 4)
+all_conf_matrix$glm_train <- round(all_conf_matrix$glm_train, digits = 2)
+all_conf_matrix$glm_valid <- round(all_conf_matrix$glm_valid, digits = 2)
+all_conf_matrix$glm_test <- round(all_conf_matrix$glm_test, digits = 2)
+all_conf_matrix$rf_train <- round(all_conf_matrix$rf_train, digits = 2)
+all_conf_matrix$rf_valid <- round(all_conf_matrix$rf_valid, digits = 2)
+all_conf_matrix$rf_test <- round(all_conf_matrix$rf_test, digits = 2)
 
 rownames(all_conf_matrix)[3] <- "95% CI (Upper)"
 rownames(all_conf_matrix)[4] <- "95% CI (Lower)"
@@ -1067,46 +1093,50 @@ all_conf_matrix
 ```
 
 ```
-##                        glm_train glm_validation glm_test rf_train
-## Accuracy                  0.8997         0.8890   0.8923   1.0000
-## Kappa                     0.7265         0.6976   0.7036   1.0000
-## 95% CI (Upper)            0.8933         0.8772   0.8807   0.9996
-## 95% CI (Lower)            0.9058         0.9000   0.9032   1.0000
-## No Information Rate       0.7619         0.7620   0.7619   0.7619
-## P-Value [Acc > NIR]       0.0000         0.0000   0.0000   0.0000
-## Mcnemar's Test P-Value    0.0236         0.1884   0.9114      NaN
-## Sensitivity               0.8054         0.7843   0.7759   1.0000
-## Specificity               0.9291         0.9217   0.9287   1.0000
-## Pos Pred Value            0.7803         0.7578   0.7727   1.0000
-## Neg Pred Value            0.9386         0.9319   0.9299   1.0000
-## Precision                 0.7803         0.7578   0.7727   1.0000
-## Recall                    0.8054         0.7843   0.7759   1.0000
-## F1                        0.7927         0.7708   0.7743   1.0000
-## Prevalence                0.2381         0.2380   0.2381   0.7619
-## Detection Rate            0.1918         0.1867   0.1847   0.7619
-## Detection Prevalence      0.2458         0.2463   0.2391   0.7619
-## Balanced Accuracy         0.8673         0.8530   0.8523   1.0000
-##                        rf_validation rf_test
-## Accuracy                      0.9880  0.9913
-## Kappa                         0.9664  0.9759
-## 95% CI (Upper)                0.9834  0.9873
-## 95% CI (Lower)                0.9916  0.9943
-## No Information Rate           0.7620  0.7619
-## P-Value [Acc > NIR]           0.0000  0.0000
-## Mcnemar's Test P-Value        0.0000  0.0033
-## Sensitivity                   0.9524  0.9706
-## Specificity                   0.9991  0.9978
-## Pos Pred Value                0.9971  0.9928
-## Neg Pred Value                0.9853  0.9909
-## Precision                     0.9971  0.9928
-## Recall                        0.9524  0.9706
-## F1                            0.9742  0.9816
-## Prevalence                    0.2380  0.2381
-## Detection Rate                0.2267  0.2311
-## Detection Prevalence          0.2273  0.2327
-## Balanced Accuracy             0.9758  0.9842
+##                        glm_train glm_valid glm_test rf_train rf_valid
+## Accuracy                    0.90      0.89     0.89     1.00     0.99
+## Kappa                       0.73      0.70     0.70     1.00     0.97
+## 95% CI (Upper)              0.89      0.88     0.88     1.00     0.98
+## 95% CI (Lower)              0.91      0.90     0.90     1.00     0.99
+## No Information Rate         0.76      0.76     0.76     0.76     0.76
+## P-Value [Acc > NIR]         0.00      0.00     0.00     0.00     0.00
+## Mcnemar's Test P-Value      0.02      0.19     0.91      NaN     0.00
+## Sensitivity                 0.81      0.78     0.78     1.00     0.95
+## Specificity                 0.93      0.92     0.93     1.00     1.00
+## Pos Pred Value              0.78      0.76     0.77     1.00     1.00
+## Neg Pred Value              0.94      0.93     0.93     1.00     0.99
+## Precision                   0.78      0.76     0.77     1.00     1.00
+## Recall                      0.81      0.78     0.78     1.00     0.95
+## F1                          0.79      0.77     0.77     1.00     0.97
+## Prevalence                  0.24      0.24     0.24     0.24     0.24
+## Detection Rate              0.19      0.19     0.18     0.24     0.23
+## Detection Prevalence        0.25      0.25     0.24     0.24     0.23
+## Balanced Accuracy           0.87      0.85     0.85     1.00     0.98
+##                        rf_test
+## Accuracy                  0.99
+## Kappa                     0.98
+## 95% CI (Upper)            0.99
+## 95% CI (Lower)            0.99
+## No Information Rate       0.76
+## P-Value [Acc > NIR]       0.00
+## Mcnemar's Test P-Value    0.00
+## Sensitivity               0.97
+## Specificity               1.00
+## Pos Pred Value            0.99
+## Neg Pred Value            0.99
+## Precision                 0.99
+## Recall                    0.97
+## F1                        0.98
+## Prevalence                0.24
+## Detection Rate            0.23
+## Detection Prevalence      0.23
+## Balanced Accuracy         0.98
 ```
 
-
+##Recommendations
+* Random Forest Model is giving better prediction for employees leaving.
+* Overall right sizing work load and ensuring an 8 - 10 hours a day work load will go long way to have highly satisfied employee and low attrition rate.
+* High rating does not equate directly to level of satisfaction as shown by peaks in low satisfaction. Also, both at high and low rating level we see folks quitting. So maybe improved rating is not resulting into reward or the reward is not matching expectation?
+* Employees who have spent more than 4 years may be finding work not exciting anymore or maybe feeling competitive enough to try opportunities. Maybe there is a dialogue needed here to understand what would make work more rewarding and satisfying.
 
 

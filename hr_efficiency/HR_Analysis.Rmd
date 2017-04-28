@@ -26,10 +26,16 @@ library(GGally)
 myTheme <- scale_fill_brewer(palette = "Set1") + theme( panel.grid = element_blank(), legend.key = element_blank(), plot.title = element_text(hjust = 0.5))
 ```
 
-## Problem
-###Factors important to retain performing employees
-* We will be exploring data set available for avenues for improving employee satisfaction and identify factors important to employees.
-* We will be building a predictive model to determine probability in leaving. We comapre logistic regression and random forest models.
+
+##About Client and problem
+The client is the HR department for company ABC.
+
+HR Department wants to know:
+
+* The factors that are important to the employees.
+* Why are best and most experienced employees of ABC leaving prematurely.
+* Provide recommendation to HR department to lower attrition rate and save on hiring costs.
+* Build a predictive model to determine their probability in leaving.
 
 ## Data Source
 https://www.kaggle.com/ludobenistant/hr-analytics
@@ -266,6 +272,7 @@ hr_explore %>% ggplot(aes(satisfaction_level)) +
 ###Exploratory analysis using Clustering
 Here we will be using cluster analysis on __employees who left__ to explore various correlations. We will be using k-Means clustering.
 
+####Identify number of clusters for kmeans cluster analysis
 To decide how many clusters for analysis we will plot total within-groups sums of squares against the number of clusters in a K-means. A bend in the graph can suggest the appropriate number of clusters. 
 
 ```{r cluster1}
@@ -300,6 +307,8 @@ hr_clust$promotion_last_5years <- as.numeric(hr_clust$promotion_last_5years)
 wssplot(scale(hr_clust))
 ```
 
+
+####Cluster Plot 
 Let's consider 3 clusters for analysis. Also in exploratory analysis, we could identify 3 groups of employees who are leaving (high, medium & low satisfaction level)
 
 ```{r clustering}
@@ -309,6 +318,9 @@ fit.km <- kmeans(scale(hr_clust), 3)
 clusplot(hr_clust,fit.km$cluster, color = TRUE)
 ```
 
+####Lets plot the 3 clusters with key attributes 
+We will use attributes identified earlier as showing correlation to employee satisfaction and employees leaving - 
+satisfaction_level, number_projects, last_evalaluation, average_monthly_hours,time_spend_company
 ```{r clustering_analysis_signifanct}
 cluster_analysis <- cbind(hr_clust,fit.km$cluster)
 names(cluster_analysis)[10] <- 'cluster'
@@ -341,33 +353,37 @@ time_spend <- cluster_analysis %>%
 grid.arrange(satis_2, num_prj2, last_eval2, avg_hrs2,time_spend, nrow = 5)
 ```
 
-###cluster 3
+####Observation
+#####cluster 3
 * Employees having overall higher satisfaction level, 
 * involved 3-5 projects, 
 * spend 5 - 6 years.
 * higher evaluation rating (0.8 -1) and 
 * average monthly hours of 225  - 275 hours. Assuming 22 working days a month, this translates to 10 - 13 hrs per day.
 
-###cluster 1
+#####cluster 1
 * Employees having overall medium satisfaction level, 
 * involved in less than 2 projects, 
 * spend 3 - 4 years
 * low to medium evaluation rating (<0.6) and 
 * low average monthly hours of less than 175 hours.
 
-###cluster 2
+#####cluster 2
 * Employees having overall low satisfaction level, 
 * involved in mainly 6 - 7 projects, 
 * spend 4 -5 years
 * high evaluation rating (0.8-1) and 
 * high average monthly hours of 225 - 350 hours. Assuming 22 working days a month, this translates to 10 - 16 hrs per day.
 
-###overall
+#####overall
 * cluster 3 are employees that company need to find ways to retain. Based on earlier exploratory analysis we know keeping average monthly hours to 174 - 225 hrs or 8-10 hrs a day helps to maintain retention and employee satisfaction.
 * cluster 2 are over worked employees, company need to find ways to optimize work load and improve satisfaction level
 * cluster 1 are under-utilized employees and company need to find means to have them share the work load of cluster 2.
 * Overall right sizing work load and ensuring a 8 - 10 hours a day work load will go long way to have highly satisfied employee and low attrition rate.
 
+####Lets plot the 3 clusters with other important attributes
+We will use other important attributes identified earlier as __not showing correlation or low correlation__ to employee satisfaction and employees leaving - 
+promotion_last_5years, dept, work_accident, salary
 
 ```{r cluster_analysis_not_imp}
 promotion2 <- cluster_analysis %>% 
@@ -396,11 +412,10 @@ grid.arrange(promotion2,dept2, wrk_accdnt2, sal2, nrow = 4)
 ###overall
 All clusters have even distribution for promotion, department, work accident and salary. Not much significant observation that can be made.
 
-##Regression Analysis
 
-###Linear Regression Analysis
+
+###Exploratory analysis using Linear Regression
 Let's build a model to determine how long an employee will stay using data from __employees who already left__
-
 
 ####Data
 ```{r}
@@ -485,48 +500,52 @@ round(rmse, digits = 2)
 ```
 ####Linear model _lm_time_spend_ prediction with a correlation coefficient of `r round(correlation[1,2], digits =2)` is providing a good prediction of time spent in company by employees with an RMSE of `r round(rmse, digits = 2)` years.
 
+##Build a model to predict Employees leaving
+* We will split available data set into training data (60%), validation data (10%) and Test data (10%)
+* We will build the predictive model using training data. We will be trying both Logistic regression and random forest model.
+* Validate both the models against validation data for repeatability of the model against unseen data and pick the best model of the two.
 
-###Logistic Regression Analysis
-
-Let's build a model to __predict if the employee will leave__
-
-#### Data
+###Data
 ```{r}
-hr_log_analysis <- hr_correl
 set.seed(3456)
-trainIndex <- createDataPartition(hr_log_analysis$left, p = .6, 
+trainIndex <- createDataPartition(hr$left, p = .6, 
                                   list = FALSE, 
                                   times = 1)
 
-validationIndex <- createDataPartition(hr_log_analysis[-trainIndex,]$left, p = .5, 
+validationIndex <- createDataPartition(hr[-trainIndex,]$left, p = .5, 
                                   list = FALSE, 
                                   times = 1)
 #Training data 
-hrTrain <- hr_log_analysis[ trainIndex,]
+hrTrain <- hr[ trainIndex,]
 
 #validation data
-hrValidation <- hr_log_analysis[-trainIndex,][validationIndex,]
+hrValidation <- hr[-trainIndex,][validationIndex,]
 
 #Test data
-hrTest  <- hr_log_analysis[-trainIndex,][-validationIndex,]
+hrTest  <- hr[-trainIndex,][-validationIndex,]
 ```
+
+###Logistic Regression
+
+Let's build a model to __predict if the employee will leave__ using Logistic Regression
 
 ####Let's identify significant attributes for logistics regression
 
 ```{r log_reg_model_signi_fields}
 plot(varImp(train(left ~ ., data = hrTrain, method = "glm")))
 ```
-* Attributes - _number_project_, _time_spend_company_, _satisfaction_level_, _Work_accident_, _salary_, _last_evaluation, _average_montly_hours_, _promotion_last_5years_ & _dept_ are significant for the logistics regression model to predict left (employees leaving left=1)
+* Attributes - _number_project_, _time_spend_company_, _satisfaction_level_, _Work_accident_, _salary_, _last_evaluation, _average_monthly_hours_, _promotion_last_5years_ & _dept_ are significant for the logistics regression model to predict left (employees leaving left=1)
 
-####Logistics Regression Model
+####Logistic Regression Model
+By converting time_spend_company and number_project as factor in the model, we are getting better sensitivity for positive class 1 (employees left)
 ```{r log_model}
 #Logistics regression model
-log_model <- train( left ~ time_spend_company + 
+log_model <- train( left ~ as.factor(time_spend_company) + 
                       average_montly_hours + 
                       dept+
                       last_evaluation +
                       promotion_last_5years +
-                      number_project +
+                      as.factor(number_project) +
                       salary + 
                       Work_accident  + 
                       satisfaction_level ,
@@ -547,7 +566,7 @@ glm_confusion_matrix_train <- confusionMatrix(glm_prediction_train,
 glm_confusion_matrix_train
 ```
 
-####Logistics Regression model against validation data
+####Logistic Regression model against validation data
 Let us analyze the goodness of fit of the regression by applying the model's predictive performance to data that was not used in model estimation.
 ```{r}
 #Lets test prediction using test data 
@@ -563,41 +582,13 @@ glm_confusion_matrix_validation
   * model is maintaining its accuracy levels and hence the model is repetitive  and is representative of the problem.
 
 
-
-```{r}
-#Lets test performance of the model against test data 
-testPrediction <- predict(log_model,hrTest)
-glm_confusion_matrix_test <- confusionMatrix(testPrediction,hrTest$left, dnn = c("Predicted","actual"), positive = "1")
-
-```
-
-###Random Forest Analysis
+###Random Forest
+Importing doMC package and setting it up to utilize parallel processing across 5 cores, to improve speed of Random Forest model generation on a training set,
 ```{r rf}
 #To improve speed of Random Forest model genration on a training set, using doMC to utilize parallel processing across 5 cores
 library(doMC)
 registerDoMC(5)
 ```
-
-####Data
-```{r rf_data}
-set.seed(3456)
-trainIndex <- createDataPartition(hr$left, p = .6, 
-                                  list = FALSE, 
-                                  times = 1)
-
-validationIndex <- createDataPartition(hr[-trainIndex,]$left, p = .5, 
-                                  list = FALSE, 
-                                  times = 1)
-#Training data 
-hrTrain <- hr[ trainIndex,]
-
-#validation data
-hrValidation <- hr[-trainIndex,][validationIndex,]
-
-#Test data
-hrTest  <- hr[-trainIndex,][-validationIndex,]
-```
-
 ####Random Forest Model
 ```{r rf_model}
 
@@ -620,7 +611,7 @@ print(rf_model)
 #prediction on train data
 rf_prediction_train = predict(rf_model, newdata = hrTrain)
 
-rf_conf_matrix_train <- confusionMatrix(rf_prediction_train, hrTrain$left)
+rf_conf_matrix_train <- confusionMatrix(rf_prediction_train, hrTrain$left, dnn = c("Predicted","actual"), positive = "1")
 
 rf_conf_matrix_train
 
@@ -643,9 +634,9 @@ rf_confusion_matrix_validation
   * predicting employees staying with the company with `r rf_confusion_matrix_validation$byClass["Specificity"]` accuracy against validation data as compared to `r rf_conf_matrix_train$byClass["Specificity"]` given by model.
   * Though model is too perfect (accuracy of 1.0) it is maintaining its accuracy levels close enough with unseen data and hence the model is repetitive and is representative of the problem.
 
-####Overall looks like Random Forest Model is giving better prediction
+###Overall Random Forest Model is giving better prediction
 
-###Prediction using random forest model
+##Prediction using random forest model
 
 ```{r rf_prediction}
 #prediction on test data
@@ -657,8 +648,13 @@ rf_conf_matrix
 
 ```
 
+##Summarize Logistic Regression and Random Forest Models
+```{r glm_test}
+#prediction on test data
+glm_testPrediction <- predict(log_model,hrTest)
+glm_confusion_matrix_test <- confusionMatrix(glm_testPrediction,hrTest$left, dnn = c("Predicted","actual"), positive = "1")
+```
 
-###Summarize Logistics and Random Forest Regression results
 ```{r reg_summary}
 overall <- cbind(
   glm_confusion_matrix_train$overall,
@@ -680,14 +676,14 @@ byClass <- cbind(
   
 all_conf_matrix <- rbind(overall, byClass)
 all_conf_matrix <- data.frame(all_conf_matrix)
-names(all_conf_matrix) <- c("glm_train","glm_validation", "glm_test", "rf_train","rf_validation", "rf_test")
+names(all_conf_matrix) <- c("glm_train","glm_valid", "glm_test", "rf_train","rf_valid", "rf_test")
 
-all_conf_matrix$glm_train <- round(all_conf_matrix$glm_train, digits = 4)
-all_conf_matrix$glm_validation <- round(all_conf_matrix$glm_validation, digits = 4)
-all_conf_matrix$glm_test <- round(all_conf_matrix$glm_test, digits = 4)
-all_conf_matrix$rf_train <- round(all_conf_matrix$rf_train, digits = 4)
-all_conf_matrix$rf_validation <- round(all_conf_matrix$rf_validation, digits = 4)
-all_conf_matrix$rf_test <- round(all_conf_matrix$rf_test, digits = 4)
+all_conf_matrix$glm_train <- round(all_conf_matrix$glm_train, digits = 2)
+all_conf_matrix$glm_valid <- round(all_conf_matrix$glm_valid, digits = 2)
+all_conf_matrix$glm_test <- round(all_conf_matrix$glm_test, digits = 2)
+all_conf_matrix$rf_train <- round(all_conf_matrix$rf_train, digits = 2)
+all_conf_matrix$rf_valid <- round(all_conf_matrix$rf_valid, digits = 2)
+all_conf_matrix$rf_test <- round(all_conf_matrix$rf_test, digits = 2)
 
 rownames(all_conf_matrix)[3] <- "95% CI (Upper)"
 rownames(all_conf_matrix)[4] <- "95% CI (Lower)"
@@ -699,6 +695,10 @@ all_conf_matrix
 
 ```
 
-
+##Recommendations
+* Random Forest Model is giving better prediction for employees leaving.
+* Overall right sizing work load and ensuring an 8 - 10 hours a day work load will go long way to have highly satisfied employee and low attrition rate.
+* High rating does not equate directly to level of satisfaction as shown by peaks in low satisfaction. Also, both at high and low rating level we see folks quitting. So maybe improved rating is not resulting into reward or the reward is not matching expectation?
+* Employees who have spent more than 4 years may be finding work not exciting anymore or maybe feeling competitive enough to try opportunities. Maybe there is a dialogue needed here to understand what would make work more rewarding and satisfying.
 
 
