@@ -8,15 +8,15 @@ published: true
 ---
 **HR Efficiency Analysis**
 
-* Problem
+*About Client and problem*
+* The client is the HR department for company ABC.
 
-    * Factors important to retain performing employees
+HR Department wants to know:
 
-* Data
-
-    * https://www.kaggle.com/ludobenistant/hr-analytics
-
-    * https://www.kaggle.com/ludobenistant/hr-analytics/downloads/human-resources-analytics.zip
+* The factors that are important to the employees.
+* Why are best and most experienced employees of ABC leaving prematurely.
+* Provide recommendation to HR department to lower attrition rate and save on hiring costs.
+* Build a predictive model to determine their probability in leaving.
 
 * Analysis
    * https://github.com/tonyvx/007x/blob/master/hr_efficiency/HR%20Analysis.Rmd
