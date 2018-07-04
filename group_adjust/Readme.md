@@ -20,7 +20,7 @@ author: tonyvx
 
 * In the main logger is instantiated
 * Log level is set to ERROR for best performance. Available INFO, DEBUG
-* isPanda is set to True to use pandas library. 
+* isPanda is set to True to use pandas library. (mac pro i7 2011 model)  
   * pandas - test_performance took 10-12 secs with 9-10 secs in creating data frame
   * python - test_performance took 17-20 secs with bulk of the time spent in computing weighted mean
 
